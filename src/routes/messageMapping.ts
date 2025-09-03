@@ -29,12 +29,11 @@ router.post("/generate", async (req, res) => {
       configuration,
       source,
     );
-    res.status(201).json(mapping);
+    return res.status(201).json(mapping);
   } catch (error) {
     logger.error("Error generating message mapping", { error });
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
-  return;
 });
 
 // Get message mapping by ID
@@ -47,12 +46,11 @@ router.get("/:id", async (req, res) => {
       return res.status(404).json({ error: "Message mapping not found" });
     }
 
-    res.json(mapping);
+    return res.json(mapping);
   } catch (error) {
     logger.error("Error retrieving message mapping", { error });
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
-  return;
 });
 
 // Clear message mapping by ID
@@ -65,22 +63,21 @@ router.delete("/:id", async (req, res) => {
       return res.status(404).json({ error: "Message mapping not found" });
     }
 
-    res.json({ message: "Message mapping cleared successfully" });
+    return res.json({ message: "Message mapping cleared successfully" });
   } catch (error) {
     logger.error("Error clearing message mapping", { error });
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
-  return;
 });
 
 // Get all message mappings
 router.get("/", async (req, res) => {
   try {
     const mappings = messageMappingService.getAllMappings();
-    res.json(mappings);
+    return res.json(mappings);
   } catch (error) {
     logger.error("Error retrieving message mappings", { error });
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -96,10 +93,10 @@ router.post("/:id/rules", async (req, res) => {
     }
 
     messageMappingService.createAdvancedMappingRules(id, rules);
-    res.status(201).json({ message: "Advanced mapping rules created successfully" });
+    return res.status(201).json({ message: "Advanced mapping rules created successfully" });
   } catch (error) {
     logger.error("Error creating advanced mapping rules", { error });
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -108,10 +105,10 @@ router.get("/:id/rules", async (req, res) => {
   try {
     const { id } = req.params;
     const rules = messageMappingService.getAdvancedMappingRules(id);
-    res.json(rules);
+    return res.json(rules);
   } catch (error) {
     logger.error("Error retrieving advanced mapping rules", { error });
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -126,10 +123,10 @@ router.post("/:id/transformations", async (req, res) => {
     }
 
     messageMappingService.createTransformationRule(id, rule);
-    res.status(201).json({ message: "Transformation rule created successfully" });
+    return res.status(201).json({ message: "Transformation rule created successfully" });
   } catch (error) {
     logger.error("Error creating transformation rule", { error });
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -138,10 +135,10 @@ router.get("/:id/transformations", async (req, res) => {
   try {
     const { id } = req.params;
     const rules = messageMappingService.getTransformationRules(id);
-    res.json(rules);
+    return res.json(rules);
   } catch (error) {
     logger.error("Error retrieving transformation rules", { error });
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -157,10 +154,10 @@ router.post("/:id/collaboration", async (req, res) => {
     }
 
     messageMappingService.addCollaborationEvent(id, event);
-    res.status(201).json({ message: "Collaboration event added successfully" });
+    return res.status(201).json({ message: "Collaboration event added successfully" });
   } catch (error) {
     logger.error("Error adding collaboration event", { error });
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -169,10 +166,10 @@ router.get("/:id/collaboration", async (req, res) => {
   try {
     const { id } = req.params;
     const history = messageMappingService.getCollaborationHistory(id);
-    res.json(history);
+    return res.json(history);
   } catch (error) {
     logger.error("Error retrieving collaboration history", { error });
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -186,10 +183,10 @@ router.post("/validate-schema", async (req, res) => {
     }
 
     const isValid = messageMappingService.validateSchema(content, schemaType, schemaContent);
-    res.json({ valid: isValid });
+    return res.json({ valid: isValid });
   } catch (error) {
     logger.error("Error validating schema", { error });
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 

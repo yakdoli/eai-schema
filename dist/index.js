@@ -10,14 +10,33 @@ const morgan_1 = __importDefault(require("morgan"));
 const compression_1 = __importDefault(require("compression"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const http_1 = require("http");
+const socket_io_1 = require("socket.io");
 const logger_1 = require("./utils/logger");
 const errorHandler_1 = require("./middleware/errorHandler");
+const performanceMonitoringMiddleware_1 = __importDefault(require("./middleware/performanceMonitoringMiddleware"));
 const upload_1 = require("./routes/upload");
 const health_1 = require("./routes/health");
 const messageMapping_1 = __importDefault(require("./routes/messageMapping"));
+const mcpController_1 = __importDefault(require("./mcp/mcpController"));
+const collaboration_1 = __importDefault(require("./routes/collaboration"));
+const schemaValidation_1 = __importDefault(require("./routes/schemaValidation"));
+const performanceMonitoring_1 = __importDefault(require("./routes/performanceMonitoring"));
+const CollaborationService_1 = require("./services/CollaborationService");
+const messageMappingService_1 = require("./services/messageMappingService");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
+const server = (0, http_1.createServer)(app);
 const PORT = process.env.PORT || 3001;
+const messageMappingService = new messageMappingService_1.MessageMappingService(logger_1.logger);
+const collaborationService = new CollaborationService_1.CollaborationService(messageMappingService);
+const io = new socket_io_1.Server(server, {
+    cors: {
+        origin: process.env.FRONTEND_URL || "*",
+        methods: ["GET", "POST"]
+    }
+});
+collaborationService.initialize(io);
 app.use((0, helmet_1.default)({
     crossOriginResourcePolicy: { policy: "cross-origin" },
 }));
@@ -55,14 +74,19 @@ const limiter = (0, express_rate_limit_1.default)({
     },
 });
 app.use(limiter);
+app.use(performanceMonitoringMiddleware_1.default);
 app.use("/api/upload", express_1.default.raw({ type: "application/octet-stream", limit: "50mb" }));
 app.use(express_1.default.json({ limit: "10mb" }));
 app.use(express_1.default.urlencoded({ extended: true, limit: "10mb" }));
 app.use("/api/health", health_1.healthRoutes);
 app.use("/api/upload", upload_1.uploadRoutes);
 app.use("/api/message-mapping", messageMapping_1.default);
+app.use("/api/mcp", mcpController_1.default);
+app.use("/api/collaboration", collaboration_1.default);
+app.use("/api/schema-validation", schemaValidation_1.default);
+app.use("/api/performance", performanceMonitoring_1.default);
 app.use(errorHandler_1.errorHandler);
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     logger_1.logger.info(`EAI Schema Toolkit 백엔드 서버가 포트 ${PORT}에서 실행 중입니다.`);
 });
 exports.default = app;

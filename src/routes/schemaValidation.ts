@@ -26,13 +26,13 @@ router.post("/validate", async (req, res) => {
 
     const result = schemaValidationService.validateSchema(data, format, schema);
     
-    res.json({
+    return res.json({
       valid: result.valid,
       errors: result.errors
     });
   } catch (error) {
     logger.error("Error validating schema", { error });
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -40,10 +40,10 @@ router.post("/validate", async (req, res) => {
 router.get("/formats", async (req, res) => {
   try {
     const formats = schemaValidationService.getSupportedFormats();
-    res.json({ formats });
+    return res.json({ formats });
   } catch (error) {
     logger.error("Error retrieving supported formats", { error });
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -60,13 +60,13 @@ router.post("/json", async (req, res) => {
 
     const result = schemaValidationService.validateJsonSchema(data, schema);
     
-    res.json({
+    return res.json({
       valid: result.valid,
       errors: result.errors
     });
   } catch (error) {
     logger.error("Error validating JSON schema", { error });
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -83,13 +83,13 @@ router.post("/xml", async (req, res) => {
 
     const result = schemaValidationService.validateXmlSchema(xml, xsd);
     
-    res.json({
+    return res.json({
       valid: result.valid,
       errors: result.errors
     });
   } catch (error) {
     logger.error("Error validating XML schema", { error });
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -106,13 +106,13 @@ router.post("/yaml", async (req, res) => {
 
     const result = schemaValidationService.validateYamlSchema(yaml, schema);
     
-    res.json({
+    return res.json({
       valid: result.valid,
       errors: result.errors
     });
   } catch (error) {
     logger.error("Error validating YAML schema", { error });
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 

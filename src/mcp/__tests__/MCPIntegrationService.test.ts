@@ -1,6 +1,6 @@
-import { MCPIntegrationService } from "../mcp/MCPIntegrationService";
-import { MessageMappingService } from "../services/messageMappingService";
-import { logger } from "../utils/logger";
+import { MCPIntegrationService } from "../MCPIntegrationService";
+import { MessageMappingService } from "../../services/messageMappingService";
+import { logger } from "../../utils/logger";
 
 // Mock logger for testing
 const mockLogger = {
@@ -15,7 +15,7 @@ describe("MCPIntegrationService", () => {
   let messageMappingService: MessageMappingService;
 
   beforeEach(() => {
-    messageMappingService = new MessageMappingService(mockLogger);
+    messageMappingService = new MessageMappingService(mockLogger as any);
     mcpService = new MCPIntegrationService(messageMappingService);
   });
 

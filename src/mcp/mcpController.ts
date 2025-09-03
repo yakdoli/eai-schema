@@ -13,10 +13,10 @@ const mcpService = new MCPIntegrationService(messageMappingService);
 router.get("/provider", async (req, res) => {
   try {
     const providerInfo = mcpService.getProviderInfo();
-    res.json(providerInfo);
+    return res.json(providerInfo);
   } catch (error) {
     logger.error("Error retrieving MCP provider info", { error });
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -30,20 +30,20 @@ router.post("/process", async (req, res) => {
     }
     
     const result = await mcpService.processRequest(request);
-    res.json(result);
+    return res.json(result);
   } catch (error) {
     logger.error("Error processing MCP request", { error });
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
 // Health check endpoint
 router.get("/health", async (req, res) => {
   try {
-    res.json({ status: "OK", timestamp: new Date().toISOString() });
+    return res.json({ status: "OK", timestamp: new Date().toISOString() });
   } catch (error) {
     logger.error("Error in MCP health check", { error });
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 

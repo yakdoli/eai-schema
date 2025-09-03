@@ -109,7 +109,7 @@ class PerformanceMonitoringService {
       this.memoryGauge.labels("rss").set(memoryUsage.rss);
       this.memoryGauge.labels("heapTotal").set(memoryUsage.heapTotal);
       this.memoryGauge.labels("heapUsed").set(memoryUsage.heapUsed);
-      this.memoryGauge.labels("external").set(memoryUsage.external);
+      this.memoryGauge.labels("external").set(memoryUsage.external || 0);
     } catch (error) {
       logger.error("Error recording memory usage metrics", { error });
     }
@@ -181,9 +181,16 @@ class PerformanceMonitoringService {
       const requestTotal = metrics.find(m => m.name === "http_requests_total");
       const memoryUsage = metrics.find(m => m.name === "process_memory_usage_bytes");
       
+      const totalRequests = requestTotal ? requestTotal.values.reduce((sum, v) => sum + v.value, 0) : 0;
+      let memoryUsageStr = "Unknown";
+      
+      if (memoryUsage && memoryUsage.values.length > 0 && memoryUsage.values[0]) {
+        memoryUsageStr = `${(memoryUsage.values[0].value / 1024 / 1024).toFixed(2)} MB`;
+      }
+      
       logger.info("Metrics Summary", {
-        totalRequests: requestTotal ? requestTotal.values.reduce((sum, v) => sum + v.value, 0) : 0,
-        memoryUsage: memoryUsage ? `${(memoryUsage.values[0].value / 1024 / 1024).toFixed(2)} MB` : "Unknown"
+        totalRequests,
+        memoryUsage: memoryUsageStr
       });
     } catch (error) {
       logger.error("Error logging metrics summary", { error });

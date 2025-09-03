@@ -1,4 +1,4 @@
-import { performanceMonitoringService } from "../services/PerformanceMonitoringService";
+import { performanceMonitoringService } from "../PerformanceMonitoringService";
 
 describe("PerformanceMonitoringService", () => {
   describe("recordHttpRequest", () => {

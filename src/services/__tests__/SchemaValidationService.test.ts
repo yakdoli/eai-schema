@@ -1,4 +1,4 @@
-import { SchemaValidationService } from "../services/SchemaValidationService";
+import { SchemaValidationService } from "../SchemaValidationService";
 
 describe("SchemaValidationService", () => {
   let schemaValidationService: SchemaValidationService;

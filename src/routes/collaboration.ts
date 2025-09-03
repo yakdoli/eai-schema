@@ -19,10 +19,10 @@ router.get("/:mappingId/history", async (req, res) => {
     }
     
     const history = collaborationService.getCollaborationHistory(mappingId);
-    res.json(history);
+    return res.json(history);
   } catch (error) {
     logger.error("Error retrieving collaboration history", { error });
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -36,10 +36,10 @@ router.get("/:mappingId/users", async (req, res) => {
     }
     
     const users = collaborationService.getMappingUsers(mappingId);
-    res.json(users);
+    return res.json(users);
   } catch (error) {
     logger.error("Error retrieving mapping users", { error });
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 

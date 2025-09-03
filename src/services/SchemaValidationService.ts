@@ -1,7 +1,6 @@
-import Ajv from "ajv";
+import Ajv, { ErrorObject } from "ajv";
 import addFormats from "ajv-formats";
 import libxmljs from "libxmljs2";
-import { validate as validateYaml } from "yaml-validator";
 import { logger } from "../utils/logger";
 
 /**
@@ -35,9 +34,9 @@ class SchemaValidationService {
 
       return {
         valid,
-        errors: valid ? undefined : validate.errors
+        errors: valid ? undefined : (validate.errors as any[]) || []
       };
-    } catch (error) {
+    } catch (error: any) {
       logger.error("Error validating JSON schema", { error });
       return {
         valid: false,
@@ -65,7 +64,7 @@ class SchemaValidationService {
         valid,
         errors: valid ? undefined : xmlDoc.validationErrors.map(error => error.message)
       };
-    } catch (error) {
+    } catch (error: any) {
       logger.error("Error validating XML schema", { error });
       return {
         valid: false,
@@ -82,13 +81,16 @@ class SchemaValidationService {
    */
   validateYamlSchema(yaml: string, schema?: any): { valid: boolean; errors?: string[] } {
     try {
-      // Basic YAML syntax validation
-      const isValidYaml = validateYaml(yaml);
-
-      if (!isValidYaml) {
+      // Basic YAML syntax validation by trying to parse it
+      try {
+        // Try to parse the YAML to check syntax
+        const yamljs = require("js-yaml");
+        yamljs.load(yaml);
+        // If parsing succeeds, the YAML is syntactically valid
+      } catch (parseError: any) {
         return {
           valid: false,
-          errors: ["Invalid YAML syntax"]
+          errors: [parseError.message]
         };
       }
 
@@ -104,7 +106,7 @@ class SchemaValidationService {
       return {
         valid: true
       };
-    } catch (error) {
+    } catch (error: any) {
       logger.error("Error validating YAML schema", { error });
       return {
         valid: false,
@@ -133,7 +135,7 @@ class SchemaValidationService {
         default:
           throw new Error(`Unsupported format: ${format}`);
       }
-    } catch (error) {
+    } catch (error: any) {
       logger.error(`Error validating ${format} schema`, { error });
       return {
         valid: false,

@@ -39,3 +39,8 @@
 {"level":"info","message":"::1 - - [02/Sep/2025:23:39:26 +0000] \"POST /api/upload/url HTTP/1.1\" 200 326 \"-\" \"-\"","service":"eai-schema-toolkit-backend","timestamp":"2025-09-03 08:39:26"}
 {"level":"info","message":"::1 - - [02/Sep/2025:23:39:26 +0000] \"GET /api/upload/files HTTP/1.1\" 200 1006 \"-\" \"-\"","service":"eai-schema-toolkit-backend","timestamp":"2025-09-03 08:39:26"}
 {"level":"info","message":"::1 - - [02/Sep/2025:23:39:26 +0000] \"GET /api/upload/file/97079e7d-08fd-45c8-89d3-e92edca9058e/content HTTP/1.1\" 200 646 \"-\" \"-\"","service":"eai-schema-toolkit-backend","timestamp":"2025-09-03 08:39:26"}
+{"level":"info","message":"Collaboration service initialized","service":"eai-schema-toolkit-backend","timestamp":"2025-09-03 23:52:40"}
+{"level":"info","message":"EAI Schema Toolkit 백엔드 서버가 포트 3001에서 실행 중입니다.","service":"eai-schema-toolkit-backend","timestamp":"2025-09-03 23:52:40"}
+{"error":{},"level":"error","message":"Error processing MCP request","service":"eai-schema-toolkit-backend","timestamp":"2025-09-04 00:32:04"}
+{"level":"info","message":"Collaboration service initialized","service":"eai-schema-toolkit-backend","timestamp":"2025-09-04 00:33:14"}
+{"level":"info","message":"EAI Schema Toolkit 백엔드 서버가 포트 3001에서 실행 중입니다.","service":"eai-schema-toolkit-backend","timestamp":"2025-09-04 00:33:14"}
