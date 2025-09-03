@@ -3,7 +3,17 @@
   "description": "EAI Schema Toolkit - Enterprise Application Integration Schema Conversion and Validation API",
   "repository": "https://github.com/yakdoli/eai-schema",
   "logo": "https://cdn.jsdelivr.net/gh/yakdoli/eai-schema@main/docs/manifest.json",
-  "keywords": ["eai", "schema", "xml", "json", "yaml", "conversion", "validation", "enterprise", "api"],
+  "keywords": [
+    "eai",
+    "schema",
+    "xml",
+    "json",
+    "yaml",
+    "conversion",
+    "validation",
+    "enterprise",
+    "api"
+  ],
   "stack": "heroku-22",
   "buildpacks": [
     {
@@ -27,7 +37,7 @@
     },
     "FRONTEND_URL": {
       "description": "Frontend URL for CORS configuration",
-      "value": "https://yakdoli.github.io"
+      "value": "https://powerschema.com"
     },
     "LOG_LEVEL": {
       "description": "Logging level",
