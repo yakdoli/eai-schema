@@ -5,17 +5,43 @@ import morgan from "morgan";
 import compression from "compression";
 import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
+import { createServer } from "http";
+import { Server } from "socket.io";
 import { logger } from "./utils/logger";
 import { errorHandler } from "./middleware/errorHandler";
+import performanceMonitoringMiddleware from "./middleware/performanceMonitoringMiddleware";
 import { uploadRoutes } from "./routes/upload";
 import { healthRoutes } from "./routes/health";
 import messageMappingRoutes from "./routes/messageMapping";
+import mcpRoutes from "./mcp/mcpController";
+import collaborationRoutes from "./routes/collaboration";
+import schemaValidationRoutes from "./routes/schemaValidation";
+import performanceMonitoringRoutes from "./routes/performanceMonitoring";
+import { CollaborationService } from "./services/CollaborationService";
+import { MessageMappingService } from "./services/messageMappingService";
+import { performanceMonitoringService } from "./services/PerformanceMonitoringService";
 
 // 환경 변수 로드
 dotenv.config();
 
 const app: express.Application = express();
+const server = createServer(app);
 const PORT = process.env.PORT || 3001;
+
+// Initialize services
+const messageMappingService = new MessageMappingService(logger);
+const collaborationService = new CollaborationService(messageMappingService);
+
+// Initialize Socket.IO
+const io = new Server(server, {
+  cors: {
+    origin: process.env.FRONTEND_URL || "*",
+    methods: ["GET", "POST"]
+  }
+});
+
+// Initialize collaboration service with Socket.IO
+collaborationService.initialize(io);
 
 // 보안 미들웨어
 app.use(
@@ -73,6 +99,9 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
+// Performance monitoring middleware
+app.use(performanceMonitoringMiddleware);
+
 // JSON 파싱 미들웨어 (파일 업로드 제외)
 app.use(
   "/api/upload",
@@ -85,12 +114,16 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use("/api/health", healthRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/message-mapping", messageMappingRoutes);
+app.use("/api/mcp", mcpRoutes);
+app.use("/api/collaboration", collaborationRoutes);
+app.use("/api/schema-validation", schemaValidationRoutes);
+app.use("/api/performance", performanceMonitoringRoutes);
 
 // 에러 핸들링 미들웨어
 app.use(errorHandler);
 
 // 서버 시작
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   logger.info(
     `EAI Schema Toolkit 백엔드 서버가 포트 ${PORT}에서 실행 중입니다.`,
   );

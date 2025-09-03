@@ -1,10 +1,11 @@
-// EAI Schema Toolkit - Frontend JavaScript
+// EAI Schema Toolkit - Frontend JavaScript with Collaboration Features
 class EAISchemaApp {
   constructor() {
-    this.apiUrl =
-      localStorage.getItem("apiUrl") ||
-      "https://eai-schema-api-8128681f739e.herokuapp.com";
-    this.currentFileId = null;
+    this.apiUrl = localStorage.getItem("apiUrl") || "https://eai-schema-api-8128681f739e.herokuapp.com";
+    this.socket = null;
+    this.currentMappingId = null;
+    this.currentUsername = "Anonymous";
+    this.collaborators = [];
     this.init();
   }
 
@@ -13,71 +14,45 @@ class EAISchemaApp {
     this.setupTabs();
     this.setupDropZone();
     this.loadFiles();
+    this.initializeCollaboration();
     this.showToast("애플리케이션이 시작되었습니다.", "success");
   }
 
   setupEventListeners() {
     // Tab switching
     document.querySelectorAll(".tab-button").forEach((button) => {
-      button.addEventListener("click", (e) =>
-        this.switchTab(e.target.dataset.tab),
-      );
+      button.addEventListener("click", (e) => this.switchTab(e.target.dataset.tab));
     });
 
     // File upload
-    document
-      .getElementById("fileInput")
-      .addEventListener("change", (e) => this.handleFileSelect(e));
-    document
-      .getElementById("uploadBtn")
-      .addEventListener("click", () => this.uploadFile());
+    document.getElementById("fileInput").addEventListener("change", (e) => this.handleFileSelect(e));
+    document.getElementById("uploadBtn").addEventListener("click", () => this.uploadFile());
 
     // URL fetch
-    document
-      .getElementById("urlInput")
-      .addEventListener("input", (e) => this.validateUrl(e.target.value));
-    document
-      .getElementById("fetchBtn")
-      .addEventListener("click", () => this.fetchFromUrl());
+    document.getElementById("urlInput").addEventListener("input", (e) => this.validateUrl(e.target.value));
+    document.getElementById("fetchBtn").addEventListener("click", () => this.fetchFromUrl());
 
     // Message mapping
-    document
-      .getElementById("generateMappingBtn")
-      .addEventListener("click", () => this.generateMapping());
-    document
-      .getElementById("validateMappingBtn")
-      .addEventListener("click", () => this.validateMapping());
-    document
-      .getElementById("clearMappingBtn")
-      .addEventListener("click", () => this.clearMapping());
+    document.getElementById("generateMappingBtn").addEventListener("click", () => this.generateMapping());
+    document.getElementById("validateMappingBtn").addEventListener("click", () => this.validateMapping());
+    document.getElementById("clearMappingBtn").addEventListener("click", () => this.clearMapping());
 
     // Actions
-    document
-      .getElementById("downloadBtn")
-      .addEventListener("click", () => this.downloadFile());
-    document
-      .getElementById("deleteBtn")
-      .addEventListener("click", () => this.deleteFile());
-    document
-      .getElementById("newUploadBtn")
-      .addEventListener("click", () => this.resetUpload());
-    document
-      .getElementById("refreshFilesBtn")
-      .addEventListener("click", () => this.loadFiles());
+    document.getElementById("downloadBtn").addEventListener("click", () => this.downloadFile());
+    document.getElementById("deleteBtn").addEventListener("click", () => this.deleteFile());
+    document.getElementById("newUploadBtn").addEventListener("click", () => this.resetUpload());
+    document.getElementById("refreshFilesBtn").addEventListener("click", () => this.loadFiles());
+
+    // Collaboration features
+    document.getElementById("joinCollaborationBtn").addEventListener("click", () => this.joinCollaboration());
+    document.getElementById("leaveCollaborationBtn").addEventListener("click", () => this.leaveCollaboration());
+    document.getElementById("usernameInput").addEventListener("input", (e) => this.updateUsername(e.target.value));
 
     // Settings
-    document
-      .getElementById("settingsBtn")
-      .addEventListener("click", () => this.openSettings());
-    document
-      .getElementById("closeSettingsModal")
-      .addEventListener("click", () => this.closeSettings());
-    document
-      .getElementById("cancelSettings")
-      .addEventListener("click", () => this.closeSettings());
-    document
-      .getElementById("saveSettings")
-      .addEventListener("click", () => this.saveSettings());
+    document.getElementById("settingsBtn").addEventListener("click", () => this.openSettings());
+    document.getElementById("closeSettingsModal").addEventListener("click", () => this.closeSettings());
+    document.getElementById("cancelSettings").addEventListener("click", () => this.closeSettings());
+    document.getElementById("saveSettings").addEventListener("click", () => this.saveSettings());
 
     // Modal backdrop click
     document.getElementById("settingsModal").addEventListener("click", (e) => {
@@ -119,6 +94,171 @@ class EAISchemaApp {
     document.getElementById("messageType").addEventListener("change", (e) => {
       this.updateDataTypeFromConfig();
     });
+  }
+
+  initializeCollaboration() {
+    // Initialize Socket.IO connection
+    const socketUrl = this.apiUrl.replace("http://", "ws://").replace("https://", "wss://");
+    this.socket = io(socketUrl, {
+      transports: ["websocket"]
+    });
+
+    // Socket event handlers
+    this.socket.on("connect", () => {
+      console.log("Connected to collaboration server");
+      this.updateCollaborationStatus("connected");
+    });
+
+    this.socket.on("disconnect", () => {
+      console.log("Disconnected from collaboration server");
+      this.updateCollaborationStatus("disconnected");
+    });
+
+    this.socket.on("userJoined", (data) => {
+      this.addCollaborator(data);
+      this.showToast(`${data.username} 님이 협업에 참여했습니다.`, "info");
+    });
+
+    this.socket.on("userLeft", (data) => {
+      this.removeCollaborator(data.userId);
+      this.showToast(`${data.username} 님이 협업에서 나갔습니다.`, "info");
+    });
+
+    this.socket.on("userDisconnected", (data) => {
+      this.removeCollaborator(data.userId);
+      this.showToast(`${data.username} 님의 연결이 끊어졌습니다.`, "warning");
+    });
+
+    this.socket.on("collaborationEvent", (event) => {
+      this.handleCollaborationEvent(event);
+    });
+
+    this.socket.on("mappingEvents", (events) => {
+      this.handleMappingEvents(events);
+    });
+
+    this.socket.on("userList", (users) => {
+      this.updateUserList(users);
+    });
+  }
+
+  joinCollaboration() {
+    if (!this.currentMappingId) {
+      this.showToast("매핑을 먼저 생성해주세요.", "error");
+      return;
+    }
+
+    if (!this.socket) {
+      this.showToast("협업 서버에 연결할 수 없습니다.", "error");
+      return;
+    }
+
+    this.socket.emit("joinMapping", {
+      mappingId: this.currentMappingId,
+      username: this.currentUsername
+    });
+
+    this.showToast("협업 세션에 참여했습니다.", "success");
+    document.getElementById("collaborationStatus").textContent = "참여 중";
+    document.getElementById("collaborationStatus").className = "collaboration-status active";
+  }
+
+  leaveCollaboration() {
+    if (!this.currentMappingId || !this.socket) {
+      return;
+    }
+
+    this.socket.emit("leaveMapping", {
+      mappingId: this.currentMappingId
+    });
+
+    this.collaborators = [];
+    this.updateCollaboratorList();
+    this.showToast("협업 세션에서 나갔습니다.", "info");
+    document.getElementById("collaborationStatus").textContent = "미참여";
+    document.getElementById("collaborationStatus").className = "collaboration-status";
+  }
+
+  updateUsername(username) {
+    this.currentUsername = username || "Anonymous";
+  }
+
+  addCollaborator(data) {
+    // Check if collaborator already exists
+    const existingIndex = this.collaborators.findIndex(c => c.userId === data.userId);
+    if (existingIndex >= 0) {
+      this.collaborators[existingIndex] = data;
+    } else {
+      this.collaborators.push(data);
+    }
+    this.updateCollaboratorList();
+  }
+
+  removeCollaborator(userId) {
+    this.collaborators = this.collaborators.filter(c => c.userId !== userId);
+    this.updateCollaboratorList();
+  }
+
+  updateCollaboratorList() {
+    const container = document.getElementById("collaboratorList");
+    if (!container) return;
+
+    container.innerHTML = this.collaborators.map(collaborator => `
+      <div class="collaborator-item">
+        <span class="collaborator-name">${collaborator.username}</span>
+        <span class="collaborator-time">${new Date(collaborator.timestamp).toLocaleTimeString()}</span>
+      </div>
+    `).join("");
+  }
+
+  handleCollaborationEvent(event) {
+    // Handle different types of collaboration events
+    switch (event.type) {
+      case "fieldUpdate":
+        this.handleFieldUpdate(event);
+        break;
+      case "mappingUpdate":
+        this.handleMappingUpdate(event);
+        break;
+      default:
+        console.log("Unhandled collaboration event:", event);
+    }
+  }
+
+  handleFieldUpdate(event) {
+    // Update a field in the UI based on collaboration event
+    const { fieldId, value } = event.data;
+    const field = document.getElementById(fieldId);
+    if (field) {
+      field.value = value;
+      this.showToast(`${event.username}님이 ${fieldId} 필드를 업데이트했습니다.`, "info");
+    }
+  }
+
+  handleMappingUpdate(event) {
+    // Update mapping results based on collaboration event
+    this.showToast(`${event.username}님이 매핑을 업데이트했습니다.`, "info");
+    // In a real implementation, you would update the mapping results here
+  }
+
+  handleMappingEvents(events) {
+    // Handle batch of mapping events (when joining a session)
+    events.forEach(event => {
+      this.handleCollaborationEvent(event);
+    });
+  }
+
+  updateUserList(users) {
+    this.collaborators = users;
+    this.updateCollaboratorList();
+  }
+
+  updateCollaborationStatus(status) {
+    const statusElement = document.getElementById("collaborationStatus");
+    if (statusElement) {
+      statusElement.textContent = status === "connected" ? "연결됨" : "연결 끊김";
+      statusElement.className = `collaboration-status ${status === "connected" ? "connected" : "disconnected"}`;
+    }
   }
 
   updateDataTypeFromConfig() {
@@ -163,12 +303,8 @@ class EAISchemaApp {
 
   switchTab(tabId) {
     // Remove active class from all tabs and contents
-    document
-      .querySelectorAll(".tab-button")
-      .forEach((btn) => btn.classList.remove("active"));
-    document
-      .querySelectorAll(".tab-content")
-      .forEach((content) => content.classList.remove("active"));
+    document.querySelectorAll(".tab-button").forEach((btn) => btn.classList.remove("active"));
+    document.querySelectorAll(".tab-content").forEach((content) => content.classList.remove("active"));
 
     // Add active class to selected tab and content
     document.querySelector(`[data-tab="${tabId}"]`).classList.add("active");
@@ -243,7 +379,7 @@ class EAISchemaApp {
 
   validateUrl(url) {
     const fetchBtn = document.getElementById("fetchBtn");
-    const urlPattern = /^https?:\/\/.+\..+/;
+    const urlPattern = /^https?:\/\/.+\\..+/;
 
     fetchBtn.disabled = !url || !urlPattern.test(url);
   }
@@ -261,24 +397,18 @@ class EAISchemaApp {
 
     try {
       // First validate the URL
-      const validateResponse = await fetch(
-        `${this.apiUrl}/api/upload/validate-url`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ url }),
+      const validateResponse = await fetch(`${this.apiUrl}/api/upload/validate-url`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({ url }),
+      });
 
       const validateData = await validateResponse.json();
 
       if (!validateData.success) {
-        this.showToast(
-          validateData.message || "URL이 유효하지 않습니다.",
-          "error",
-        );
+        this.showToast(validateData.message || "URL이 유효하지 않습니다.", "error");
         return;
       }
 
@@ -299,10 +429,7 @@ class EAISchemaApp {
         this.loadFiles();
         this.showToast("URL에서 스키마를 성공적으로 가져왔습니다.", "success");
       } else {
-        this.showToast(
-          data.message || "URL에서 가져오기에 실패했습니다.",
-          "error",
-        );
+        this.showToast(data.message || "URL에서 가져오기에 실패했습니다.", "error");
       }
     } catch (error) {
       console.error("URL fetch error:", error);
@@ -381,9 +508,7 @@ class EAISchemaApp {
     }
 
     try {
-      const response = await fetch(
-        `${this.apiUrl}/api/upload/file/${this.currentFileId}/content`,
-      );
+      const response = await fetch(`${this.apiUrl}/api/upload/file/${this.currentFileId}/content`);
 
       if (response.ok) {
         const blob = await response.blob();
@@ -420,12 +545,9 @@ class EAISchemaApp {
     }
 
     try {
-      const response = await fetch(
-        `${this.apiUrl}/api/upload/file/${this.currentFileId}`,
-        {
-          method: "DELETE",
-        },
-      );
+      const response = await fetch(`${this.apiUrl}/api/upload/file/${this.currentFileId}`, {
+        method: "DELETE",
+      });
 
       const data = await response.json();
 
@@ -464,17 +586,13 @@ class EAISchemaApp {
       const filesContainer = document.getElementById("filesContainer");
 
       if (data.success && data.data.length > 0) {
-        filesContainer.innerHTML = data.data
-          .map((file) => this.createFileItem(file))
-          .join("");
+        filesContainer.innerHTML = data.data.map((file) => this.createFileItem(file)).join("");
       } else {
-        filesContainer.innerHTML =
-          '<p class="no-files">업로드된 파일이 없습니다.</p>';
+        filesContainer.innerHTML = '<p class="no-files">업로드된 파일이 없습니다.</p>';
       }
     } catch (error) {
       console.error("Load files error:", error);
-      document.getElementById("filesContainer").innerHTML =
-        '<p class="no-files">파일 목록을 불러올 수 없습니다.</p>';
+      document.getElementById("filesContainer").innerHTML = '<p class="no-files">파일 목록을 불러올 수 없습니다.</p>';
     }
   }
 
@@ -515,9 +633,7 @@ class EAISchemaApp {
 
   async downloadFileById(fileId) {
     try {
-      const response = await fetch(
-        `${this.apiUrl}/api/upload/file/${fileId}/content`,
-      );
+      const response = await fetch(`${this.apiUrl}/api/upload/file/${fileId}/content`);
 
       if (response.ok) {
         const blob = await response.blob();
@@ -637,20 +753,18 @@ class EAISchemaApp {
         testData: testData ? JSON.parse(testData) : {},
       };
 
-      const response = await fetch(
-        `${this.apiUrl}/api/message-mapping/generate`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ configuration, source }),
+      const response = await fetch(`${this.apiUrl}/api/message-mapping/generate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({ configuration, source }),
+      });
 
       const data = await response.json();
 
       if (response.ok) {
+        this.currentMappingId = data.id;
         this.showEnhancedMappingResult(data);
         this.showToast("메시지 매핑이 생성되었습니다.", "success");
       } else {
@@ -733,22 +847,21 @@ class EAISchemaApp {
       resultSection.style.display = "none";
     }
 
-    const mappingResultSection = document.getElementById(
-      "mappingResultSection",
-    );
+    const mappingResultSection = document.getElementById("mappingResultSection");
     if (mappingResultSection) {
       mappingResultSection.style.display = "none";
     }
+
+    // Leave collaboration if active
+    this.leaveCollaboration();
 
     this.showToast("매핑이 클리어되었습니다.", "info");
   }
 
   updateMetadataTable(metadata) {
-    document.getElementById("meta-messageType").textContent =
-      metadata.messageType;
+    document.getElementById("meta-messageType").textContent = metadata.messageType;
     document.getElementById("meta-dataType").textContent = metadata.dataType;
-    document.getElementById("meta-rootElement").textContent =
-      metadata.rootElement;
+    document.getElementById("meta-rootElement").textContent = metadata.rootElement;
     document.getElementById("meta-namespace").textContent = metadata.namespace;
     document.getElementById("meta-encoding").textContent = metadata.encoding;
     document.getElementById("meta-version").textContent = metadata.version;
@@ -795,6 +908,9 @@ class EAISchemaApp {
 
     // Update mapping rules display
     this.updateMappingRules(mapping.mappings);
+
+    // Enable collaboration features
+    document.getElementById("collaborationSection").style.display = "block";
   }
 
   updatePreviewContent(mapping) {
@@ -857,8 +973,7 @@ class EAISchemaApp {
   setupResultActions(mappingId, xmlOutput, jsonOutput, mappingOutput) {
     // Download result
     document.getElementById("downloadResultBtn").onclick = () => {
-      const activeTab = document.querySelector(".result-tab-btn.active").dataset
-        .tab;
+      const activeTab = document.querySelector(".result-tab-btn.active").dataset.tab;
       let content, filename, mimeType;
 
       switch (activeTab) {
@@ -888,8 +1003,7 @@ class EAISchemaApp {
 
     // Copy result
     document.getElementById("copyResultBtn").onclick = () => {
-      const activeTab = document.querySelector(".result-tab-btn.active").dataset
-        .tab;
+      const activeTab = document.querySelector(".result-tab-btn.active").dataset.tab;
       let content;
 
       switch (activeTab) {
@@ -986,12 +1100,8 @@ class EAISchemaApp {
         const targetTab = e.target.dataset.resultTab;
 
         // Remove active class from all tabs and panels
-        document
-          .querySelectorAll(".result-tab")
-          .forEach((t) => t.classList.remove("active"));
-        document
-          .querySelectorAll(".result-panel")
-          .forEach((p) => p.classList.remove("active"));
+        document.querySelectorAll(".result-tab").forEach((t) => t.classList.remove("active"));
+        document.querySelectorAll(".result-panel").forEach((p) => p.classList.remove("active"));
 
         // Add active class to clicked tab and corresponding panel
         e.target.classList.add("active");
@@ -1002,19 +1112,15 @@ class EAISchemaApp {
 
   setupResultActions(mappingId, xmlOutput) {
     // Download XML
-    document
-      .getElementById("downloadXmlResultBtn")
-      .addEventListener("click", () => {
-        this.downloadXml(xmlOutput);
-      });
+    document.getElementById("downloadXmlResultBtn").addEventListener("click", () => {
+      this.downloadXml(xmlOutput);
+    });
 
     // Copy XML
-    document
-      .getElementById("copyXmlResultBtn")
-      .addEventListener("click", () => {
-        navigator.clipboard.writeText(xmlOutput);
-        this.showToast("XML이 클립보드에 복사되었습니다.", "success");
-      });
+    document.getElementById("copyXmlResultBtn").addEventListener("click", () => {
+      navigator.clipboard.writeText(xmlOutput);
+      this.showToast("XML이 클립보드에 복사되었습니다.", "success");
+    });
 
     // New mapping
     document.getElementById("newMappingBtn").addEventListener("click", () => {
@@ -1088,9 +1194,8 @@ class EAISchemaApp {
 
   async copyMapping(mappingId) {
     try {
-      const response = await fetch(
-        `${this.apiUrl}/api/message-mapping/${mappingId}`,
-      );
+      const response = await fetch(`${this.apiUrl}/api/message-mapping/${mappingId}`);
+
       const data = await response.json();
 
       if (response.ok) {
@@ -1108,9 +1213,8 @@ class EAISchemaApp {
 
   async downloadMapping(mappingId) {
     try {
-      const response = await fetch(
-        `${this.apiUrl}/api/message-mapping/${mappingId}`,
-      );
+      const response = await fetch(`${this.apiUrl}/api/message-mapping/${mappingId}`);
+
       const data = await response.json();
 
       if (response.ok) {

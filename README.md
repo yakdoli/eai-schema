@@ -10,6 +10,9 @@
 - **실시간 검증**: 스키마 유효성 검사 및 변환
 - **RESTful API**: 완전한 REST API 인터페이스
 - **웹 인터페이스**: GitHub Pages 호스팅 지원
+- **실시간 협업**: 여러 사용자간 실시간 협업 지원
+- **성능 모니터링**: Prometheus와 Grafana 통합 지원
+- **MCP 통합**: Model-View-Controller-Provider 패턴 지원
 
 ## 🚀 빠른 시작
 
@@ -51,6 +54,7 @@ eai-schema/
 │   ├── routes/            # API 라우트
 │   ├── services/          # 비즈니스 로직
 │   ├── middleware/        # 미들웨어
+│   ├── mcp/               # MCP 통합
 │   └── utils/             # 유틸리티
 ├── docs/                  # GitHub Pages 웹 인터페이스
 │   ├── index.html        # 메인 웹 페이지
@@ -90,6 +94,8 @@ GitHub Actions을 통한 자동 배포가 설정되어 있습니다:
 - **Render**: GitHub 연동을 통한 자동 배포
 
 ## 📚 API 문서
+
+자세한 API 문서는 [docs/api-documentation.md](docs/api-documentation.md)를 참조하세요.
 
 ### 파일 업로드
 
@@ -135,6 +141,44 @@ DELETE /api/upload/file/{fileId}
 GET /api/upload/files
 ```
 
+### 메시지 매핑 생성
+
+```http
+POST /api/message-mapping/generate
+Content-Type: application/json
+
+{
+  "configuration": {
+    "messageType": "XML",
+    "dataType": "json",
+    "rootElement": "root"
+  },
+  "source": "<xml>...</xml>"
+}
+```
+
+### 실시간 협업 참여
+
+```http
+# WebSocket 연결
+ws://localhost:3001
+
+# 협업 이벤트 전송
+{
+  "type": "joinMapping",
+  "data": {
+    "mappingId": "mapping_123",
+    "username": "user1"
+  }
+}
+```
+
+### 성능 모니터링
+
+```http
+GET /api/performance/metrics
+```
+
 ## 🛠️ 스크립트
 
 ```bash
@@ -150,6 +194,12 @@ npm start
 # 테스트 실행
 npm test
 
+# 테스트 커버리지 확인
+npm run test:coverage
+
+# 통합 테스트 실행
+npm run test:integration
+
 # 코드 린팅
 npm run lint
 
@@ -158,6 +208,9 @@ npm run lint:fix
 
 # 빌드 정리
 npm run clean
+
+# 모든 테스트 실행
+npm run test:all
 ```
 
 ## 🔧 환경 설정
@@ -201,8 +254,11 @@ FILE_EXPIRY_HOURS=24
 - **파일 타입 검증**: 허용된 파일 형식만 업로드 가능
 - **SSRF 방지**: URL 가져오기 시 보안 검증
 - **Helmet.js**: 기본 보안 헤더 설정
+- **XXE 방지**: XML 외부 엔티티 참조 방지
 
 ## 🧪 테스트
+
+자세한 테스트 문서는 [docs/testing-suite.md](docs/testing-suite.md)를 참조하세요.
 
 ```bash
 # 단위 테스트 실행
@@ -211,11 +267,24 @@ npm test
 # 테스트 커버리지 확인
 npm run test:coverage
 
-# E2E 테스트
-npm run test:e2e
+# 통합 테스트 실행
+npm run test:integration
+
+# 모든 테스트 실행
+npm run test:all
 ```
 
+## 📊 성능 모니터링
+
+자세한 성능 모니터링 문서는 [docs/performance-monitoring.md](docs/performance-monitoring.md)를 참조하세요.
+
+- **Prometheus 통합**: `/api/performance/metrics` 엔드포인트
+- **Grafana 대시보드**: 시각화를 위한 메트릭 제공
+- **실시간 모니터링**: WebSocket을 통한 실시간 메트릭 스트리밍
+
 ## 🤝 기여하기
+
+자세한 기여 가이드는 [docs/contributing.md](docs/contributing.md)를 참조하세요.
 
 1. Fork 프로젝트
 2. Feature 브랜치 생성 (`git checkout -b feature/AmazingFeature`)
@@ -257,8 +326,26 @@ GitHub Issues를 통해 버그 리포트나 기능 요청을 제출해 주세요
 - [ ] 실시간 협업 기능
 - [ ] API 문서 자동 생성
 - [ ] Docker 컨테이너 지원
+- [ ] 고급 매핑 규칙 시각화 도구
+- [ ] AI 기반 스키마 제안 기능
+
+## 🚀 고급 기능
+
+### 실시간 협업
+- 여러 사용자가 동시에 매핑 작업 가능
+- 실시간 변경 사항 동기화
+- 사용자 활동 추적
+
+### MCP (Model-View-Controller-Provider) 통합
+- 확장 가능한 아키텍처
+- 플러그인 시스템 지원
+- 외부 도구와의 통합
+
+### 성능 모니터링
+- Prometheus 메트릭 제공
+- Grafana 대시보드 호환
+- 실시간 성능 분석
 
 ---
 
 **EAI Schema Toolkit**으로 더 나은 엔터프라이즈 통합을 경험하세요! 🚀
-<!-- Rerunning workflow -->

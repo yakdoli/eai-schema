@@ -1,91 +1,29 @@
 {
-  "name": "eai-schema-api",
-  "description": "EAI Schema Toolkit - Enterprise Application Integration Schema Conversion and Validation API",
-  "repository": "https://github.com/yakdoli/eai-schema",
-  "logo": "https://cdn.jsdelivr.net/gh/yakdoli/eai-schema@main/docs/manifest.json",
-  "keywords": [
-    "eai",
-    "schema",
-    "xml",
-    "json",
-    "yaml",
-    "conversion",
-    "validation",
-    "enterprise",
-    "api"
-  ],
-  "stack": "heroku-22",
+  "name": "EAI Schema Toolkit",
+  "description": "Enterprise Application Integration Schema Conversion and Validation Tool",
+  "repository": "https://github.com/[username]/eai-schema",
+  "logo": "https://node-js-sample.herokuapp.com/node.png",
+  "keywords": ["node", "express", "eai", "schema", "integration"],
+  "env": {
+    "PORT": {
+      "description": "The port for the application to listen on",
+      "value": "3001"
+    },
+    "NODE_ENV": {
+      "description": "Application environment",
+      "value": "production"
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "free"
+    }
+  },
+  "addons": [],
   "buildpacks": [
     {
       "url": "heroku/nodejs"
     }
-  ],
-  "formation": {
-    "web": {
-      "quantity": 1,
-      "size": "eco"
-    }
-  },
-  "env": {
-    "NODE_ENV": {
-      "description": "Node.js environment",
-      "value": "production"
-    },
-    "PORT": {
-      "description": "Port for the server to run on",
-      "value": "3001"
-    },
-    "FRONTEND_URL": {
-      "description": "Frontend URL for CORS configuration",
-      "value": "https://powerschema.com"
-    },
-    "LOG_LEVEL": {
-      "description": "Logging level",
-      "value": "info"
-    },
-    "FILE_EXPIRY_HOURS": {
-      "description": "File expiration time in hours",
-      "value": "24"
-    },
-    "MAX_FILE_SIZE": {
-      "description": "Maximum file size in MB",
-      "value": "50"
-    },
-    "RATE_LIMIT_WINDOW": {
-      "description": "Rate limit window in minutes",
-      "value": "15"
-    },
-    "RATE_LIMIT_MAX": {
-      "description": "Maximum requests per window",
-      "value": "100"
-    }
-  },
-  "scripts": {
-    "postdeploy": "echo 'EAI Schema API deployed successfully!'"
-  },
-  "addons": [],
-  "environments": {
-    "production": {
-      "env": {
-        "NODE_ENV": "production"
-      },
-      "formation": {
-        "web": {
-          "quantity": 1,
-          "size": "eco"
-        }
-      }
-    },
-    "staging": {
-      "env": {
-        "NODE_ENV": "staging"
-      },
-      "formation": {
-        "web": {
-          "quantity": 1,
-          "size": "eco"
-        }
-      }
-    }
-  }
+  ]
 }
