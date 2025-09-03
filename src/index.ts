@@ -30,7 +30,7 @@ const allowedOrigins = [
   "http://localhost:8000",
   "http://127.0.0.1:8000",
   process.env.FRONTEND_URL,
-].filter(Boolean);
+].filter((url): url is string => Boolean(url));
 
 app.use(
   cors({
@@ -38,7 +38,7 @@ app.use(
       // Allow requests with no origin (like mobile apps, curl, etc.)
       if (!origin) return callback(null, true);
 
-      if (allowedOrigins.some((allowed) => origin.startsWith(allowed))) {
+      if (allowedOrigins.some((allowed) => origin.startsWith(allowed || ""))) {
         return callback(null, true);
       }
 
