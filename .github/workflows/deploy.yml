@@ -83,7 +83,7 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        run: npm ci --only=production
+        run: npm ci
 
       - name: Build backend
         run: npm run build
@@ -95,5 +95,5 @@ jobs:
           heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
           heroku_email: ${{ secrets.HEROKU_EMAIL }}
           appdir: "."
-          healthcheck: "https://$HEROKU_APP_NAME.herokuapp.com/api/health"
+          healthcheck: "https://${{ secrets.HEROKU_APP_NAME }}.herokuapp.com/api/health"
           checkstring: "OK"

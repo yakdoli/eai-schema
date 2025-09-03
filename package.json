@@ -36,7 +36,6 @@
     "deploy": "npm run build && gh-pages -d docs",
     "predeploy": "npm run build",
     "heroku-prebuild": "echo \"Prebuild script executed\"",
-    "postinstall": "npm run build",
     "test:all": "./scripts/test-runner.sh"
   },
   "dependencies": {
