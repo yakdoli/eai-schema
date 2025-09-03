@@ -99,12 +99,14 @@ class SchemaValidationService {
         // For now, we'll just do basic validation
         // In a more advanced implementation, you could convert YAML to JSON and validate with AJV
         return {
-          valid: true
+          valid: true,
+          errors: undefined
         };
       }
 
       return {
-        valid: true
+        valid: true,
+        errors: undefined
       };
     } catch (error: any) {
       logger.error("Error validating YAML schema", { error });

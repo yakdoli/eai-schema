@@ -67,6 +67,17 @@ interface CollaborationData {
   details: any;
 }
 
+// Interface for mapping rules
+interface MappingRule {
+  type: string;
+  name?: string;
+  namespace?: string;
+  attributes?: Record<string, string>;
+  content?: string;
+  transformation?: string;
+  processing?: string;
+}
+
 class MessageMappingService {
   private mappings: Map<string, MessageMapping> = new Map();
   private mappingRules: Map<string, AdvancedMappingRule[]> = new Map();
@@ -301,8 +312,8 @@ transformed: true
     };
   }
 
-  private generateMappingRules(config: Configuration): any[] {
-    const rules = [];
+  private generateMappingRules(config: Configuration): MappingRule[] {
+    const rules: MappingRule[] = [];
 
     // Generate rules based on configuration
     if (config.messageType === "XML") {
@@ -314,7 +325,7 @@ transformed: true
           version: config.version,
           encoding: config.encoding,
         },
-      });
+      } as MappingRule);
     }
 
     if (config.dataType) {
@@ -322,7 +333,7 @@ transformed: true
         type: "dataType",
         name: config.dataType,
         transformation: "direct",
-      });
+      } as MappingRule);
     }
 
     if (config.statement) {
@@ -330,7 +341,7 @@ transformed: true
         type: "statement",
         content: config.statement,
         processing: "execute",
-      });
+      } as MappingRule);
     }
 
     return rules;
@@ -408,7 +419,7 @@ transformed: true
       obj.forEach((item, index) => {
         xml += `${indentStr}<item index="${index}">\n`;
         xml += this.jsonToXml(item, indent + 1);
-        xml += `${indentStr}</item>\n`;
+        xml += `${indentStr}</item index="${index}">\n`;
       });
     } else if (typeof obj === "object" && obj !== null) {
       Object.keys(obj).forEach((key) => {
@@ -430,5 +441,6 @@ export {
   Configuration, 
   AdvancedMappingRule, 
   TransformationRule, 
-  CollaborationData 
+  CollaborationData,
+  MappingRule
 };
