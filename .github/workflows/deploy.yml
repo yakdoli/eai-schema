@@ -93,11 +93,16 @@ jobs:
         run: npm run build
 
       - name: Deploy to Heroku
-        uses: akhileshns/heroku-deploy@v3.12.12
-        with:
-          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-          heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
-          heroku_email: ${{ secrets.HEROKU_EMAIL }}
-          appdir: "."
-          healthcheck: "https://${{ secrets.HEROKU_APP_NAME }}.herokuapp.com/api/health"
-          checkstring: "OK"
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
+          HEROKU_EMAIL: ${{ secrets.HEROKU_EMAIL }}
+        run: |
+          # Authenticate with Heroku
+          heroku login --password <<< "$HEROKU_API_KEY"
+          
+          # Add Heroku remote
+          heroku git:remote -a "$HEROKU_APP_NAME"
+          
+          # Deploy to Heroku
+          git push heroku main
