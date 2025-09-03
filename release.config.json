@@ -10,5 +10,6 @@
         "releasedLabels": ["Status: Released"]
       }
     ]
-  ]
+  ],
+  "repositoryUrl": "https://github.com/yakdoli/eai-schema.git"
 }

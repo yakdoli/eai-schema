@@ -2,13 +2,13 @@
   "name": "eai-schema-toolkit",
   "version": "1.0.0",
   "description": "EAI Schema Toolkit - Enterprise Application Integration Schema Conversion and Validation Tool",
-  "homepage": "https://[username].github.io/eai-schema/",
+  "homepage": "https://yakdoli.github.io/eai-schema/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/[username]/eai-schema.git"
+    "url": "https://github.com/yakdoli/eai-schema.git"
   },
   "bugs": {
-    "url": "https://github.com/[username]/eai-schema/issues"
+    "url": "https://github.com/yakdoli/eai-schema/issues"
   },
   "keywords": [
     "eai",
