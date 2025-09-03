@@ -82,109 +82,159 @@
 
                     <!-- 메시지 매핑 탭 -->
                     <div id="message-mapping" class="tab-content">
-                        <div class="mapping-container">
-                            <div class="mapping-grid">
-                                <div class="mapping-section config-section">
-                                    <h3><i class="fas fa-cogs"></i> 구성 (Configuration)</h3>
-                                    <div class="config-grid">
-                                        <div class="config-item">
-                                            <label for="messageType">메시지 타입:</label>
-                                            <select id="messageType">
-                                                <option value="XML">XML</option>
-                                                <option value="JSON">JSON</option>
-                                                <option value="YAML">YAML</option>
-                                            </select>
-                                        </div>
-                                        <div class="config-item">
-                                            <label for="dataType">데이터 타입:</label>
-                                            <input type="text" id="dataType" placeholder="데이터 타입 입력" />
-                                        </div>
-                                        <div class="config-item">
-                                            <label for="rootElement">루트 엘리먼트:</label>
-                                            <input type="text" id="rootElement" placeholder="루트 엘리먼트명" />
-                                        </div>
-                                        <div class="config-item">
-                                            <label for="namespace">네임스페이스:</label>
-                                            <input type="text" id="namespace" placeholder="XML 네임스페이스" />
-                                        </div>
-                                        <div class="config-item">
-                                            <label for="encoding">인코딩:</label>
-                                            <select id="encoding">
-                                                <option value="UTF-8">UTF-8</option>
-                                                <option value="UTF-16">UTF-16</option>
-                                                <option value="ISO-8859-1">ISO-8859-1</option>
-                                            </select>
-                                        </div>
-                                        <div class="config-item">
-                                            <label for="version">버전:</label>
-                                            <input type="text" id="version" placeholder="1.0" value="1.0" />
+                        <div class="eai-work-tool-layout">
+                            <!-- 상단 섹션들 -->
+                            <div class="top-sections">
+                                <div class="section-box" id="configuration">
+                                    <h4><i class="fas fa-cogs"></i> Configuration</h4>
+                                    <div class="section-content">
+                                        <div class="config-fields">
+                                            <div class="field-group">
+                                                <label for="messageType">Message Type:</label>
+                                                <select id="messageType">
+                                                    <option value="XML">XML</option>
+                                                    <option value="JSON">JSON</option>
+                                                    <option value="YAML">YAML</option>
+                                                </select>
+                                            </div>
+                                            <div class="field-group">
+                                                <label for="dataType">Data Type:</label>
+                                                <input type="text" id="dataType" placeholder="Enter data type" />
+                                            </div>
+                                            <div class="field-group">
+                                                <label for="rootElement">Root Element:</label>
+                                                <input type="text" id="rootElement" placeholder="Root element name" />
+                                            </div>
+                                            <div class="field-group">
+                                                <label for="namespace">Namespace:</label>
+                                                <input type="text" id="namespace" placeholder="XML namespace URI" />
+                                            </div>
+                                            <div class="field-group">
+                                                <label for="encoding">Encoding:</label>
+                                                <select id="encoding">
+                                                    <option value="UTF-8">UTF-8</option>
+                                                    <option value="UTF-16">UTF-16</option>
+                                                    <option value="ISO-8859-1">ISO-8859-1</option>
+                                                </select>
+                                            </div>
+                                            <div class="field-group">
+                                                <label for="version">Version:</label>
+                                                <input type="text" id="version" placeholder="1.0" value="1.0" />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="mapping-section source-section">
-                                    <h3><i class="fas fa-code"></i> 소스 (Source)</h3>
-                                    <textarea id="sourceInput" placeholder="소스 데이터를 입력하세요"></textarea>
-                                </div>
-
-                                <div class="mapping-section metadata-section">
-                                    <h3><i class="fas fa-table"></i> 메타 정보 (Metadata)</h3>
-                                    <div class="metadata-grid">
-                                        <table class="metadata-table" id="metadataTable">
-                                            <thead>
-                                                <tr>
-                                                    <th>속성</th>
-                                                    <th>값</th>
-                                                    <th>설명</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td>메시지 타입</td>
-                                                    <td id="meta-messageType">-</td>
-                                                    <td>처리할 메시지 형식</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>데이터 타입</td</td>>
-                                                    <td id="meta-dataType">-</td>
-                                                    <td>데이터 구조 타입</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>루트 엘리먼트</td>
-                                                    <td id="meta-rootElement">-</td>
-                                                    <td>XML 루트 태그명</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>네임스페이스</td>
-                                                    <td id="meta-namespace">-</td>
-                                                    <td>XML 네임스페이스 URI</td</td>>
-                                                </tr>
-                                                <tr>
-                                                    <td>인코딩</td>
-                                                    <td id="meta-encoding">-</td>
-                                                    <td>문자 인코딩</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>버전</td>
-                                                    <td id="meta-version">-</td>
-                                                    <td>문서 버전</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
+                                <div class="section-box" id="source">
+                                    <h4><i class="fas fa-code"></i> Source</h4>
+                                    <div class="section-content">
+                                        <textarea id="sourceInput" placeholder="Enter source data here (JSON, XML, or plain text)..." rows="8"></textarea>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="mapping-actions">
-                                <button class="btn btn-primary" id="generateMappingBtn">
-                                    <i class="fas fa-cogs"></i> 생성
+                            <!-- 중간 섹션들 -->
+                            <div class="middle-sections">
+                                <div class="section-box" id="messageType">
+                                    <h4><i class="fas fa-envelope"></i> Message Type</h4>
+                                    <div class="section-content">
+                                        <div class="message-type-selector">
+                                            <button class="msg-type-btn active" data-type="XML">XML</button>
+                                            <button class="msg-type-btn" data-type="JSON">JSON</button>
+                                            <button class="msg-type-btn" data-type="YAML">YAML</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="section-box" id="dataType">
+                                    <h4><i class="fas fa-database"></i> Data Type</h4>
+                                    <div class="section-content">
+                                        <input type="text" id="dataTypeInput" placeholder="Specify data type" readonly />
+                                        <small class="field-help">Auto-populated from Configuration</small>
+                                    </div>
+                                </div>
+
+                                <div class="section-box" id="statement">
+                                    <h4><i class="fas fa-terminal"></i> Statement</h4>
+                                    <div class="section-content">
+                                        <textarea id="statementInput" placeholder="SQL query, XSLT, or processing statement" rows="4"></textarea>
+                                        <small class="field-help">Optional processing instructions</small>
+                                    </div>
+                                </div>
+
+                                <div class="section-box" id="testData">
+                                    <h4><i class="fas fa-flask"></i> Test Data</h4>
+                                    <div class="section-content">
+                                        <textarea id="testDataInput" placeholder="Sample data for validation and testing" rows="4"></textarea>
+                                        <small class="field-help">Used for validation and preview</small>
+                                    </div>
+                                </div>
+
+                                <div class="section-box" id="messageMapping">
+                                    <h4><i class="fas fa-sitemap"></i> Message Mapping</h4>
+                                    <div class="section-content">
+                                        <div class="mapping-rules" id="mappingRules">
+                                            <div class="mapping-placeholder">
+                                                <i class="fas fa-project-diagram"></i>
+                                                <p>Mapping rules will be generated</p> here...</p>
+                                                <small>Click Generate to create mappings</small></small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 액션 버튼들 -->
+                            <div class="action-buttons">
+                                <button class="btn btn-primary action-btn" id="generateMappingBtn">
+                                    <i class="fas fa-play"></i> Generate
                                 </button>
-                                <button class="btn btn-success" id="downloadXmlBtn" style="display: none;">
-                                    <i class="fas fa-download"></i> XML 다운로드
+                                <button class="btn btn-warning action-btn" id="validateMappingBtn">
+                                    <i class="fas fa-check-circle"></i> Validate
                                 </button>
-                                <button class="btn btn-secondary" id="clearMappingBtn">
-                                    <i class="fas fa-eraser"></i> 클리어
+                                <button class="btn btn-secondary action-btn" id="clearMappingBtn">
+                                    <i class="fas fa-trash"></i> Clear
                                 </button>
+                            </div>
+
+                            <!-- 결과 섹션 -->
+                            <div class="result-section" id="resultSection" style="display: none;">
+                                <div class="section-box result-box">
+                                    <h4><i class="fas fa-chart-bar"></i> Result</h4>
+                                    <div class="section-content">
+                                        <div class="result-tabs">
+                                            <button class="result-tab-btn active" data-tab="xml">XML</button>
+                                            <button class="result-tab-btn" data-tab="json">JSON</button>
+                                            <button class="result-tab-btn" data-tab="preview">Preview</button>
+                                            <button class="result-tab-btn" data-tab="mapping">Mapping</button>
+                                        </div>
+                                        <div class="result-content">
+                                            <div id="xmlResult" class="result-panel active">
+                                                <pre id="xmlOutput"></pre>
+                                            </div>
+                                            <div id="jsonResult" class="result-panel">
+                                                <pre id="jsonOutput"></pre>
+                                            </div>
+                                            <div id="previewResult" class="result-panel">
+                                                <div id="previewContent"></div>
+                                            </div>
+                                            <div id="mappingResult" class="result-panel">
+                                                <pre id="mappingOutput"></pre>
+                                            </div>
+                                        </div>
+                                        <div class="result-actions">
+                                            <button class="btn btn-success" id="downloadResultBtn">
+                                                <i class="fas fa-download"></i> Download
+                                            </button>
+                                            <button class="btn btn-info" id="copyResultBtn">
+                                                <i class="fas fa-copy"></i> Copy
+                                            </button>
+                                            <button class="btn btn-outline-primary" id="shareResultBtn">
+                                                <i class="fas fa-share"></i> Share
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

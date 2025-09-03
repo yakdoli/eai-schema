@@ -45,6 +45,9 @@ class EAISchemaApp {
       .getElementById("generateMappingBtn")
       .addEventListener("click", () => this.generateMapping());
     document
+      .getElementById("validateMappingBtn")
+      .addEventListener("click", () => this.validateMapping());
+    document
       .getElementById("clearMappingBtn")
       .addEventListener("click", () => this.clearMapping());
 
@@ -111,6 +114,17 @@ class EAISchemaApp {
         localStorage.setItem("theme", "light");
       }
     });
+
+    // Update data type input when message type changes
+    document.getElementById("messageType").addEventListener("change", (e) => {
+      this.updateDataTypeFromConfig();
+    });
+  }
+
+  updateDataTypeFromConfig() {
+    const messageType = document.getElementById("messageType").value;
+    const dataTypeInput = document.getElementById("dataTypeInput");
+    dataTypeInput.value = messageType.toLowerCase();
   }
 
   setupTabs() {
@@ -588,11 +602,16 @@ class EAISchemaApp {
     const encoding = document.getElementById("encoding").value;
     const version = document.getElementById("version").value;
     const source = document.getElementById("sourceInput").value;
+    const statement = document.getElementById("statementInput").value;
+    const testData = document.getElementById("testDataInput").value;
 
     if (!source) {
       this.showToast("소스 데이터를 입력하세요.", "error");
       return;
     }
+
+    // Update data type input
+    this.updateDataTypeFromConfig();
 
     // Update metadata table
     this.updateMetadataTable({
@@ -614,7 +633,8 @@ class EAISchemaApp {
         namespace,
         encoding,
         version,
-        testData: {},
+        statement,
+        testData: testData ? JSON.parse(testData) : {},
       };
 
       const response = await fetch(
@@ -644,6 +664,53 @@ class EAISchemaApp {
     }
   }
 
+  async validateMapping() {
+    const source = document.getElementById("sourceInput").value;
+    const messageType = document.getElementById("messageType").value;
+
+    if (!source) {
+      this.showToast("검증할 소스 데이터를 입력하세요.", "error");
+      return;
+    }
+
+    try {
+      let isValid = false;
+      let errorMessage = "";
+
+      switch (messageType) {
+        case "JSON":
+          try {
+            JSON.parse(source);
+            isValid = true;
+          } catch (e) {
+            errorMessage = "유효하지 않은 JSON 형식입니다.";
+          }
+          break;
+        case "XML":
+          // Basic XML validation
+          isValid = source.includes("<") && source.includes(">");
+          if (!isValid) {
+            errorMessage = "유효하지 않은 XML 형식입니다.";
+          }
+          break;
+        case "YAML":
+          // Basic YAML validation
+          isValid = source.trim().length > 0;
+          break;
+        default:
+          errorMessage = "지원되지 않는 메시지 타입입니다.";
+      }
+
+      if (isValid) {
+        this.showToast("데이터 검증이 성공했습니다.", "success");
+      } else {
+        this.showToast(errorMessage, "error");
+      }
+    } catch (error) {
+      this.showToast("검증 중 오류가 발생했습니다.", "error");
+    }
+  }
+
   clearMapping() {
     // Reset all form fields
     document.getElementById("messageType").value = "XML";
@@ -653,14 +720,24 @@ class EAISchemaApp {
     document.getElementById("encoding").value = "UTF-8";
     document.getElementById("version").value = "1.0";
     document.getElementById("sourceInput").value = "";
+    document.getElementById("statementInput").value = "";
+    document.getElementById("testDataInput").value = "";
+    document.getElementById("dataTypeInput").value = "";
 
     // Clear metadata table
     this.clearMetadataTable();
 
     // Hide result sections
-    const resultSection = document.getElementById("mappingResultSection");
+    const resultSection = document.getElementById("resultSection");
     if (resultSection) {
       resultSection.style.display = "none";
+    }
+
+    const mappingResultSection = document.getElementById(
+      "mappingResultSection",
+    );
+    if (mappingResultSection) {
+      mappingResultSection.style.display = "none";
     }
 
     this.showToast("매핑이 클리어되었습니다.", "info");
@@ -692,76 +769,214 @@ class EAISchemaApp {
   }
 
   showEnhancedMappingResult(mapping) {
-    const resultSection = document.getElementById("mappingResultSection");
-    const startTime = Date.now();
+    const resultSection = document.getElementById("resultSection");
 
-    // Generate XML output
+    // Generate outputs
     const xmlOutput = this.generateXmlOutput(mapping);
     const jsonOutput = JSON.stringify(mapping, null, 2);
+    const mappingOutput = JSON.stringify(mapping.mappings, null, 2);
 
-    resultSection.innerHTML = `
-      <h2><i class="fas fa-code-branch"></i> 메시지 매핑 결과</h2>
-      <div class="mapping-result-card">
-        <div class="result-tabs">
-          <button class="result-tab active" data-result-tab="xml">XML 결과</button>
-          <button class="result-tab" data-result-tab="json">JSON 결과</button>
-          <button class="result-tab" data-result-tab="summary">요약</button>
-        </div>
+    // Show result section
+    resultSection.style.display = "block";
 
-        <div class="result-content">
-          <div id="xml-result" class="result-panel active">
-            <pre id="xmlOutput" class="xml-output">${xmlOutput}</pre>
-          </div>
-          <div id="json-result" class="result-panel">
-            <pre id="jsonOutput" class="json-output">${jsonOutput}</pre>
-          </div>
-          <div id="summary-result" class="result-panel">
-            <div class="summary-grid">
-              <div class="summary-item">
-                <span class="summary-label">매핑 ID:</span>
-                <span class="summary-value">${mapping.id}</span>
-              </div>
-              <div class="summary-item">
-                <span class="summary-label">생성된 노드 수:</span>
-                <span class="summary-value" id="nodeCount">${this.countXmlNodes(xmlOutput)}</span>
-              </div>
-              <div class="summary-item">
-                <span class="summary-label">XML 크기:</span>
-                <span class="summary-value">${xmlOutput.length} bytes</span>
-              </div>
-              <div class="summary-item">
-                <span class="summary-label">처리 시간:</span>
-                <span class="summary-value">${Date.now() - startTime}ms</span>
-              </div>
-              <div class="summary-item">
-                <span class="summary-label">유효성:</span>
-                <span class="summary-value" id="validationStatus">유효함</span>
-              </div>
-            </div>
-          </div>
-        </div>
+    // Update result panels
+    document.getElementById("xmlOutput").textContent = xmlOutput;
+    document.getElementById("jsonOutput").textContent = jsonOutput;
+    document.getElementById("mappingOutput").textContent = mappingOutput;
+
+    // Update preview content
+    this.updatePreviewContent(mapping);
+
+    // Setup result tab switching
+    this.setupResultTabSwitching();
+
+    // Setup result actions
+    this.setupResultActions(mapping.id, xmlOutput, jsonOutput, mappingOutput);
+
+    // Update mapping rules display
+    this.updateMappingRules(mapping.mappings);
+  }
+
+  updatePreviewContent(mapping) {
+    const previewContent = document.getElementById("previewContent");
+    const config = mapping.configuration;
+
+    previewContent.innerHTML = `
+      <div class="preview-header">
+        <h5>Configuration Preview</h5>
       </div>
-
-      <div class="actions">
-        <button class="btn btn-success" id="downloadXmlResultBtn">
-          <i class="fas fa-download"></i> XML 다운로드
-        </button>
-        <button class="btn btn-info" id="copyXmlResultBtn">
-          <i class="fas fa-copy"></i> 복사
-        </button>
-        <button class="btn btn-secondary" id="newMappingBtn">
-          <i class="fas fa-plus"></i> 새 매핑
-        </button>
+      <div class="preview-details">
+        <div class="preview-item">
+          <span class="preview-label">Message Type:</span>
+          <span class="preview-value">${config.messageType}</span>
+        </div>
+        <div class="preview-item">
+          <span class="preview-label">Data Type:</span>
+          <span class="preview-value">${config.dataType}</span>
+        </div>
+        <div class="preview-item">
+          <span class="preview-label">Root Element:</span>
+          <span class="preview-value">${config.rootElement || "N/A"}</span>
+        </div>
+        <div class="preview-item">
+          <span class="preview-label">Namespace:</span>
+          <span class="preview-value">${config.namespace || "N/A"}</span>
+        </div>
+        <div class="preview-item">
+          <span class="preview-label">Processing Time:</span>
+          <span class="preview-value">${mapping.metadata.processingTime}ms</span>
+        </div>
+        <div class="preview-item">
+          <span class="preview-label">Validation:</span>
+          <span class="preview-value ${mapping.metadata.validationStatus ? "valid" : "invalid"}">
+            ${mapping.metadata.validationStatus ? "Valid" : "Invalid"}
+          </span>
+        </div>
       </div>
     `;
+  }
 
-    // Add event listeners for tabs
-    this.setupResultTabs();
+  setupResultTabSwitching() {
+    const tabButtons = document.querySelectorAll(".result-tab-btn");
+    const resultPanels = document.querySelectorAll(".result-panel");
 
-    // Add event listeners for action buttons
-    this.setupResultActions(mapping.id, xmlOutput);
+    tabButtons.forEach((button) => {
+      button.addEventListener("click", (e) => {
+        // Remove active class from all tabs and panels
+        tabButtons.forEach((btn) => btn.classList.remove("active"));
+        resultPanels.forEach((panel) => panel.classList.remove("active"));
 
-    resultSection.style.display = "block";
+        // Add active class to clicked tab and corresponding panel
+        e.target.classList.add("active");
+        const tabId = e.target.dataset.tab;
+        document.getElementById(`${tabId}Result`).classList.add("active");
+      });
+    });
+  }
+
+  setupResultActions(mappingId, xmlOutput, jsonOutput, mappingOutput) {
+    // Download result
+    document.getElementById("downloadResultBtn").onclick = () => {
+      const activeTab = document.querySelector(".result-tab-btn.active").dataset
+        .tab;
+      let content, filename, mimeType;
+
+      switch (activeTab) {
+        case "xml":
+          content = xmlOutput;
+          filename = `mapping-result-${mappingId}.xml`;
+          mimeType = "application/xml";
+          break;
+        case "json":
+          content = jsonOutput;
+          filename = `mapping-result-${mappingId}.json`;
+          mimeType = "application/json";
+          break;
+        case "mapping":
+          content = mappingOutput;
+          filename = `mapping-rules-${mappingId}.json`;
+          mimeType = "application/json";
+          break;
+        default:
+          content = xmlOutput;
+          filename = `mapping-result-${mappingId}.xml`;
+          mimeType = "application/xml";
+      }
+
+      this.downloadContent(content, filename, mimeType);
+    };
+
+    // Copy result
+    document.getElementById("copyResultBtn").onclick = () => {
+      const activeTab = document.querySelector(".result-tab-btn.active").dataset
+        .tab;
+      let content;
+
+      switch (activeTab) {
+        case "xml":
+          content = xmlOutput;
+          break;
+        case "json":
+          content = jsonOutput;
+          break;
+        case "mapping":
+          content = mappingOutput;
+          break;
+        default:
+          content = xmlOutput;
+      }
+
+      navigator.clipboard.writeText(content);
+      this.showToast("결과가 클립보드에 복사되었습니다.", "success");
+    };
+
+    // Share result
+    document.getElementById("shareResultBtn").onclick = () => {
+      if (navigator.share) {
+        navigator.share({
+          title: "EAI Schema Mapping Result",
+          text: "Generated mapping result from EAI Schema Toolkit",
+          url: window.location.href,
+        });
+      } else {
+        this.showToast("공유 기능이 지원되지 않습니다.", "warning");
+      }
+    };
+  }
+
+  updateMappingRules(mappings) {
+    const mappingRules = document.getElementById("mappingRules");
+    const rules = mappings.mappingRules || [];
+
+    if (rules.length > 0) {
+      const rulesHtml = rules
+        .map(
+          (rule, index) => `
+        <div class="mapping-rule">
+          <div class="rule-header">
+            <span class="rule-type">${rule.type}</span>
+            <span class="rule-name">${rule.name || `Rule ${index + 1}`}</span>
+          </div>
+          <div class="rule-details">
+            ${Object.entries(rule)
+              .map(
+                ([key, value]) => `
+              <div class="rule-property">
+                <span class="property-key">${key}:</span>
+                <span class="property-value">${JSON.stringify(value)}</span>
+              </div>
+            `,
+              )
+              .join("")}
+          </div>
+        </div>
+      `,
+        )
+        .join("");
+
+      mappingRules.innerHTML = rulesHtml;
+    } else {
+      mappingRules.innerHTML = `
+        <div class="mapping-placeholder">
+          <i class="fas fa-project-diagram"></i>
+          <p>매핑 규칙이 생성되지 않았습니다.</p>
+          <small>설정을 확인하고 다시 생성하세요.</small>
+        </div>
+      `;
+    }
+  }
+
+  downloadContent(content, filename, mimeType) {
+    const blob = new Blob([content], { type: mimeType });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    this.showToast(`${filename} 파일이 다운로드되었습니다.`, "success");
   }
 
   setupResultTabs() {
