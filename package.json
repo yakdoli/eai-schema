@@ -1,16 +1,36 @@
 {
-  "name": "backend",
+  "name": "eai-schema-toolkit",
   "version": "1.0.0",
-  "description": "EAI Schema Toolkit 백엔드 API 서버",
+  "description": "EAI Schema Toolkit - Enterprise Application Integration Schema Conversion and Validation Tool",
+  "homepage": "https://[username].github.io/eai-schema/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/[username]/eai-schema.git"
+  },
+  "bugs": {
+    "url": "https://github.com/[username]/eai-schema/issues"
+  },
+  "keywords": [
+    "eai",
+    "schema",
+    "xml",
+    "json",
+    "yaml",
+    "conversion",
+    "validation",
+    "enterprise"
+  ],
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "npx tsc",
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
     "test": "jest",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist",
+    "deploy": "npm run build && gh-pages -d docs",
+    "predeploy": "npm run build"
   },
   "dependencies": {
     "@eai/shared": "workspace:*",
@@ -42,6 +62,11 @@
     "supertest": "^6.3.0",
     "tsx": "^3.12.0",
     "typescript": "^5.0.0",
-    "rimraf": "^5.0.0"
+    "rimraf": "^5.0.0",
+    "gh-pages": "^6.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   }
 }

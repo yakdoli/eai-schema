@@ -1,0 +1,28 @@
+{
+  "name": "EAI Schema Toolkit",
+  "short_name": "EAI Schema",
+  "description": "Enterprise Application Integration Schema Conversion and Validation Tool",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#667eea",
+  "theme_color": "#667eea",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9IiM2NjdlZWEiLz4KPHN2ZyB4PSI0OCIgeT0iNDgiIHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+CjxwYXRoIGQ9Ik0xNCA2VjRoLTR2Mkg0djE4aDV2LTZIODE3djZoNVY2aC02em0tMS01SDlWM2g0djJ6bTcgMTRoLTN2LTJoM3Yyem0wLTRoLTN2LTJoM3Yyem0wLTRoLTN2LTJoM3Yyek0xMSAxNkg5di0yaDJ2MnptMC00SDl2LTJoMnYyek01IDE2SDJWMTBIOG42ek01IDEySDJ2LTJoM3Yyek01IDhIMnYtMmgzdjJ6Ii8+Cjwvc3ZnPgo8L3N2Zz4K",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iNjQiIGZpbGw9IiM2NjdlZWEiLz4KPHN2ZyB4PSIxMjgiIHk9IjEyOCIgd2lkdGg9IjI1NiIgaGVpZ2h0PSIyNTYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPgo8cGF0aCBkPSJNMTQgNlY0aC00djJINHYxOGg1di02SDEsNy02aDVWNmgtNnptLTEtNUg5VjNoNHYyek03IDE0aC0zdi0yaDN2MnptMC00aC0zdi0yaDN2MnptMC00aC0zdi0yaDN2Mk0xMSAxNkg5di0yaDJ2MnptMC00SDl2LTJoMnYyek01IDE2SDJWMTBIOG42ek01IDEySFM2LTJoM3Yyek01IDhIMnYtMmgzdjJ6Ii8+Cjwvc3ZnPgo8L3N2Zz4K",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["productivity", "utilities", "developer"],
+  "lang": "ko-KR",
+  "dir": "ltr",
+  "scope": "/",
+  "related_applications": [],
+  "prefer_related_applications": false
+}
