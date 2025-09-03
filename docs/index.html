@@ -1,128 +1,176 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EAI Schema Toolkit</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body>
-    <div class="container">
-        <header class="header">
-            <h1><i class="fas fa-code-branch"></i> EAI Schema Toolkit</h1>
-            <p class="subtitle">스키마 변환 및 검증 도구</p>
-        </header>
-
-        <main class="main-content">
-            <!-- 업로드 섹션 -->
-            <section class="upload-section">
-                <div class="upload-tabs">
-                    <button class="tab-button active" data-tab="file-upload">파일 업로드</button>
-                    <button class="tab-button" data-tab="url-upload">URL에서 가져오기</button>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>EAI Schema Toolkit</title>
+        <link rel="stylesheet" href="style.css" />
+        <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <div class="container">
+            <header class="header">
+                <h1><i class="fas fa-code-branch"></i> EAI Schema Toolkit</h1>
+                <p class="subtitle">스키마 변환 및 검증 도구</p>
+                <div class="theme-switch-wrapper">
+                    <label class="theme-switch" for="checkbox">
+                        <input type="checkbox" id="checkbox" />
+                        <div class="slider round"></div>
+                    </label>
                 </div>
+            </header>
 
-                <!-- 파일 업로드 탭 -->
-                <div id="file-upload" class="tab-content active">
-                    <div class="drop-zone" id="dropZone">
-                        <div class="drop-zone-content">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <p>파일을 드래그 앤 드롭하거나 클릭하여 선택하세요</p>
-                            <p class="file-info">지원 형식: XML, JSON, YAML (최대 50MB)</p>
-                            <input type="file" id="fileInput" accept=".xml,.json,.yaml,.yml" hidden>
+            <main class="main-content">
+                <!-- 업로드 섹션 -->
+                <section class="upload-section">
+                    <div class="upload-tabs">
+                        <button
+                            class="tab-button active"
+                            data-tab="file-upload"
+                        >
+                            파일 업로드
+                        </button>
+                        <button class="tab-button" data-tab="url-upload">
+                            URL에서 가져오기
+                        </button>
+                    </div>
+
+                    <!-- 파일 업로드 탭 -->
+                    <div id="file-upload" class="tab-content active">
+                        <div class="drop-zone" id="dropZone">
+                            <div class="drop-zone-content">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>
+                                    파일을 드래그 앤 드롭하거나 클릭하여
+                                    선택하세요
+                                </p>
+                                <p class="file-info">
+                                    지원 형식: XML, JSON, YAML (최대 50MB)
+                                </p>
+                                <input
+                                    type="file"
+                                    id="fileInput"
+                                    accept=".xml,.json,.yaml,.yml"
+                                    hidden
+                                />
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" id="uploadBtn" disabled>
+                            <i class="fas fa-upload"></i> 업로드
+                        </button>
+                    </div>
+
+                    <!-- URL 업로드 탭 -->
+                    <div id="url-upload" class="tab-content">
+                        <div class="url-input-container">
+                            <input
+                                type="url"
+                                id="urlInput"
+                                placeholder="스키마 URL을 입력하세요 (예: https://example.com/schema.xml)"
+                            />
+                            <button class="btn btn-primary" id="fetchBtn">
+                                <i class="fas fa-download"></i> 가져오기
+                            </button>
                         </div>
                     </div>
-                    <button class="btn btn-primary" id="uploadBtn" disabled>
-                        <i class="fas fa-upload"></i> 업로드
-                    </button>
+                </section>
+
+                <!-- 로딩 상태 -->
+                <div
+                    class="loading-container"
+                    id="loadingContainer"
+                    style="display: none"
+                >
+                    <div class="loading-spinner"></div>
+                    <p>처리 중...</p>
                 </div>
 
-                <!-- URL 업로드 탭 -->
-                <div id="url-upload" class="tab-content">
-                    <div class="url-input-container">
-                        <input type="url" id="urlInput" placeholder="스키마 URL을 입력하세요 (예: https://example.com/schema.xml)">
-                        <button class="btn btn-primary" id="fetchBtn">
-                            <i class="fas fa-download"></i> 가져오기
+                <!-- 결과 섹션 -->
+                <section
+                    class="results-section"
+                    id="resultsSection"
+                    style="display: none"
+                >
+                    <h2><i class="fas fa-check-circle"></i> 업로드 완료</h2>
+                    <div class="file-info-card" id="fileInfoCard">
+                        <!-- 파일 정보가 여기에 표시됩니다 -->
+                    </div>
+
+                    <div class="actions">
+                        <button class="btn btn-secondary" id="downloadBtn">
+                            <i class="fas fa-download"></i> 다운로드
+                        </button>
+                        <button class="btn btn-danger" id="deleteBtn">
+                            <i class="fas fa-trash"></i> 삭제
+                        </button>
+                        <button class="btn btn-info" id="newUploadBtn">
+                            <i class="fas fa-plus"></i> 새 업로드
+                        </button>
+                    </div>
+                </section>
+
+                <!-- 업로드된 파일 목록 -->
+                <section class="files-list-section">
+                    <h2><i class="fas fa-list"></i> 업로드된 파일</h2>
+                    <div class="files-container" id="filesContainer">
+                        <p class="no-files">업로드된 파일이 없습니다.</p>
+                    </div>
+                    <button class="btn btn-secondary" id="refreshFilesBtn">
+                        <i class="fas fa-refresh"></i> 새로고침
+                    </button>
+                </section>
+            </main>
+
+            <!-- 알림 토스트 -->
+            <div class="toast" id="toast">
+                <div class="toast-content">
+                    <i class="toast-icon"></i>
+                    <span class="toast-message"></span>
+                </div>
+            </div>
+
+            <!-- 설정 모달 -->
+            <div class="modal" id="settingsModal" style="display: none">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3><i class="fas fa-cog"></i> 설정</h3>
+                        <button class="modal-close" id="closeSettingsModal">
+                            &times;
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="setting-group">
+                            <label for="apiUrl">API 서버 URL:</label>
+                            <input
+                                type="url"
+                                id="apiUrl"
+                                placeholder="http://localhost:3001"
+                            />
+                            <small>백엔드 API 서버의 URL을 입력하세요</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" id="cancelSettings">
+                            취소
+                        </button>
+                        <button class="btn btn-primary" id="saveSettings">
+                            저장
                         </button>
                     </div>
                 </div>
-            </section>
-
-            <!-- 로딩 상태 -->
-            <div class="loading-container" id="loadingContainer" style="display: none;">
-                <div class="loading-spinner"></div>
-                <p>처리 중...</p>
             </div>
 
-            <!-- 결과 섹션 -->
-            <section class="results-section" id="resultsSection" style="display: none;">
-                <h2><i class="fas fa-check-circle"></i> 업로드 완료</h2>
-                <div class="file-info-card" id="fileInfoCard">
-                    <!-- 파일 정보가 여기에 표시됩니다 -->
-                </div>
-
-                <div class="actions">
-                    <button class="btn btn-secondary" id="downloadBtn">
-                        <i class="fas fa-download"></i> 다운로드
-                    </button>
-                    <button class="btn btn-danger" id="deleteBtn">
-                        <i class="fas fa-trash"></i> 삭제
-                    </button>
-                    <button class="btn btn-info" id="newUploadBtn">
-                        <i class="fas fa-plus"></i> 새 업로드
-                    </button>
-                </div>
-            </section>
-
-            <!-- 업로드된 파일 목록 -->
-            <section class="files-list-section">
-                <h2><i class="fas fa-list"></i> 업로드된 파일</h2>
-                <div class="files-container" id="filesContainer">
-                    <p class="no-files">업로드된 파일이 없습니다.</p>
-                </div>
-                <button class="btn btn-secondary" id="refreshFilesBtn">
-                    <i class="fas fa-refresh"></i> 새로고침
+            <footer class="footer">
+                <p>&copy; 2024 EAI Schema Toolkit. All rights reserved.</p>
+                <button class="settings-btn" id="settingsBtn" title="설정">
+                    <i class="fas fa-cog"></i>
                 </button>
-            </section>
-        </main>
-
-        <!-- 알림 토스트 -->
-        <div class="toast" id="toast">
-            <div class="toast-content">
-                <i class="toast-icon"></i>
-                <span class="toast-message"></span>
-            </div>
+            </footer>
         </div>
 
-        <!-- 설정 모달 -->
-        <div class="modal" id="settingsModal" style="display: none;">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3><i class="fas fa-cog"></i> 설정</h3>
-                    <button class="modal-close" id="closeSettingsModal">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div class="setting-group">
-                        <label for="apiUrl">API 서버 URL:</label>
-                        <input type="url" id="apiUrl" placeholder="http://localhost:3001">
-                        <small>백엔드 API 서버의 URL을 입력하세요</small>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" id="cancelSettings">취소</button>
-                    <button class="btn btn-primary" id="saveSettings">저장</button>
-                </div>
-            </div>
-        </div>
-
-        <footer class="footer">
-            <p>&copy; 2024 EAI Schema Toolkit. All rights reserved.</p>
-            <button class="settings-btn" id="settingsBtn" title="설정">
-                <i class="fas fa-cog"></i>
-            </button>
-        </footer>
-    </div>
-
-    <script src="script.js"></script>
-</body>
+        <script src="script.js"></script>
+    </body>
 </html>
