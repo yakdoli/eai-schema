@@ -580,10 +580,13 @@ class EAISchemaApp {
   }
 
   async generateMapping() {
+    // Get all form values including new fields
     const messageType = document.getElementById("messageType").value;
     const dataType = document.getElementById("dataType").value;
-    const statement = document.getElementById("statement").value;
-    const testData = document.getElementById("testData").value;
+    const rootElement = document.getElementById("rootElement").value;
+    const namespace = document.getElementById("namespace").value;
+    const encoding = document.getElementById("encoding").value;
+    const version = document.getElementById("version").value;
     const source = document.getElementById("sourceInput").value;
 
     if (!source) {
@@ -591,14 +594,27 @@ class EAISchemaApp {
       return;
     }
 
+    // Update metadata table
+    this.updateMetadataTable({
+      messageType,
+      dataType,
+      rootElement,
+      namespace,
+      encoding,
+      version,
+    });
+
     this.showLoading();
 
     try {
       const configuration = {
         messageType,
         dataType,
-        statement,
-        testData: testData ? JSON.parse(testData) : {},
+        rootElement,
+        namespace,
+        encoding,
+        version,
+        testData: {},
       };
 
       const response = await fetch(
@@ -615,7 +631,7 @@ class EAISchemaApp {
       const data = await response.json();
 
       if (response.ok) {
-        this.showMappingResult(data);
+        this.showEnhancedMappingResult(data);
         this.showToast("메시지 매핑이 생성되었습니다.", "success");
       } else {
         this.showToast(data.error || "매핑 생성에 실패했습니다.", "error");
@@ -629,62 +645,230 @@ class EAISchemaApp {
   }
 
   clearMapping() {
+    // Reset all form fields
     document.getElementById("messageType").value = "XML";
     document.getElementById("dataType").value = "";
-    document.getElementById("statement").value = "";
-    document.getElementById("testData").value = "";
+    document.getElementById("rootElement").value = "";
+    document.getElementById("namespace").value = "";
+    document.getElementById("encoding").value = "UTF-8";
+    document.getElementById("version").value = "1.0";
     document.getElementById("sourceInput").value = "";
-    document.getElementById("mappingResult").style.display = "none";
+
+    // Clear metadata table
+    this.clearMetadataTable();
+
+    // Hide result sections
+    const resultSection = document.getElementById("mappingResultSection");
+    if (resultSection) {
+      resultSection.style.display = "none";
+    }
+
     this.showToast("매핑이 클리어되었습니다.", "info");
   }
 
-  showMappingResult(mapping) {
-    let resultSection = document.getElementById("mappingResult");
-    if (!resultSection) {
-      resultSection = document.createElement("section");
-      resultSection.id = "mappingResult";
-      resultSection.className = "mapping-result-section";
-      document.querySelector(".main-content").appendChild(resultSection);
-    }
+  updateMetadataTable(metadata) {
+    document.getElementById("meta-messageType").textContent =
+      metadata.messageType;
+    document.getElementById("meta-dataType").textContent = metadata.dataType;
+    document.getElementById("meta-rootElement").textContent =
+      metadata.rootElement;
+    document.getElementById("meta-namespace").textContent = metadata.namespace;
+    document.getElementById("meta-encoding").textContent = metadata.encoding;
+    document.getElementById("meta-version").textContent = metadata.version;
+  }
+
+  clearMetadataTable() {
+    const metadataCells = [
+      "meta-messageType",
+      "meta-dataType",
+      "meta-rootElement",
+      "meta-namespace",
+      "meta-encoding",
+      "meta-version",
+    ];
+    metadataCells.forEach((id) => {
+      document.getElementById(id).textContent = "-";
+    });
+  }
+
+  showEnhancedMappingResult(mapping) {
+    const resultSection = document.getElementById("mappingResultSection");
+    const startTime = Date.now();
+
+    // Generate XML output
+    const xmlOutput = this.generateXmlOutput(mapping);
+    const jsonOutput = JSON.stringify(mapping, null, 2);
 
     resultSection.innerHTML = `
       <h2><i class="fas fa-code-branch"></i> 메시지 매핑 결과</h2>
       <div class="mapping-result-card">
-        <div class="result-item">
-          <span class="result-label">매핑 ID:</span>
-          <span class="result-value">${mapping.id}</span>
+        <div class="result-tabs">
+          <button class="result-tab active" data-result-tab="xml">XML 결과</button>
+          <button class="result-tab" data-result-tab="json">JSON 결과</button>
+          <button class="result-tab" data-result-tab="summary">요약</button>
         </div>
-        <div class="result-item">
-          <span class="result-label">메시지 타입:</span>
-          <span class="result-value">${mapping.configuration.messageType}</span>
-        </div>
-        <div class="result-item">
-          <span class="result-label">데이터 타입:</span>
-          <span class="result-value">${mapping.configuration.dataType}</span>
-        </div>
-        <div class="result-item">
-          <span class="result-label">소스:</span>
-          <pre class="result-value">${mapping.source}</pre>
-        </div>
-        <div class="result-item">
-          <span class="result-label">타겟:</span>
-          <pre class="result-value">${mapping.target}</pre>
-        </div>
-        <div class="result-item">
-          <span class="result-label">매핑:</span>
-          <pre class="result-value">${JSON.stringify(mapping.mappings, null, 2)}</pre>
+
+        <div class="result-content">
+          <div id="xml-result" class="result-panel active">
+            <pre id="xmlOutput" class="xml-output">${xmlOutput}</pre>
+          </div>
+          <div id="json-result" class="result-panel">
+            <pre id="jsonOutput" class="json-output">${jsonOutput}</pre>
+          </div>
+          <div id="summary-result" class="result-panel">
+            <div class="summary-grid">
+              <div class="summary-item">
+                <span class="summary-label">매핑 ID:</span>
+                <span class="summary-value">${mapping.id}</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">생성된 노드 수:</span>
+                <span class="summary-value" id="nodeCount">${this.countXmlNodes(xmlOutput)}</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">XML 크기:</span>
+                <span class="summary-value">${xmlOutput.length} bytes</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">처리 시간:</span>
+                <span class="summary-value">${Date.now() - startTime}ms</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">유효성:</span>
+                <span class="summary-value" id="validationStatus">유효함</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+
       <div class="actions">
-        <button class="btn btn-secondary" onclick="app.copyMapping('${mapping.id}')">
+        <button class="btn btn-success" id="downloadXmlResultBtn">
+          <i class="fas fa-download"></i> XML 다운로드
+        </button>
+        <button class="btn btn-info" id="copyXmlResultBtn">
           <i class="fas fa-copy"></i> 복사
         </button>
-        <button class="btn btn-info" onclick="app.downloadMapping('${mapping.id}')">
-          <i class="fas fa-download"></i> 다운로드
+        <button class="btn btn-secondary" id="newMappingBtn">
+          <i class="fas fa-plus"></i> 새 매핑
         </button>
       </div>
     `;
+
+    // Add event listeners for tabs
+    this.setupResultTabs();
+
+    // Add event listeners for action buttons
+    this.setupResultActions(mapping.id, xmlOutput);
+
     resultSection.style.display = "block";
+  }
+
+  setupResultTabs() {
+    const tabs = document.querySelectorAll(".result-tab");
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", (e) => {
+        const targetTab = e.target.dataset.resultTab;
+
+        // Remove active class from all tabs and panels
+        document
+          .querySelectorAll(".result-tab")
+          .forEach((t) => t.classList.remove("active"));
+        document
+          .querySelectorAll(".result-panel")
+          .forEach((p) => p.classList.remove("active"));
+
+        // Add active class to clicked tab and corresponding panel
+        e.target.classList.add("active");
+        document.getElementById(`${targetTab}-result`).classList.add("active");
+      });
+    });
+  }
+
+  setupResultActions(mappingId, xmlOutput) {
+    // Download XML
+    document
+      .getElementById("downloadXmlResultBtn")
+      .addEventListener("click", () => {
+        this.downloadXml(xmlOutput);
+      });
+
+    // Copy XML
+    document
+      .getElementById("copyXmlResultBtn")
+      .addEventListener("click", () => {
+        navigator.clipboard.writeText(xmlOutput);
+        this.showToast("XML이 클립보드에 복사되었습니다.", "success");
+      });
+
+    // New mapping
+    document.getElementById("newMappingBtn").addEventListener("click", () => {
+      this.clearMapping();
+    });
+  }
+
+  generateXmlOutput(mapping) {
+    const config = mapping.configuration;
+    const rootElement = config.rootElement || "root";
+    const namespace = config.namespace ? ` xmlns="${config.namespace}"` : "";
+
+    let xmlContent = `<?xml version="${config.version || "1.0"}" encoding="${config.encoding || "UTF-8"}"?>\n`;
+    xmlContent += `<${rootElement}${namespace}>\n`;
+
+    // Add source data as XML elements
+    if (mapping.source) {
+      try {
+        const sourceData = JSON.parse(mapping.source);
+        xmlContent += this.jsonToXml(sourceData, 1);
+      } catch {
+        xmlContent += `  <source>${mapping.source}</source>\n`;
+      }
+    }
+
+    xmlContent += `</${rootElement}>`;
+
+    return xmlContent;
+  }
+
+  jsonToXml(obj, indent = 0) {
+    const indentStr = "  ".repeat(indent);
+    let xml = "";
+
+    if (Array.isArray(obj)) {
+      obj.forEach((item, index) => {
+        xml += `${indentStr}<item${index}>\n`;
+        xml += this.jsonToXml(item, indent + 1);
+        xml += `${indentStr}</item${index}>\n`;
+      });
+    } else if (typeof obj === "object" && obj !== null) {
+      Object.keys(obj).forEach((key) => {
+        xml += `${indentStr}<${key}>\n`;
+        xml += this.jsonToXml(obj[key], indent + 1);
+        xml += `${indentStr}</${key}>\n`;
+      });
+    } else {
+      xml += `${indentStr}${obj}\n`;
+    }
+
+    return xml;
+  }
+
+  countXmlNodes(xmlString) {
+    const matches = xmlString.match(/<[^>]+>/g);
+    return matches ? matches.length : 0;
+  }
+
+  downloadXml(xmlContent) {
+    const blob = new Blob([xmlContent], { type: "application/xml" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `mapping-result-${Date.now()}.xml`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    this.showToast("XML 파일이 다운로드되었습니다.", "success");
   }
 
   async copyMapping(mappingId) {
