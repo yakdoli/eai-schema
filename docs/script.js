@@ -40,6 +40,14 @@ class EAISchemaApp {
       .getElementById("fetchBtn")
       .addEventListener("click", () => this.fetchFromUrl());
 
+    // Message mapping
+    document
+      .getElementById("generateMappingBtn")
+      .addEventListener("click", () => this.generateMapping());
+    document
+      .getElementById("clearMappingBtn")
+      .addEventListener("click", () => this.clearMapping());
+
     // Actions
     document
       .getElementById("downloadBtn")
@@ -569,6 +577,163 @@ class EAISchemaApp {
     this.showToast("설정이 저장되었습니다.", "success");
     this.closeSettings();
     this.loadFiles(); // Reload files with new API URL
+  }
+
+  async generateMapping() {
+    const messageType = document.getElementById("messageType").value;
+    const dataType = document.getElementById("dataType").value;
+    const statement = document.getElementById("statement").value;
+    const testData = document.getElementById("testData").value;
+    const source = document.getElementById("sourceInput").value;
+
+    if (!source) {
+      this.showToast("소스 데이터를 입력하세요.", "error");
+      return;
+    }
+
+    this.showLoading();
+
+    try {
+      const configuration = {
+        messageType,
+        dataType,
+        statement,
+        testData: testData ? JSON.parse(testData) : {},
+      };
+
+      const response = await fetch(
+        `${this.apiUrl}/api/message-mapping/generate`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ configuration, source }),
+        },
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        this.showMappingResult(data);
+        this.showToast("메시지 매핑이 생성되었습니다.", "success");
+      } else {
+        this.showToast(data.error || "매핑 생성에 실패했습니다.", "error");
+      }
+    } catch (error) {
+      console.error("Generate mapping error:", error);
+      this.showToast("서버 연결에 실패했습니다.", "error");
+    } finally {
+      this.hideLoading();
+    }
+  }
+
+  clearMapping() {
+    document.getElementById("messageType").value = "XML";
+    document.getElementById("dataType").value = "";
+    document.getElementById("statement").value = "";
+    document.getElementById("testData").value = "";
+    document.getElementById("sourceInput").value = "";
+    document.getElementById("mappingResult").style.display = "none";
+    this.showToast("매핑이 클리어되었습니다.", "info");
+  }
+
+  showMappingResult(mapping) {
+    let resultSection = document.getElementById("mappingResult");
+    if (!resultSection) {
+      resultSection = document.createElement("section");
+      resultSection.id = "mappingResult";
+      resultSection.className = "mapping-result-section";
+      document.querySelector(".main-content").appendChild(resultSection);
+    }
+
+    resultSection.innerHTML = `
+      <h2><i class="fas fa-code-branch"></i> 메시지 매핑 결과</h2>
+      <div class="mapping-result-card">
+        <div class="result-item">
+          <span class="result-label">매핑 ID:</span>
+          <span class="result-value">${mapping.id}</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">메시지 타입:</span>
+          <span class="result-value">${mapping.configuration.messageType}</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">데이터 타입:</span>
+          <span class="result-value">${mapping.configuration.dataType}</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">소스:</span>
+          <pre class="result-value">${mapping.source}</pre>
+        </div>
+        <div class="result-item">
+          <span class="result-label">타겟:</span>
+          <pre class="result-value">${mapping.target}</pre>
+        </div>
+        <div class="result-item">
+          <span class="result-label">매핑:</span>
+          <pre class="result-value">${JSON.stringify(mapping.mappings, null, 2)}</pre>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-secondary" onclick="app.copyMapping('${mapping.id}')">
+          <i class="fas fa-copy"></i> 복사
+        </button>
+        <button class="btn btn-info" onclick="app.downloadMapping('${mapping.id}')">
+          <i class="fas fa-download"></i> 다운로드
+        </button>
+      </div>
+    `;
+    resultSection.style.display = "block";
+  }
+
+  async copyMapping(mappingId) {
+    try {
+      const response = await fetch(
+        `${this.apiUrl}/api/message-mapping/${mappingId}`,
+      );
+      const data = await response.json();
+
+      if (response.ok) {
+        const mappingText = JSON.stringify(data, null, 2);
+        navigator.clipboard.writeText(mappingText);
+        this.showToast("매핑이 클립보드에 복사되었습니다.", "success");
+      } else {
+        this.showToast("매핑을 가져올 수 없습니다.", "error");
+      }
+    } catch (error) {
+      console.error("Copy mapping error:", error);
+      this.showToast("복사 중 오류가 발생했습니다.", "error");
+    }
+  }
+
+  async downloadMapping(mappingId) {
+    try {
+      const response = await fetch(
+        `${this.apiUrl}/api/message-mapping/${mappingId}`,
+      );
+      const data = await response.json();
+
+      if (response.ok) {
+        const blob = new Blob([JSON.stringify(data, null, 2)], {
+          type: "application/json",
+        });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `mapping-${mappingId}.json`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        this.showToast("매핑이 다운로드되었습니다.", "success");
+      } else {
+        this.showToast("매핑을 다운로드할 수 없습니다.", "error");
+      }
+    } catch (error) {
+      console.error("Download mapping error:", error);
+      this.showToast("다운로드 중 오류가 발생했습니다.", "error");
+    }
   }
 
   showToast(message, type = "info") {

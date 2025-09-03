@@ -1,34 +1,35 @@
-import winston from 'winston';
-// 로그 포맷 정의
-const logFormat = winston.format.combine(winston.format.timestamp({
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.logger = void 0;
+const winston_1 = __importDefault(require("winston"));
+const logFormat = winston_1.default.format.combine(winston_1.default.format.timestamp({
     format: 'YYYY-MM-DD HH:mm:ss'
-}), winston.format.errors({ stack: true }), winston.format.json());
-// 로거 생성
-export const logger = winston.createLogger({
+}), winston_1.default.format.errors({ stack: true }), winston_1.default.format.json());
+exports.logger = winston_1.default.createLogger({
     level: process.env.LOG_LEVEL || 'info',
     format: logFormat,
     defaultMeta: { service: 'eai-schema-toolkit-backend' },
     transports: [
-        // 콘솔 출력
-        new winston.transports.Console({
-            format: winston.format.combine(winston.format.colorize(), winston.format.simple())
+        new winston_1.default.transports.Console({
+            format: winston_1.default.format.combine(winston_1.default.format.colorize(), winston_1.default.format.simple())
         }),
-        // 파일 출력 (에러 로그)
-        new winston.transports.File({
+        new winston_1.default.transports.File({
             filename: 'logs/error.log',
             level: 'error'
         }),
-        // 파일 출력 (전체 로그)
-        new winston.transports.File({
+        new winston_1.default.transports.File({
             filename: 'logs/combined.log'
         })
     ]
 });
-// 개발 환경에서는 더 자세한 로그 출력
 if (process.env.NODE_ENV !== 'production') {
-    logger.add(new winston.transports.Console({
-        format: winston.format.combine(winston.format.colorize(), winston.format.timestamp(), winston.format.printf(({ timestamp, level, message, ...meta }) => {
+    exports.logger.add(new winston_1.default.transports.Console({
+        format: winston_1.default.format.combine(winston_1.default.format.colorize(), winston_1.default.format.timestamp(), winston_1.default.format.printf(({ timestamp, level, message, ...meta }) => {
             return `${timestamp} [${level}]: ${message} ${Object.keys(meta).length ? JSON.stringify(meta, null, 2) : ''}`;
         }))
     }));
 }
+//# sourceMappingURL=logger.js.map

@@ -36,6 +36,9 @@
                         <button class="tab-button" data-tab="url-upload">
                             URL에서 가져오기
                         </button>
+                        <button class="tab-button" data-tab="message-mapping">
+                            메시지 매핑
+                        </button>
                     </div>
 
                     <!-- 파일 업로드 탭 -->
@@ -74,6 +77,68 @@
                             <button class="btn btn-primary" id="fetchBtn">
                                 <i class="fas fa-download"></i> 가져오기
                             </button>
+                        </div>
+                    </div>
+
+                    <!-- 메시지 매핑 탭 -->
+                    <div id="message-mapping" class="tab-content">
+                        <div class="mapping-container">
+                            <div class="mapping-section">
+                                <h3>구성 (Configuration)</h3>
+                                <div class="form-group">
+                                    <label for="messageType"
+                                        >메시지 타입:</label
+                                    >
+                                    <select id="messageType">
+                                        <option value="XML">XML</option>
+                                        <option value="JSON">JSON</option>
+                                        <option value="YAML">YAML</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="dataType">데이터 타입:</label>
+                                    <input
+                                        type="text"
+                                        id="dataType"
+                                        placeholder="데이터 타입 입력"
+                                    />
+                                </div>
+                                <div class="form-group">
+                                    <label for="statement">스테이트먼트:</label>
+                                    <textarea
+                                        id="statement"
+                                        placeholder="스테이트먼트 입력"
+                                    ></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="testData">테스트 데이터:</label>
+                                    <textarea
+                                        id="testData"
+                                        placeholder="테스트 데이터 입력 (JSON 형식)"
+                                    ></textarea>
+                                </div>
+                            </div>
+                            <div class="mapping-section">
+                                <h3>소스 (Source)</h3>
+                                <textarea
+                                    id="sourceInput"
+                                    placeholder="소스 데이터를 입력하세요"
+                                ></textarea>
+                            </div>
+                            <div class="mapping-actions">
+                                <button
+                                    class="btn btn-primary"
+                                    id="generateMappingBtn"
+                                >
+                                    <i class="fas fa-cogs"></i> 생성
+                                </button>
+                                <button
+                                    class="btn btn-secondary"
+                                    id="clearMappingBtn"
+                                >
+                                    <i class="fas fa-eraser"></i> 클리어
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </section>

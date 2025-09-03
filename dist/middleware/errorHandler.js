@@ -1,7 +1,9 @@
-import { logger } from '../utils/logger';
-export const errorHandler = (error, req, res, next) => {
-    // 에러 로깅
-    logger.error('에러 발생:', {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.NetworkError = exports.SecurityError = exports.FileUploadError = exports.ValidationError = exports.asyncHandler = exports.errorHandler = void 0;
+const logger_1 = require("../utils/logger");
+const errorHandler = (error, req, res, next) => {
+    logger_1.logger.error('에러 발생:', {
         message: error.message,
         stack: error.stack,
         url: req.url,
@@ -9,9 +11,7 @@ export const errorHandler = (error, req, res, next) => {
         ip: req.ip,
         userAgent: req.get('User-Agent')
     });
-    // 기본 에러 상태 코드 설정
     const statusCode = error.statusCode || 500;
-    // 개발 환경에서는 스택 트레이스 포함
     const errorResponse = {
         error: {
             message: error.message || '내부 서버 오류가 발생했습니다.',
@@ -20,40 +20,45 @@ export const errorHandler = (error, req, res, next) => {
     };
     res.status(statusCode).json(errorResponse);
 };
-// 비동기 함수 에러 처리를 위한 래퍼
-export const asyncHandler = (fn) => (req, res, next) => {
+exports.errorHandler = errorHandler;
+const asyncHandler = (fn) => (req, res, next) => {
     Promise.resolve(fn(req, res, next)).catch(next);
 };
-// 커스텀 에러 클래스들
-export class ValidationError extends Error {
-    statusCode = 400;
-    isOperational = true;
+exports.asyncHandler = asyncHandler;
+class ValidationError extends Error {
     constructor(message) {
         super(message);
+        this.statusCode = 400;
+        this.isOperational = true;
         this.name = 'ValidationError';
     }
 }
-export class FileUploadError extends Error {
-    statusCode = 400;
-    isOperational = true;
+exports.ValidationError = ValidationError;
+class FileUploadError extends Error {
     constructor(message) {
         super(message);
+        this.statusCode = 400;
+        this.isOperational = true;
         this.name = 'FileUploadError';
     }
 }
-export class SecurityError extends Error {
-    statusCode = 403;
-    isOperational = true;
+exports.FileUploadError = FileUploadError;
+class SecurityError extends Error {
     constructor(message) {
         super(message);
+        this.statusCode = 403;
+        this.isOperational = true;
         this.name = 'SecurityError';
     }
 }
-export class NetworkError extends Error {
-    statusCode = 502;
-    isOperational = true;
+exports.SecurityError = SecurityError;
+class NetworkError extends Error {
     constructor(message) {
         super(message);
+        this.statusCode = 502;
+        this.isOperational = true;
         this.name = 'NetworkError';
     }
 }
+exports.NetworkError = NetworkError;
+//# sourceMappingURL=errorHandler.js.map

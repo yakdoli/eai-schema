@@ -9,6 +9,7 @@ import { logger } from "./utils/logger";
 import { errorHandler } from "./middleware/errorHandler";
 import { uploadRoutes } from "./routes/upload";
 import { healthRoutes } from "./routes/health";
+import messageMappingRoutes from "./routes/messageMapping";
 
 // 환경 변수 로드
 dotenv.config();
@@ -83,6 +84,7 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 // 라우트 등록
 app.use("/api/health", healthRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/message-mapping", messageMappingRoutes);
 
 // 에러 핸들링 미들웨어
 app.use(errorHandler);

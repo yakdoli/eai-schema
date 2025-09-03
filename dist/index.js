@@ -1,55 +1,69 @@
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import morgan from 'morgan';
-import compression from 'compression';
-import rateLimit from 'express-rate-limit';
-import dotenv from 'dotenv';
-import { logger } from './utils/logger';
-import { errorHandler } from './middleware/errorHandler';
-import { uploadRoutes } from './routes/upload';
-import { healthRoutes } from './routes/health';
-// 환경 변수 로드
-dotenv.config();
-const app = express();
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const cors_1 = __importDefault(require("cors"));
+const helmet_1 = __importDefault(require("helmet"));
+const morgan_1 = __importDefault(require("morgan"));
+const compression_1 = __importDefault(require("compression"));
+const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
+const dotenv_1 = __importDefault(require("dotenv"));
+const logger_1 = require("./utils/logger");
+const errorHandler_1 = require("./middleware/errorHandler");
+const upload_1 = require("./routes/upload");
+const health_1 = require("./routes/health");
+const messageMapping_1 = __importDefault(require("./routes/messageMapping"));
+dotenv_1.default.config();
+const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3001;
-// 보안 미들웨어
-app.use(helmet({
-    crossOriginResourcePolicy: { policy: "cross-origin" }
+app.use((0, helmet_1.default)({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
 }));
-// CORS 설정
-app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    credentials: true
+const allowedOrigins = [
+    "https://yakdoli.github.io",
+    "http://localhost:3000",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    process.env.FRONTEND_URL,
+].filter((url) => Boolean(url));
+app.use((0, cors_1.default)({
+    origin: (origin, callback) => {
+        if (!origin)
+            return callback(null, true);
+        if (allowedOrigins.some((allowed) => origin.startsWith(allowed || ""))) {
+            return callback(null, true);
+        }
+        callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
 }));
-// 압축 미들웨어
-app.use(compression());
-// 로깅 미들웨어
-app.use(morgan('combined', {
+app.use((0, compression_1.default)());
+app.use((0, morgan_1.default)("combined", {
     stream: {
-        write: (message) => logger.info(message.trim())
-    }
+        write: (message) => logger_1.logger.info(message.trim()),
+    },
 }));
-// Rate limiting
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15분
-    max: 100, // 최대 100개 요청
+const limiter = (0, express_rate_limit_1.default)({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
     message: {
-        error: 'Too many requests from this IP, please try again later.'
-    }
+        error: "Too many requests from this IP, please try again later.",
+    },
 });
 app.use(limiter);
-// JSON 파싱 미들웨어 (파일 업로드 제외)
-app.use('/api/upload', express.raw({ type: 'application/octet-stream', limit: '50mb' }));
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-// 라우트 등록
-app.use('/api/health', healthRoutes);
-app.use('/api/upload', uploadRoutes);
-// 에러 핸들링 미들웨어
-app.use(errorHandler);
-// 서버 시작
+app.use("/api/upload", express_1.default.raw({ type: "application/octet-stream", limit: "50mb" }));
+app.use(express_1.default.json({ limit: "10mb" }));
+app.use(express_1.default.urlencoded({ extended: true, limit: "10mb" }));
+app.use("/api/health", health_1.healthRoutes);
+app.use("/api/upload", upload_1.uploadRoutes);
+app.use("/api/message-mapping", messageMapping_1.default);
+app.use(errorHandler_1.errorHandler);
 app.listen(PORT, () => {
-    logger.info(`EAI Schema Toolkit 백엔드 서버가 포트 ${PORT}에서 실행 중입니다.`);
+    logger_1.logger.info(`EAI Schema Toolkit 백엔드 서버가 포트 ${PORT}에서 실행 중입니다.`);
 });
-export default app;
+exports.default = app;
+//# sourceMappingURL=index.js.map

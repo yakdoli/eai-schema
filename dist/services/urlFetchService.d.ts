@@ -6,7 +6,6 @@ export interface FetchResult {
     fetchedAt: Date;
 }
 export declare class UrlFetchService {
-    validateUrlSecurity(urlString: string): Promise<void>;
     private validateUrl;
     private isBlockedHost;
     private isIpAddress;

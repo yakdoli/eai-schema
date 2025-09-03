@@ -1,8 +1,11 @@
-import { Router } from 'express';
-import { asyncHandler } from '../middleware/errorHandler';
-const router = Router();
-// 헬스 체크 엔드포인트
-router.get('/', asyncHandler(async (req, res) => {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.healthRoutes = void 0;
+const express_1 = require("express");
+const errorHandler_1 = require("../middleware/errorHandler");
+const router = (0, express_1.Router)();
+exports.healthRoutes = router;
+router.get('/', (0, errorHandler_1.asyncHandler)(async (req, res) => {
     const healthCheck = {
         status: 'OK',
         timestamp: new Date().toISOString(),
@@ -17,4 +20,4 @@ router.get('/', asyncHandler(async (req, res) => {
     };
     res.status(200).json(healthCheck);
 }));
-export { router as healthRoutes };
+//# sourceMappingURL=health.js.map
