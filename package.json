@@ -36,7 +36,10 @@
     "deploy": "npm run build && gh-pages -d docs",
     "predeploy": "npm run build",
     "heroku-prebuild": "echo \"Prebuild script executed\"",
-    "test:all": "./scripts/test-runner.sh"
+    "heroku-postbuild": "npm run build",
+    "test:all": "./scripts/test-runner.sh",
+    "test:heroku-setup": "node scripts/test-heroku-setup.js",
+    "heroku-health": "node scripts/heroku-health-check.js"
   },
   "dependencies": {
     "ajv": "^8.17.1",
