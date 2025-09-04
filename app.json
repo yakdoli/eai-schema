@@ -1,7 +1,7 @@
 {
   "name": "EAI Schema Toolkit",
   "description": "Enterprise Application Integration Schema Conversion and Validation Tool",
-  "repository": "https://github.com/[username]/eai-schema",
+  "repository": "https://github.com/yakdoli/eai-schema",
   "logo": "https://node-js-sample.herokuapp.com/node.png",
   "keywords": ["node", "express", "eai", "schema", "integration"],
   "env": {

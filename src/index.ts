@@ -142,6 +142,15 @@ app.use("/api/performance", performanceMonitoringRoutes);
 // 에러 핸들링 미들웨어
 app.use(errorHandler);
 
+// Heroku health check endpoint
+app.get("/", (req, res) => {
+  res.status(200).json({ 
+    status: "OK", 
+    message: "EAI Schema Toolkit is running",
+    timestamp: new Date().toISOString()
+  });
+});
+
 // 서버 시작
 server.listen(PORT, () => {
   logger.info(

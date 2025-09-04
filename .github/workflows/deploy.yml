@@ -118,6 +118,7 @@ jobs:
         run: |
           # Heroku CLI 로그인
           echo "$HEROKU_API_KEY" | heroku auth:token
+          heroku auth:whoami
           
           # Git 설정
           git config --global user.email "action@github.com"
