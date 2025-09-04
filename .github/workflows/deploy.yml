@@ -114,10 +114,14 @@ jobs:
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
           HEROKU_APP_NAME: eai-schema-api
-          HEROKU_EMAIL: ${{ secrets.HEROKU_EMAIL }}
+          HEROKU_EMAIL: ourpebble@gmail.com
         run: |
-          # Heroku CLI 로그인
-          echo "$HEROKU_API_KEY" | heroku auth:token
+          # Heroku CLI 로그인 using netrc
+          echo "machine api.heroku.com login $HEROKU_EMAIL password $HEROKU_API_KEY" > ~/.netrc
+          echo "machine git.heroku.com login $HEROKU_EMAIL password $HEROKU_API_KEY" >> ~/.netrc
+          chmod 600 ~/.netrc
+          
+          # Verify authentication
           heroku auth:whoami
           
           # Git 설정
