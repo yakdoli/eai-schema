@@ -4,6 +4,7 @@ import fs from 'fs/promises';
 import crypto from 'crypto';
 import { ValidationError, FileUploadError, SecurityError } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
+import { Multer } from 'multer';
 
 // 지원되는 파일 타입
 const ALLOWED_MIME_TYPES = [
@@ -64,7 +65,7 @@ export class FileUploadService {
   }
 
   // 파일 검증
-  validateFile(file: Express.Multer.File): void {
+  validateFile(file: Multer.File): void {
     // 파일 크기 검증
     if (file.size > MAX_FILE_SIZE) {
       throw new FileUploadError(`파일 크기가 너무 큽니다. 최대 ${MAX_FILE_SIZE / 1024 / 1024}MB까지 허용됩니다.`);
@@ -114,7 +115,7 @@ export class FileUploadService {
   }
 
   // 파일 저장
-  async saveFile(file: Express.Multer.File): Promise<UploadedFileInfo> {
+  async saveFile(file: Multer.File): Promise<UploadedFileInfo> {
     this.validateFile(file);
 
     const fileId = crypto.randomUUID();

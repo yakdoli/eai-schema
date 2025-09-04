@@ -1,3 +1,4 @@
+import { Multer } from 'multer';
 export interface UploadedFileInfo {
     id: string;
     originalName: string;
@@ -12,9 +13,9 @@ export declare class FileUploadService {
     private uploadedFiles;
     constructor();
     private ensureTempDirectory;
-    validateFile(file: Express.Multer.File): void;
+    validateFile(file: Multer.File): void;
     private validateFileContent;
-    saveFile(file: Express.Multer.File): Promise<UploadedFileInfo>;
+    saveFile(file: Multer.File): Promise<UploadedFileInfo>;
     getFileInfo(fileId: string): UploadedFileInfo | undefined;
     readFile(fileId: string): Promise<Buffer>;
     deleteFile(fileId: string): Promise<void>;
