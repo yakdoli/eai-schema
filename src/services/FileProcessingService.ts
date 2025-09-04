@@ -503,7 +503,7 @@ export class FileProcessingService {
       const match = line.match(/^(\s*)([\w]+):\s*(.*)$/);
       if (match) {
         const [, indent, key, value] = match;
-        result[key] = value;
+        result[key!] = value;
       }
     });
 
@@ -539,15 +539,15 @@ export class FileProcessingService {
     const lines = csv.split('\n').filter(line => line.trim());
     if (lines.length === 0) return [];
 
-    const headers = this.parseCSVLine(lines[0]);
+    const headers = this.parseCSVLine(lines[0]!);
     const result: any[] = [];
 
     for (let i = 1; i < lines.length; i++) {
-      const values = this.parseCSVLine(lines[i]);
+      const values = this.parseCSVLine(lines[i]!);
       const obj: any = {};
 
       headers.forEach((header, index) => {
-        obj[header] = values[index] || '';
+        obj[header!] = values[index] || '';
       });
 
       result.push(obj);

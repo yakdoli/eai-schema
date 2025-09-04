@@ -11,6 +11,7 @@ const compression_1 = __importDefault(require("compression"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const http_1 = require("http");
+const path_1 = __importDefault(require("path"));
 const socket_io_1 = require("socket.io");
 const logger_1 = require("./utils/logger");
 const errorHandler_1 = require("./middleware/errorHandler");
@@ -92,6 +93,7 @@ app.use(performanceMonitoringMiddleware_1.default);
 app.use("/api/upload", express_1.default.raw({ type: "application/octet-stream", limit: "50mb" }));
 app.use(express_1.default.json({ limit: "10mb" }));
 app.use(express_1.default.urlencoded({ extended: true, limit: "10mb" }));
+app.use(express_1.default.static(path_1.default.join(__dirname, "../docs")));
 app.use("/api/health", health_1.healthRoutes);
 app.use("/api/upload", upload_1.uploadRoutes);
 app.use("/api/message-mapping", messageMapping_1.default);
@@ -100,6 +102,13 @@ app.use("/api/collaboration", collaboration_1.default);
 app.use("/api/schema-validation", schemaValidation_1.default);
 app.use("/api/performance", performanceMonitoring_1.default);
 app.use(errorHandler_1.errorHandler);
+app.get("/", (req, res) => {
+    res.status(200).json({
+        status: "OK",
+        message: "EAI Schema Toolkit is running",
+        timestamp: new Date().toISOString()
+    });
+});
 server.listen(PORT, () => {
     logger_1.logger.info(`EAI Schema Toolkit 백엔드 서버가 포트 ${PORT}에서 실행 중입니다.`);
 });

@@ -6,6 +6,7 @@ import compression from "compression";
 import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 import { createServer } from "http";
+import path from "path";
 import { Server } from "socket.io";
 import { logger } from "./utils/logger";
 import { errorHandler } from "./middleware/errorHandler";
@@ -130,6 +131,10 @@ app.use(
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
+// 정적 파일 서빙 (프론트엔드)
+app.use(express.static(path.join(__dirname, "../docs")));
+
+// 라우트 등록
 // 라우트 등록
 app.use("/api/health", healthRoutes);
 app.use("/api/upload", uploadRoutes);

@@ -96,7 +96,7 @@ export class FileValidationService {
     const extension = filename.split('.').pop()?.toLowerCase();
     const expectedMimeType = this.getExpectedMimeType(extension);
 
-    if (expectedMimeType && !mimetype.includes(expectedMimeType.split('/')[1])) {
+    if (expectedMimeType && expectedMimeType.includes('/') && !mimetype.includes(expectedMimeType.split('/')[1]!)) {
       result.warnings.push(`MIME 타입(${mimetype})과 확장자(${extension})가 일치하지 않습니다.`);
     }
 
@@ -140,7 +140,7 @@ export class FileValidationService {
     if (content.includes(',') && content.split('\n').length > 1) {
       const lines = content.split('\n').slice(0, 5);
       const commaCounts = lines.map(line => (line.match(/,/g) || []).length);
-      if (commaCounts.every(count => count > 0 && Math.abs(count - commaCounts[0]) <= 1)) {
+      if (commaCounts.length > 0 && commaCounts.every(count => count > 0 && Math.abs(count - commaCounts[0]!) <= 1)) {
         return 'csv';
       }
     }
@@ -283,7 +283,7 @@ export class FileValidationService {
 
     // 헤더 검증
     const headerLine = lines[0];
-    const headerFields = this.parseCSVLine(headerLine);
+    const headerFields = this.parseCSVLine(headerLine!);
 
     if (headerFields.length === 0) {
       result.warnings.push("CSV 헤더가 비어 있습니다.");
@@ -291,7 +291,7 @@ export class FileValidationService {
 
     // 데이터 행 검증
     for (let i = 1; i < Math.min(lines.length, 10); i++) {
-      const fields = this.parseCSVLine(lines[i]);
+      const fields = this.parseCSVLine(lines[i]!);
       if (fields.length !== headerFields.length) {
         result.warnings.push(`행 ${i + 1}의 필드 수가 헤더와 일치하지 않습니다.`);
       }
@@ -379,7 +379,7 @@ export class FileValidationService {
       'csv': 'text/csv',
       'txt': 'text/plain'
     };
-    return extension ? mimeTypes[extension] : '';
+    return extension ? mimeTypes[extension] || '' : '';
   }
 
   private detectEncoding(buffer: Buffer): string {

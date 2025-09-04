@@ -38,7 +38,17 @@ export const errorHandler = (
   const userMessage = getUserFriendlyMessage(error);
 
   // 에러 응답 구성
-  const errorResponse = {
+  const errorResponse: {
+    success: false;
+    error: {
+      message: string;
+      errorId: string;
+      timestamp: string;
+      type?: string;
+      stack?: string;
+      originalMessage?: string;
+    };
+  } = {
     success: false,
     error: {
       message: userMessage,
@@ -126,7 +136,7 @@ function getUserFriendlyMessage(error: AppError): string {
 
   // 특정 에러 타입에 대한 사용자 친화적인 메시지 반환
   if (error.name && errorMessages[error.name]) {
-    return errorMessages[error.name];
+    return errorMessages[error.name]!;
   }
 
   // 기본 메시지

@@ -6,6 +6,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.uploadRoutes = void 0;
 const express_1 = require("express");
 const multer_1 = __importDefault(require("multer"));
+const path_1 = __importDefault(require("path"));
+const promises_1 = __importDefault(require("fs/promises"));
+const crypto_1 = __importDefault(require("crypto"));
 const errorHandler_1 = require("../middleware/errorHandler");
 const fileUploadService_1 = require("../services/fileUploadService");
 const urlFetchService_1 = require("../services/urlFetchService");
@@ -17,6 +20,16 @@ const upload = (0, multer_1.default)({
     limits: {
         fileSize: 50 * 1024 * 1024,
         files: 1,
+    },
+    fileFilter: (req, file, cb) => {
+        cb(null, true);
+    },
+});
+const uploadMultiple = (0, multer_1.default)({
+    storage: multer_1.default.memoryStorage(),
+    limits: {
+        fileSize: 50 * 1024 * 1024,
+        files: 10,
     },
     fileFilter: (req, file, cb) => {
         cb(null, true);
@@ -206,6 +219,161 @@ router.post("/validate-url", (0, errorHandler_1.asyncHandler)(async (req, res) =
                 isSupported: false,
             },
         });
+    }
+}));
+router.post("/file/advanced", upload.single("file"), (0, errorHandler_1.asyncHandler)(async (req, res) => {
+    if (!req.file) {
+        throw new errorHandler_1.ValidationError("업로드할 파일이 없습니다.");
+    }
+    const { enableAdvancedValidation, enableProcessing, chunkSize, compressionEnabled } = req.body;
+    logger_1.logger.info(`고급 파일 업로드 요청: ${req.file.originalname} (크기: ${req.file.size} bytes)`);
+    try {
+        const fileInfo = await fileUploadService_1.fileUploadService.saveFileAdvanced(req.file, {
+            enableAdvancedValidation: enableAdvancedValidation === 'true',
+            enableProcessing: enableProcessing === 'true',
+            chunkSize: chunkSize ? parseInt(chunkSize) : undefined,
+            compressionEnabled: compressionEnabled === 'true'
+        });
+        res.status(200).json({
+            success: true,
+            message: "파일이 성공적으로 업로드되었습니다.",
+            data: {
+                fileId: fileInfo.id,
+                originalName: fileInfo.originalName,
+                size: fileInfo.size,
+                mimetype: fileInfo.mimetype,
+                uploadedAt: fileInfo.uploadedAt,
+                expiresAt: fileInfo.expiresAt,
+                detectedType: fileInfo.detectedType,
+                checksum: fileInfo.checksum,
+                validationResult: fileInfo.validationResult,
+                processingResult: fileInfo.processingResult
+            },
+        });
+    }
+    catch (error) {
+        logger_1.logger.error("고급 파일 업로드 실패:", error);
+        throw error;
+    }
+}));
+router.post("/files", uploadMultiple.array("files", 10), (0, errorHandler_1.asyncHandler)(async (req, res) => {
+    if (!req.files || req.files.length === 0) {
+        throw new errorHandler_1.ValidationError("업로드할 파일이 없습니다.");
+    }
+    const files = req.files;
+    const { enableAdvancedValidation, enableProcessing, maxConcurrent } = req.body;
+    logger_1.logger.info(`다중 파일 업로드 요청: ${files.length}개 파일`);
+    try {
+        const batchResult = await fileUploadService_1.fileUploadService.processBatchFiles(files, {
+            enableAdvancedValidation: enableAdvancedValidation === 'true',
+            enableProcessing: enableProcessing === 'true',
+            maxConcurrent: maxConcurrent ? parseInt(maxConcurrent) : 3
+        });
+        res.status(200).json({
+            success: true,
+            message: `${batchResult.successful.length}개 파일이 성공적으로 업로드되었습니다.`,
+            data: {
+                successful: batchResult.successful.map(file => ({
+                    fileId: file.id,
+                    originalName: file.originalName,
+                    size: file.size,
+                    mimetype: file.mimetype,
+                    uploadedAt: file.uploadedAt,
+                    expiresAt: file.expiresAt,
+                    detectedType: file.detectedType,
+                    checksum: file.checksum
+                })),
+                failed: batchResult.failed.map(failure => ({
+                    originalName: failure.file.originalname,
+                    error: failure.error
+                })),
+                summary: {
+                    total: files.length,
+                    successful: batchResult.successful.length,
+                    failed: batchResult.failed.length
+                }
+            },
+        });
+    }
+    catch (error) {
+        logger_1.logger.error("다중 파일 업로드 실패:", error);
+        throw error;
+    }
+}));
+router.get("/file/:fileId/progress", (0, errorHandler_1.asyncHandler)(async (req, res) => {
+    const { fileId } = req.params;
+    if (!fileId) {
+        throw new errorHandler_1.ValidationError("파일 ID가 필요합니다.");
+    }
+    const fileInfo = fileUploadService_1.fileUploadService.getFileInfo(fileId);
+    if (!fileInfo) {
+        throw new errorHandler_1.ValidationError("파일을 찾을 수 없습니다.");
+    }
+    const validationStatus = fileUploadService_1.fileUploadService.getFileValidationStatus(fileId);
+    const processingStatus = fileUploadService_1.fileUploadService.getFileProcessingStatus(fileId);
+    res.status(200).json({
+        success: true,
+        data: {
+            fileId: fileInfo.id,
+            originalName: fileInfo.originalName,
+            size: fileInfo.size,
+            status: {
+                validation: validationStatus ? {
+                    isValid: validationStatus.isValid,
+                    errors: validationStatus.errors,
+                    warnings: validationStatus.warnings,
+                    metadata: validationStatus.metadata
+                } : null,
+                processing: processingStatus ? {
+                    success: processingStatus.success,
+                    errors: processingStatus.errors,
+                    metadata: processingStatus.metadata
+                } : null
+            },
+            isComplete: !!(validationStatus && processingStatus),
+            completedAt: fileInfo.uploadedAt
+        },
+    });
+}));
+router.post("/file/:fileId/convert", (0, errorHandler_1.asyncHandler)(async (req, res) => {
+    const { fileId } = req.params;
+    const { targetFormat, compressionEnabled } = req.body;
+    if (!fileId) {
+        throw new errorHandler_1.ValidationError("파일 ID가 필요합니다.");
+    }
+    if (!targetFormat) {
+        throw new errorHandler_1.ValidationError("대상 형식이 필요합니다.");
+    }
+    logger_1.logger.info(`파일 형식 변환 요청: ${fileId} -> ${targetFormat}`);
+    try {
+        const result = await fileUploadService_1.fileUploadService.convertFile(fileId, targetFormat, {
+            compressionEnabled: compressionEnabled === 'true'
+        });
+        if (result.success && result.outputPath) {
+            const convertedFileId = crypto_1.default.randomUUID();
+            const convertedFilename = `${convertedFileId}_converted.${targetFormat}`;
+            const convertedPath = path_1.default.join(path_1.default.dirname(result.outputPath), convertedFilename);
+            await promises_1.default.rename(result.outputPath, convertedPath);
+            res.status(200).json({
+                success: true,
+                message: "파일 형식이 성공적으로 변환되었습니다.",
+                data: {
+                    originalFileId: fileId,
+                    convertedFileId,
+                    targetFormat,
+                    size: result.metadata.processedSize,
+                    processingTime: result.metadata.processingTime,
+                    compressionRatio: result.metadata.compressionRatio
+                },
+            });
+        }
+        else {
+            throw new errorHandler_1.ValidationError("파일 변환에 실패했습니다.");
+        }
+    }
+    catch (error) {
+        logger_1.logger.error("파일 형식 변환 실패:", error);
+        throw error;
     }
 }));
 function extractFilenameFromUrl(url) {
