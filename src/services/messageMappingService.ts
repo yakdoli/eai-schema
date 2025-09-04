@@ -171,15 +171,15 @@ class MessageMappingService {
   validateSchema(content: string, schemaType: string, schemaContent: string): boolean {
     try {
       switch (schemaType.toLowerCase()) {
-        case "xsd":
-          return this.validateXsdSchema(content, schemaContent);
-        case "json":
-          return this.validateJsonSchema(content, schemaContent);
-        case "yaml":
-          return this.validateYamlSchema(content, schemaContent);
-        default:
-          this.logger.warn(`Unsupported schema type: ${schemaType}`);
-          return false;
+      case "xsd":
+        return this.validateXsdSchema(content, schemaContent);
+      case "json":
+        return this.validateJsonSchema(content, schemaContent);
+      case "yaml":
+        return this.validateYamlSchema(content, schemaContent);
+      default:
+        this.logger.warn(`Unsupported schema type: ${schemaType}`);
+        return false;
       }
     } catch (error) {
       this.logger.error(`Schema validation error: ${error}`);
@@ -214,14 +214,14 @@ class MessageMappingService {
   private transformSource(source: string, config: Configuration): string {
     // Enhanced transformation based on message type and configuration
     switch (config.messageType) {
-      case "XML":
-        return this.transformXml(source, config);
-      case "JSON":
-        return this.transformJson(source, config);
-      case "YAML":
-        return this.transformYaml(source, config);
-      default:
-        return source;
+    case "XML":
+      return this.transformXml(source, config);
+    case "JSON":
+      return this.transformJson(source, config);
+    case "YAML":
+      return this.transformYaml(source, config);
+    default:
+      return source;
     }
   }
 
@@ -241,9 +241,9 @@ class MessageMappingService {
         xmlContent += this.jsonToXml(jsonData, 1);
       } catch (error) {
         // Handle invalid JSON gracefully
-        xmlContent += `  <error type="invalid-json">Invalid JSON format</error>\n`;
+        xmlContent += "  <error type=\"invalid-json\">Invalid JSON format</error>\n";
         xmlContent += `  <source><![CDATA[${source}]]></source>\n`;
-        xmlContent += `  <transformed>true</transformed>\n`;
+        xmlContent += "  <transformed>true</transformed>\n";
       }
     } else {
       xmlContent += `  <source><![CDATA[${source}]]></source>\n`;
@@ -387,24 +387,27 @@ transformed: true
   private validateMapping(content: string, config: Configuration): boolean {
     try {
       switch (config.messageType) {
-        case "XML":
-          // Basic XML validation
-          const hasXmlDeclaration = content.includes("<?xml");
-          const hasRootElement = content.includes(
-            `<${config.rootElement || "root"}`,
-          );
-          const hasClosingTag = content.includes(
-            `</${config.rootElement || "root"}>`,
-          );
-          return hasXmlDeclaration && hasRootElement && hasClosingTag;
-        case "JSON":
-          JSON.parse(content);
-          return true;
-        case "YAML":
-          // Basic YAML validation
-          return content.includes("---") || content.trim().length > 0;
-        default:
-          return false;
+      case "XML": {
+        // Basic XML validation
+        const hasXmlDeclaration = content.includes("<?xml");
+        const hasRootElement = content.includes(
+          `<${config.rootElement || "root"}`,
+        );
+        const hasClosingTag = content.includes(
+          `</${config.rootElement || "root"}>`,
+        );
+        return hasXmlDeclaration && hasRootElement && hasClosingTag;
+      }
+      case "JSON": {
+        JSON.parse(content);
+        return true;
+      }
+      case "YAML": {
+        // Basic YAML validation
+        return content.includes("---") || content.trim().length > 0;
+      }
+      default:
+        return false;
       }
     } catch {
       return false;

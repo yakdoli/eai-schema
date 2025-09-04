@@ -28,7 +28,7 @@ dotenv_1.default.config();
 const app = (0, express_1.default)();
 const server = (0, http_1.createServer)(app);
 const PORT = process.env.PORT || 3001;
-app.set('trust proxy', 1);
+app.set("trust proxy", 1);
 const messageMappingService = new messageMappingService_1.MessageMappingService(logger_1.logger);
 const collaborationService = new CollaborationService_1.CollaborationService(messageMappingService);
 const io = new socket_io_1.Server(server, {
@@ -52,7 +52,7 @@ app.use((0, cors_1.default)({
     origin: (origin, callback) => {
         if (!origin)
             return callback(null, true);
-        if (process.env.NODE_ENV === 'development') {
+        if (process.env.NODE_ENV === "development") {
             return callback(null, true);
         }
         if (allowedOrigins.some((allowed) => {
@@ -62,7 +62,7 @@ app.use((0, cors_1.default)({
         })) {
             return callback(null, true);
         }
-        logger_1.logger.warn('CORS 차단된 요청', { origin, allowedOrigins });
+        logger_1.logger.warn("CORS 차단된 요청", { origin, allowedOrigins });
         callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
@@ -83,6 +83,9 @@ const limiter = (0, express_rate_limit_1.default)({
     },
     standardHeaders: true,
     legacyHeaders: false,
+    skip: (req) => {
+        return req.path === "/api/health";
+    }
 });
 app.use(limiter);
 app.use(performanceMonitoringMiddleware_1.default);

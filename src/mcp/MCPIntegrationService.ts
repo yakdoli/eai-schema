@@ -26,14 +26,14 @@ class MCPIntegrationService {
       
       // Route to appropriate handler based on action
       switch (action) {
-        case "generateMapping":
-          return await this.handleGenerateMapping(data);
-        case "validateSchema":
-          return await this.handleValidateSchema(data);
-        case "transformData":
-          return await this.handleTransformData(data);
-        default:
-          throw new Error(`Unsupported action: ${action}`);
+      case "generateMapping":
+        return await this.handleGenerateMapping(data);
+      case "validateSchema":
+        return await this.handleValidateSchema(data);
+      case "transformData":
+        return await this.handleTransformData(data);
+      default:
+        throw new Error(`Unsupported action: ${action}`);
       }
     } catch (error) {
       logger.error("Error processing MCP request", { error });

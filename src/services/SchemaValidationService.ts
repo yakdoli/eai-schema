@@ -127,15 +127,15 @@ class SchemaValidationService {
   validateSchema(data: any, format: string, schema: any): { valid: boolean; errors?: any[] } {
     try {
       switch (format.toLowerCase()) {
-        case "json":
-          return this.validateJsonSchema(data, schema);
-        case "xml":
-          return this.validateXmlSchema(data, schema);
-        case "yaml":
-        case "yml":
-          return this.validateYamlSchema(data, schema);
-        default:
-          throw new Error(`Unsupported format: ${format}`);
+      case "json":
+        return this.validateJsonSchema(data, schema);
+      case "xml":
+        return this.validateXmlSchema(data, schema);
+      case "yaml":
+      case "yml":
+        return this.validateYamlSchema(data, schema);
+      default:
+        throw new Error(`Unsupported format: ${format}`);
       }
     } catch (error: any) {
       logger.error(`Error validating ${format} schema`, { error });

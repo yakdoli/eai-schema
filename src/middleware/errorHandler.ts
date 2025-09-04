@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
-import { logger } from '../utils/logger';
+import { Request, Response, NextFunction } from "express";
+import { logger } from "../utils/logger";
 
 export interface AppError extends Error {
   statusCode?: number;
@@ -13,13 +13,13 @@ export const errorHandler = (
   next: NextFunction
 ) => {
   // 에러 로깅
-  logger.error('에러 발생:', {
+  logger.error("에러 발생:", {
     message: error.message,
     stack: error.stack,
     url: req.url,
     method: req.method,
     ip: req.ip,
-    userAgent: req.get('User-Agent')
+    userAgent: req.get("User-Agent")
   });
 
   // 기본 에러 상태 코드 설정
@@ -28,8 +28,8 @@ export const errorHandler = (
   // 개발 환경에서는 스택 트레이스 포함
   const errorResponse = {
     error: {
-      message: error.message || '내부 서버 오류가 발생했습니다.',
-      ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
+      message: error.message || "내부 서버 오류가 발생했습니다.",
+      ...(process.env.NODE_ENV === "development" && { stack: error.stack })
     }
   };
 
@@ -48,7 +48,7 @@ export class ValidationError extends Error {
 
   constructor(message: string) {
     super(message);
-    this.name = 'ValidationError';
+    this.name = "ValidationError";
   }
 }
 
@@ -58,7 +58,7 @@ export class FileUploadError extends Error {
 
   constructor(message: string) {
     super(message);
-    this.name = 'FileUploadError';
+    this.name = "FileUploadError";
   }
 }
 
@@ -68,7 +68,7 @@ export class SecurityError extends Error {
 
   constructor(message: string) {
     super(message);
-    this.name = 'SecurityError';
+    this.name = "SecurityError";
   }
 }
 
@@ -78,6 +78,6 @@ export class NetworkError extends Error {
 
   constructor(message: string) {
     super(message);
-    this.name = 'NetworkError';
+    this.name = "NetworkError";
   }
 }

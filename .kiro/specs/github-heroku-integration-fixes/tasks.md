@@ -40,7 +40,7 @@
   - npm test 명령어로 Jest 설정 문제 해결 확인
   - _Requirements: 4.1, 4.3_
 
-- [-] 3.2 Heroku 배포 검증
+- [ ] 3.2 Heroku 배포 검증
   - 수정된 코드를 GitHub에 푸시하여 자동 배포 트리거
   - /api/mcp/provider 엔드포인트 접근 가능 여부 확인
   - 서버 로그에서 trust proxy 경고 해결 확인

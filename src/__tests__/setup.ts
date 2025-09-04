@@ -2,8 +2,8 @@
 /// <reference types="jest" />
 
 // 테스트 환경 변수 설정
-process.env.NODE_ENV = 'test';
-process.env.LOG_LEVEL = 'error'; // 테스트 중 로그 출력 최소화
+process.env.NODE_ENV = "test";
+process.env.LOG_LEVEL = "error"; // 테스트 중 로그 출력 최소화
 
 // 타임아웃 설정
 jest.setTimeout(10000);

@@ -49,7 +49,7 @@ describe("MCPIntegrationService", () => {
             dataType: "json",
             rootElement: "root"
           },
-          source: '{"test": "data"}'
+          source: "{\"test\": \"data\"}"
         }
       };
       
@@ -83,7 +83,7 @@ describe("MCPIntegrationService", () => {
       const request = {
         action: "transformData",
         data: {
-          source: '{"test": "data"}',
+          source: "{\"test\": \"data\"}",
           targetType: "XML"
         }
       };

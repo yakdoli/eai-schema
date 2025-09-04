@@ -29,7 +29,7 @@ const server = createServer(app);
 const PORT = process.env.PORT || 3001;
 
 // Heroku에서 프록시 뒤에서 실행되므로 trust proxy 설정
-app.set('trust proxy', 1);
+app.set("trust proxy", 1);
 
 // Initialize services
 const messageMappingService = new MessageMappingService(logger);
@@ -69,7 +69,7 @@ app.use(
       if (!origin) return callback(null, true);
 
       // 개발 환경에서는 모든 origin 허용
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV === "development") {
         return callback(null, true);
       }
 
@@ -81,7 +81,7 @@ app.use(
         return callback(null, true);
       }
 
-      logger.warn('CORS 차단된 요청', { origin, allowedOrigins });
+      logger.warn("CORS 차단된 요청", { origin, allowedOrigins });
       callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
@@ -114,7 +114,7 @@ const limiter = rateLimit({
   // trust proxy가 이미 설정되어 있으므로 별도 설정 불필요
   skip: (req) => {
     // 헬스체크 요청은 rate limit에서 제외
-    return req.path === '/api/health';
+    return req.path === "/api/health";
   }
 });
 app.use(limiter);
