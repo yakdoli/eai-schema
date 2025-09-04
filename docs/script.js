@@ -1,7 +1,7 @@
 // EAI Schema Toolkit - Frontend JavaScript with Collaboration Features
 class EAISchemaApp {
   constructor() {
-    this.apiUrl = localStorage.getItem("apiUrl") || "https://eai-schema-api-8128681f739e.herokuapp.com";
+    this.apiUrl = localStorage.getItem("apiUrl") || "http://localhost:3001";
     this.socket = null;
     this.currentMappingId = null;
     this.currentUsername = "Anonymous";
@@ -12,12 +12,11 @@ class EAISchemaApp {
     this.selectedCell = null;
     this.mappingRules = [];
     this.currentMappingRuleId = 0;
-    this.selectedCell = null;
-    this.collaborators = [];
     this.uploadQueue = []; // 업로드 큐
     this.uploadProgress = new Map(); // 업로드 진행률 추적
     this.retryAttempts = new Map(); // 재시도 횟수 추적
     this.maxRetries = 3; // 최대 재시도 횟수
+    this.eventListeners = []; // 이벤트 리스너 추적을 위한 배열
     this.init();
   }
 
@@ -27,9 +26,7 @@ class EAISchemaApp {
     this.setupDropZone();
     this.loadFiles();
     this.initializeCollaboration();
-    this.initializeCollaboration();
     this.loadGridData();
-    this.showToast("애플리케이션이 시작되었습니다.", "success");
     this.showToast("애플리케이션이 시작되었습니다.", "success");
   }
 
@@ -855,12 +852,52 @@ class EAISchemaApp {
   }
 
   openSettings() {
-    document.getElementById("apiUrl").value = this.apiUrl;
-    document.getElementById("settingsModal").style.display = "flex";
+    const modal = document.getElementById("settingsModal");
+    modal.style.display = "flex";
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-labelledby", "settingsModalTitle");
+    modal.setAttribute("aria-describedby", "settingsModalDescription");
+
+    // 포커스 트랩 설정
+    this.focusableElements = modal.querySelectorAll('button, input, select, textarea');
+    this.firstFocusableElement = this.focusableElements[0];
+    this.lastFocusableElement = this.focusableElements[this.focusableElements.length - 1];
+
+    // 키보드 내비게이션 이벤트 추가
+    this.handleModalKeydown = (e) => {
+      if (e.key === "Tab") {
+        if (e.shiftKey) {
+          if (document.activeElement === this.firstFocusableElement) {
+            e.preventDefault();
+            this.lastFocusableElement.focus();
+          }
+        } else {
+          if (document.activeElement === this.lastFocusableElement) {
+            e.preventDefault();
+            this.firstFocusableElement.focus();
+          }
+        }
+      }
+    };
+
+    modal.addEventListener("keydown", this.handleModalKeydown);
+
+    // 첫 번째 포커스 가능한 요소에 포커스
+    this.firstFocusableElement.focus();
   }
 
   closeSettings() {
-    document.getElementById("settingsModal").style.display = "none";
+    const modal = document.getElementById("settingsModal");
+    modal.style.display = "none";
+    modal.removeAttribute("role");
+    modal.removeAttribute("aria-labelledby");
+    modal.removeAttribute("aria-describedby");
+
+    // 키보드 이벤트 제거
+    if (this.handleModalKeydown) {
+      modal.removeEventListener("keydown", this.handleModalKeydown);
+      this.handleModalKeydown = null;
+    }
   }
 
   saveSettings() {
@@ -936,7 +973,6 @@ class EAISchemaApp {
 
       if (response.ok) {
         this.currentMappingId = data.id;
-        this.currentMappingId = data.id;
         this.showEnhancedMappingResult(data);
 
         // Generate mapping rules for the grid
@@ -955,8 +991,6 @@ class EAISchemaApp {
           this.generateMappingRulesFromSource(source);
         }
 
-        this.showToast("메시지 매핑이 생성되었습니다.", "success");
-        this.showEnhancedMappingResult(data);
         this.showToast("메시지 매핑이 생성되었습니다.", "success");
       } else {
         this.showToast(data.error || "매핑 생성에 실패했습니다.", "error");
