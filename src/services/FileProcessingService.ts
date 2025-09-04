@@ -167,11 +167,11 @@ export class FileProcessingService {
           resolve(result);
         });
 
-        writeStream.on('error', (error) => {
-          logger.error('쓰기 스트림 오류:', error);
-          result.errors.push(`스트림 쓰기 실패: ${error.message}`);
-          resolve(result);
-        });
+        writeStream.on('error', (error: Error) => {
+           logger.error('쓰기 스트림 오류:', error);
+           result.errors.push(`스트림 쓰기 실패: ${error.message}`);
+           resolve(result);
+         });
       });
 
     } catch (error) {
