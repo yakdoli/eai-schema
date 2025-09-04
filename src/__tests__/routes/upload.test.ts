@@ -1,3 +1,4 @@
+/// <reference types="jest" />
 import request from 'supertest';
 import express from 'express';
 import { uploadRoutes } from '../../routes/upload';

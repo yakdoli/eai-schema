@@ -102,7 +102,7 @@ app.use(
   }),
 );
 
-// Rate limiting - trust proxy 설정 후 적용
+// Rate limiting - Heroku 환경에 최적화된 설정
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15분
   max: 100, // 최대 100개 요청
@@ -111,6 +111,11 @@ const limiter = rateLimit({
   },
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  // trust proxy가 이미 설정되어 있으므로 별도 설정 불필요
+  skip: (req) => {
+    // 헬스체크 요청은 rate limit에서 제외
+    return req.path === '/api/health';
+  }
 });
 app.use(limiter);
 

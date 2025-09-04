@@ -1,3 +1,4 @@
+/// <reference types="jest" />
 import { FileUploadService } from '../../services/fileUploadService';
 import { FileUploadError, SecurityError } from '../../middleware/errorHandler';
 import fs from 'fs/promises';

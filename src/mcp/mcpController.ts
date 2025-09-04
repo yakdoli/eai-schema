@@ -9,6 +9,33 @@ const router = express.Router();
 const messageMappingService = new MessageMappingService(logger);
 const mcpService = new MCPIntegrationService(messageMappingService);
 
+// Base route handler - MCP 서비스 정보 제공
+router.get("/", async (req, res) => {
+  try {
+    const serviceInfo = {
+      name: "EAI Schema Toolkit MCP Service",
+      version: "1.0.0",
+      description: "Model Context Protocol integration for EAI Schema Toolkit",
+      endpoints: {
+        provider: "/api/mcp/provider",
+        process: "/api/mcp/process", 
+        health: "/api/mcp/health"
+      },
+      capabilities: [
+        "schema-transformation",
+        "schema-validation", 
+        "format-detection"
+      ],
+      status: "active"
+    };
+    
+    return res.json(serviceInfo);
+  } catch (error) {
+    logger.error("Error retrieving MCP service info", { error });
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // MCP Provider Info endpoint
 router.get("/provider", async (req, res) => {
   try {

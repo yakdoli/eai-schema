@@ -4,7 +4,7 @@ import { asyncHandler, ValidationError } from "../middleware/errorHandler";
 import { fileUploadService } from "../services/fileUploadService";
 import { urlFetchService } from "../services/urlFetchService";
 import { logger } from "../utils/logger";
-import { Multer } from "multer";
+
 
 const router: Router = Router();
 
@@ -72,7 +72,7 @@ router.post(
       const fetchResult = await urlFetchService.fetchFromUrl(url);
 
       // 가져온 내용을 임시 파일로 저장
-      const mockFile: Multer.File = {
+      const mockFile: Express.Multer.File = {
         fieldname: "url",
         originalname: extractFilenameFromUrl(url),
         encoding: "7bit",
