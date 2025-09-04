@@ -1,0 +1,16 @@
+{
+  "name": "실시간 협업 기능 검사",
+  "description": "WebSocket 기반 실시간 협업 기능의 안정성과 성능을 검사합니다",
+  "trigger": {
+    "event": "file_save",
+    "patterns": [
+      "src/routes/collaboration.ts",
+      "src/services/CollaborationService.ts",
+      "src/middleware/*collaboration*.ts"
+    ]
+  },
+  "prompt": "실시간 협업 기능을 검토해주세요:\n\n🔄 WebSocket 연결 관리:\n- 연결 생성 및 해제 로직\n- 연결 상태 추적\n- 재연결 메커니즘\n- 연결 수 제한 및 관리\n- 메모리 누수 방지\n\n📡 메시지 처리:\n- 메시지 브로드캐스팅 로직\n- 메시지 큐잉 및 순서 보장\n- 메시지 검증 및 sanitization\n- 대용량 메시지 처리\n- 메시지 압축\n\n🔒 보안 및 인증:\n- 사용자 인증 및 세션 관리\n- 권한 기반 접근 제어\n- 메시지 암호화\n- CSRF 방지\n- 스팸 및 남용 방지\n\n⚡ 성능 최적화:\n- 동시 사용자 처리 능력\n- 메시지 처리 지연 시간\n- 메모리 사용량 최적화\n- CPU 사용량 모니터링\n- 네트워크 대역폭 효율성\n\n🔄 데이터 동기화:\n- 충돌 해결 알고리즘\n- 상태 일관성 보장\n- 오프라인 지원\n- 변경 사항 추적\n- 백업 및 복구\n\n📊 모니터링 및 로깅:\n- 연결 상태 메트릭\n- 메시지 처리 통계\n- 에러 추적 및 알림\n- 성능 지표 수집\n\n🛠️ 에러 처리:\n- 연결 끊김 처리\n- 메시지 전송 실패 처리\n- 서버 오류 복구\n- 클라이언트 에러 처리\n\n동시 사용자 처리, 데이터 동기화, 성능 이슈가 있는지 확인하고 개선 방안을 제안해주세요. 특히 50명 이상의 동시 사용자를 지원할 수 있는지 검토해주세요.",
+  "enabled": true,
+  "priority": "high",
+  "tags": ["websocket", "collaboration", "realtime", "performance"]
+}

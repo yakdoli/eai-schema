@@ -28,6 +28,9 @@ const app: express.Application = express();
 const server = createServer(app);
 const PORT = process.env.PORT || 3001;
 
+// Heroku에서 프록시 뒤에서 실행되므로 trust proxy 설정
+app.set('trust proxy', 1);
+
 // Initialize services
 const messageMappingService = new MessageMappingService(logger);
 const collaborationService = new CollaborationService(messageMappingService);
@@ -65,15 +68,25 @@ app.use(
       // Allow requests with no origin (like mobile apps, curl, etc.)
       if (!origin) return callback(null, true);
 
-      if (allowedOrigins.some((allowed) => origin.startsWith(allowed || ""))) {
+      // 개발 환경에서는 모든 origin 허용
+      if (process.env.NODE_ENV === 'development') {
         return callback(null, true);
       }
 
+      // 허용된 origin 체크
+      if (allowedOrigins.some((allowed) => {
+        if (!allowed) return false;
+        return origin === allowed || origin.startsWith(allowed);
+      })) {
+        return callback(null, true);
+      }
+
+      logger.warn('CORS 차단된 요청', { origin, allowedOrigins });
       callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   }),
 );
 
@@ -89,13 +102,15 @@ app.use(
   }),
 );
 
-// Rate limiting
+// Rate limiting - trust proxy 설정 후 적용
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15분
   max: 100, // 최대 100개 요청
   message: {
     error: "Too many requests from this IP, please try again later.",
   },
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
 app.use(limiter);
 

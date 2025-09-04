@@ -28,6 +28,7 @@ dotenv_1.default.config();
 const app = (0, express_1.default)();
 const server = (0, http_1.createServer)(app);
 const PORT = process.env.PORT || 3001;
+app.set('trust proxy', 1);
 const messageMappingService = new messageMappingService_1.MessageMappingService(logger_1.logger);
 const collaborationService = new CollaborationService_1.CollaborationService(messageMappingService);
 const io = new socket_io_1.Server(server, {
@@ -51,14 +52,22 @@ app.use((0, cors_1.default)({
     origin: (origin, callback) => {
         if (!origin)
             return callback(null, true);
-        if (allowedOrigins.some((allowed) => origin.startsWith(allowed || ""))) {
+        if (process.env.NODE_ENV === 'development') {
             return callback(null, true);
         }
+        if (allowedOrigins.some((allowed) => {
+            if (!allowed)
+                return false;
+            return origin === allowed || origin.startsWith(allowed);
+        })) {
+            return callback(null, true);
+        }
+        logger_1.logger.warn('CORS 차단된 요청', { origin, allowedOrigins });
         callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
 }));
 app.use((0, compression_1.default)());
 app.use((0, morgan_1.default)("combined", {
@@ -72,6 +81,8 @@ const limiter = (0, express_rate_limit_1.default)({
     message: {
         error: "Too many requests from this IP, please try again later.",
     },
+    standardHeaders: true,
+    legacyHeaders: false,
 });
 app.use(limiter);
 app.use(performanceMonitoringMiddleware_1.default);

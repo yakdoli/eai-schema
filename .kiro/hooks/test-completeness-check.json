@@ -1,0 +1,16 @@
+{
+  "name": "테스트 완성도 검사",
+  "description": "테스트 파일의 완성도와 커버리지를 검사합니다",
+  "trigger": {
+    "event": "file_save",
+    "patterns": [
+      "**/*.test.ts",
+      "**/*.spec.ts",
+      "src/__tests__/**/*.ts"
+    ]
+  },
+  "prompt": "테스트 파일의 완성도를 검토해주세요:\n\n🎯 테스트 커버리지:\n- 성공 케이스 (Happy Path) 테스트\n- 실패 케이스 (Error Cases) 테스트\n- 경계값 테스트 (Edge Cases)\n- 입력 검증 테스트\n- 보안 관련 테스트 (인증, 권한, 입력 검증)\n\n🏗️ 테스트 구조:\n- describe/it 블록의 적절한 구조\n- Given-When-Then 패턴 사용\n- 명확하고 이해하기 쉬운 테스트 이름\n- beforeEach/afterEach 적절한 사용\n\n🔧 모킹 전략:\n- 외부 의존성 적절한 모킹\n- 데이터베이스 모킹\n- API 호출 모킹\n- 파일 시스템 모킹\n\n📊 테스트 품질:\n- 테스트 격리 (독립성)\n- 반복 가능한 테스트\n- 빠른 실행 시간\n- 명확한 assertion\n\nEAI Schema Toolkit의 핵심 기능 (스키마 변환, 파일 업로드, 실시간 협업)에 대한 테스트가 충분한지 확인하고, 누락된 테스트 케이스가 있다면 예시 코드와 함께 제안해주세요.",
+  "enabled": true,
+  "priority": "medium",
+  "tags": ["testing", "coverage", "quality"]
+}
