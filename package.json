@@ -2,13 +2,13 @@
   "name": "eai-schema-toolkit",
   "version": "1.0.0",
   "description": "EAI Schema Toolkit - Enterprise Application Integration Schema Conversion and Validation Tool",
-  "homepage": "https://yakdoli.github.io/eai-schema/",
+  "homepage": "https://[username].github.io/eai-schema/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yakdoli/eai-schema.git"
+    "url": "https://github.com/[username]/eai-schema.git"
   },
   "bugs": {
-    "url": "https://github.com/yakdoli/eai-schema/issues"
+    "url": "https://github.com/[username]/eai-schema/issues"
   },
   "keywords": [
     "eai",
@@ -22,7 +22,7 @@
   ],
   "main": "dist/index.js",
   "scripts": {
-    "build": "./scripts/build.sh",
+    "build": "npx tsc",
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
     "test": "jest",
@@ -36,10 +36,9 @@
     "deploy": "npm run build && gh-pages -d docs",
     "predeploy": "npm run build",
     "heroku-prebuild": "echo \"Prebuild script executed\"",
-    "heroku-postbuild": "npm run build",
     "test:all": "./scripts/test-runner.sh",
-    "test:heroku-setup": "node scripts/test-heroku-setup.js",
-    "heroku-health": "node scripts/heroku-health-check.js"
+    "mcp:start": "cd mcp-server && npm start",
+    "mcp:install": "cd mcp-server && npm install"
   },
   "dependencies": {
     "ajv": "^8.17.1",
@@ -65,27 +64,27 @@
   },
   "devDependencies": {
     "@semantic-release/git": "^10.0.1",
-    "@types/compression": "^1.8.1",
-    "@types/cors": "^2.8.17",
-    "@types/express": "^4.17.23",
-    "@types/jest": "^29.5.14",
-    "@types/morgan": "^1.9.10",
-    "@types/multer": "^1.4.11",
-    "@types/node": "^20.14.10",
+    "@types/compression": "^1.7.0",
+    "@types/cors": "^2.8.0",
+    "@types/express": "^4.17.0",
+    "@types/jest": "^29.5.0",
+    "@types/morgan": "^1.9.0",
+    "@types/multer": "^1.4.0",
+    "@types/node": "^20.0.0",
     "@types/socket.io": "^3.0.1",
-    "@types/supertest": "^6.0.2",
-    "@typescript-eslint/eslint-plugin": "^8.42.0",
-    "@typescript-eslint/parser": "^8.42.0",
-    "eslint": "^9.34.0",
+    "@types/supertest": "^2.0.12",
+    "eslint": "^8.57.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-config-standard-with-typescript": "^43.0.1",
-    "gh-pages": "^6.1.1",
-    "jest": "^29.7.0",
-    "rimraf": "^5.0.7",
-    "semantic-release": "^23.1.1",
-    "supertest": "^7.0.0",
-    "ts-jest": "^29.1.5",
-    "tsx": "^4.16.2",
-    "typescript": "^5.5.3"
+    "gh-pages": "^6.0.0",
+    "jest": "^29.5.0",
+    "rimraf": "^5.0.0",
+    "semantic-release": "^21.0.7",
+    "supertest": "^6.3.0",
+    "ts-jest": "^29.1.0",
+    "tsx": "^3.12.0",
+    "typescript": "^5.0.0"
   },
   "engines": {
     "node": ">=18.0.0",

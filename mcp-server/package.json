@@ -1,0 +1,13 @@
+{
+  "name": "eai-schema-toolkit-mcp-server",
+  "version": "1.0.0",
+  "description": "Model Context Provider server for EAI Schema Toolkit development assistance",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node src/index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.0"
+  }
+}
