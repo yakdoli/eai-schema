@@ -11,6 +11,23 @@ import { logger } from "../utils/logger";
 const router = express.Router();
 const messageMappingService = new MessageMappingService(logger);
 
+// Get all message mappings (기본 경로)
+router.get("/", async (req, res) => {
+  try {
+    const mappings = messageMappingService.getAllMappings();
+    return res.json({
+      success: true,
+      data: mappings
+    });
+  } catch (error) {
+    logger.error("Error retrieving message mappings", { error });
+    return res.status(500).json({ 
+      success: false,
+      error: "Internal server error" 
+    });
+  }
+});
+
 // Generate message mapping
 router.post("/generate", async (req, res) => {
   try {
@@ -70,16 +87,7 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-// Get all message mappings
-router.get("/", async (req, res) => {
-  try {
-    const mappings = messageMappingService.getAllMappings();
-    return res.json(mappings);
-  } catch (error) {
-    logger.error("Error retrieving message mappings", { error });
-    return res.status(500).json({ error: "Internal server error" });
-  }
-});
+// Get all message mappings (중복 제거됨)
 
 // Advanced mapping routes
 // Create advanced mapping rules

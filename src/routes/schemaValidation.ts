@@ -5,6 +5,33 @@ import { logger } from "../utils/logger";
 const router = express.Router();
 const schemaValidationService = new SchemaValidationService();
 
+// Get schema validation info (기본 경로)
+router.get("/", async (req, res) => {
+  try {
+    const formats = schemaValidationService.getSupportedFormats();
+    return res.json({
+      success: true,
+      data: {
+        message: "Schema Validation Service",
+        supportedFormats: formats,
+        endpoints: {
+          validate: "POST /validate",
+          formats: "GET /formats",
+          json: "POST /json",
+          xml: "POST /xml",
+          yaml: "POST /yaml"
+        }
+      }
+    });
+  } catch (error) {
+    logger.error("Error retrieving schema validation info", { error });
+    return res.status(500).json({ 
+      success: false,
+      error: "Internal server error" 
+    });
+  }
+});
+
 // Validate schema endpoint
 router.post("/validate", async (req, res) => {
   try {

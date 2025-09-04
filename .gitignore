@@ -3,7 +3,7 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-package-lock.json
+# package-lock.json  # GitHub Actions에서 npm 캐시를 위해 필요
 yarn.lock
 
 # Build outputs
