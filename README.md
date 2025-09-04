@@ -11,6 +11,7 @@
 - **RESTful API**: 완전한 REST API 인터페이스
 - **웹 인터페이스**: GitHub Pages 호스팅 지원
 - **실시간 협업**: 여러 사용자간 실시간 협업 지원
+- **EAI Work Tool 클론 탭**: 스키마 템플릿 복제 및 사용자 정의 지원
 - **성능 모니터링**: Prometheus와 Grafana 통합 지원
 - **MCP 통합**: Model-View-Controller-Provider 패턴 지원
 
@@ -324,6 +325,7 @@ GitHub Issues를 통해 버그 리포트나 기능 요청을 제출해 주세요
 - [ ] 더 많은 스키마 형식 지원 (Avro, Protobuf)
 - [ ] 스키마 변환 기능 강화
 - [ ] 실시간 협업 기능
+- [ ] EAI Work Tool 클론 탭 고급 기능
 - [ ] API 문서 자동 생성
 - [ ] Docker 컨테이너 지원
 - [ ] 고급 매핑 규칙 시각화 도구
@@ -335,6 +337,11 @@ GitHub Issues를 통해 버그 리포트나 기능 요청을 제출해 주세요
 - 여러 사용자가 동시에 매핑 작업 가능
 - 실시간 변경 사항 동기화
 - 사용자 활동 추적
+
+### EAI Work Tool 클론 탭
+- 스키마 템플릿의 빠른 복제
+- 사용자 정의 템플릿 생성 및 관리
+- 복제된 템플릿의 즉시 사용 가능
 
 ### MCP (Model-View-Controller-Provider) 통합
 - 확장 가능한 아키텍처

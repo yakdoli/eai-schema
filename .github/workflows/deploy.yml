@@ -61,17 +61,6 @@ jobs:
         with:
           path: _site
 
-      - name: Upload build artifacts for Heroku
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-files
-          path: |
-            dist/
-            package.json
-            package-lock.json
-            Procfile
-            app.json
-
   # Deployment job for GitHub Pages
   deploy-frontend:
     environment:
@@ -100,11 +89,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "18"
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-files
 
       - name: Install Heroku CLI
         run: |

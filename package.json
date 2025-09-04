@@ -36,6 +36,7 @@
     "deploy": "npm run build && gh-pages -d docs",
     "predeploy": "npm run build",
     "heroku-prebuild": "echo \"Prebuild script executed\"",
+    "heroku-postbuild": "npm run build",
     "test:all": "./scripts/test-runner.sh",
     "mcp:start": "cd mcp-server && npm start",
     "mcp:install": "cd mcp-server && npm install"

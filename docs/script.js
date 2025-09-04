@@ -17,6 +17,7 @@ class EAISchemaApp {
     this.retryAttempts = new Map(); // 재시도 횟수 추적
     this.maxRetries = 3; // 최대 재시도 횟수
     this.eventListeners = []; // 이벤트 리스너 추적을 위한 배열
+    this.selectedFileId = null; // 선택된 파일 ID
     this.init();
   }
 
@@ -27,6 +28,7 @@ class EAISchemaApp {
     this.loadFiles();
     this.initializeCollaboration();
     this.loadGridData();
+    this.updateLoadToGridButton(); // 그리드 로드 버튼 상태 초기화
     this.showToast("애플리케이션이 시작되었습니다.", "success");
   }
 
@@ -83,6 +85,15 @@ class EAISchemaApp {
     document.getElementById("generateMappingBtn").addEventListener("click", () => this.generateMapping());
     document.getElementById("validateMappingBtn").addEventListener("click", () => this.validateMapping());
     document.getElementById("clearMappingBtn").addEventListener("click", () => this.clearMapping());
+    // Clone tab message mapping
+    document.getElementById("cloneMessageType").addEventListener("change", (e) => {
+      this.updateCloneDataTypeFromConfig();
+    });
+    document.getElementById("cloneGenerateMappingBtn").addEventListener("click", () => this.generateCloneMapping());
+    document.getElementById("cloneValidateMappingBtn").addEventListener("click", () => this.validateCloneMapping());
+    document.getElementById("cloneClearMappingBtn").addEventListener("click", () => this.clearCloneMapping());
+    document.getElementById("cloneAddMappingRuleBtn").addEventListener("click", () => this.addCloneMappingRule());
+    document.getElementById("cloneClearMappingRulesBtn").addEventListener("click", () => this.clearCloneMappingRules());
     // Data Grid
     document.getElementById("addRowBtn").addEventListener("click", () => this.addGridRow());
     document.getElementById("addColumnBtn").addEventListener("click", () => this.addGridColumn());
@@ -809,6 +820,30 @@ class EAISchemaApp {
     }
   }
 
+  selectFile(fileId) {
+    // 선택 상태 토글
+    if (this.selectedFileId === fileId) {
+      this.selectedFileId = null;
+      this.showToast("파일 선택이 해제되었습니다.", "info");
+    } else {
+      this.selectedFileId = fileId;
+      this.showToast("파일이 선택되었습니다.", "success");
+    }
+
+    // 파일 목록 다시 로드하여 선택 상태 업데이트
+    this.loadFiles();
+
+    // 그리드 로드 버튼 활성화/비활성화
+    this.updateLoadToGridButton();
+  }
+
+  updateLoadToGridButton() {
+    const loadToGridBtn = document.getElementById("loadToGridBtn");
+    if (loadToGridBtn) {
+      loadToGridBtn.disabled = !this.selectedFileId;
+    }
+  }
+
   createFileItem(file) {
     const formatFileSize = (bytes) => {
       if (bytes === 0) return "0 Bytes";
@@ -822,10 +857,14 @@ class EAISchemaApp {
       return new Date(dateString).toLocaleString("ko-KR");
     };
 
+    const isSelected = this.selectedFileId === file.fileId;
+    const selectedClass = isSelected ? "selected" : "";
+    const selectedText = isSelected ? " (선택됨)" : "";
+
     return `
-            <div class="file-item">
+            <div class="file-item ${selectedClass}" onclick="app.selectFile('${file.fileId}')">
                 <div class="file-item-info">
-                    <h4>${file.originalName}</h4>
+                    <h4>${file.originalName}${selectedText}</h4>
                     <div class="file-item-meta">
                         크기: ${formatFileSize(file.size)} |
                         타입: ${file.mimetype} |
@@ -833,10 +872,10 @@ class EAISchemaApp {
                     </div>
                 </div>
                 <div class="file-item-actions">
-                    <button class="btn btn-secondary" onclick="app.downloadFileById('${file.fileId}')">
+                    <button class="btn btn-secondary" onclick="event.stopPropagation(); app.downloadFileById('${file.fileId}')">
                         <i class="fas fa-download"></i> 다운로드
                     </button>
-                    <button class="btn btn-danger" onclick="app.deleteFileById('${file.fileId}')">
+                    <button class="btn btn-danger" onclick="event.stopPropagation(); app.deleteFileById('${file.fileId}')">
                         <i class="fas fa-trash"></i> 삭제
                     </button>
                 </div>
@@ -886,6 +925,11 @@ class EAISchemaApp {
 
       if (data.success) {
         this.showToast("파일이 삭제되었습니다.", "success");
+        // 삭제된 파일이 선택된 파일이면 선택 해제
+        if (this.selectedFileId === fileId) {
+          this.selectedFileId = null;
+          this.updateLoadToGridButton();
+        }
         this.loadFiles();
       } else {
         this.showToast(data.message || "삭제에 실패했습니다.", "error");
@@ -2240,6 +2284,15 @@ class EAISchemaApp {
   }
 
   // 그리드 연동 기능
+  async loadSelectedFileToGrid() {
+    if (!this.selectedFileId) {
+      this.showToast("그리드에 로드할 파일을 선택하세요.", "warning");
+      return;
+    }
+
+    await this.loadFileToGrid(this.selectedFileId);
+  }
+
   async loadFileToGrid(fileId) {
     try {
       const response = await fetch(`${this.apiUrl}/api/upload/file/${fileId}/content`);
@@ -2339,6 +2392,225 @@ class EAISchemaApp {
     const data = await response.json();
     return data.data;
   }
+  }
+
+  // Clone tab methods
+  updateCloneDataTypeFromConfig() {
+    const messageType = document.getElementById("cloneMessageType").value;
+    const dataTypeInput = document.getElementById("cloneDataTypeInput");
+    dataTypeInput.value = messageType.toLowerCase();
+  }
+
+  async generateCloneMapping() {
+    const messageType = document.getElementById("cloneMessageType").value;
+    const dataType = document.getElementById("cloneDataType").value;
+    const rootElement = document.getElementById("cloneRootElement").value;
+    const namespace = document.getElementById("cloneNamespace").value;
+    const encoding = document.getElementById("cloneEncoding").value;
+    const version = document.getElementById("cloneVersion").value;
+    const source = document.getElementById("cloneSourceInput").value;
+    const statement = document.getElementById("cloneStatementInput").value;
+    const testData = document.getElementById("cloneTestDataInput").value;
+
+    if (!source) {
+      this.showToast("소스 데이터를 입력하세요.", "error");
+      return;
+    }
+
+    this.updateCloneDataTypeFromConfig();
+
+    this.showLoading();
+
+    try {
+      const configuration = {
+        messageType,
+        dataType,
+        rootElement,
+        namespace,
+        encoding,
+        version,
+        statement,
+        testData: testData ? JSON.parse(testData) : {},
+      };
+
+      const response = await fetch(`${this.apiUrl}/api/message-mapping/generate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ configuration, source }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        this.showCloneMappingResult(data);
+        this.showToast("클론 매핑이 생성되었습니다.", "success");
+      } else {
+        this.showToast(data.error || "매핑 생성에 실패했습니다.", "error");
+      }
+    } catch (error) {
+      console.error("Generate clone mapping error:", error);
+      this.showToast("서버 연결에 실패했습니다.", "error");
+    } finally {
+      this.hideLoading();
+    }
+  }
+
+  async validateCloneMapping() {
+    const source = document.getElementById("cloneSourceInput").value;
+    const messageType = document.getElementById("cloneMessageType").value;
+
+    if (!source) {
+      this.showToast("검증할 소스 데이터를 입력하세요.", "error");
+      return;
+    }
+
+    try {
+      let isValid = false;
+      let errorMessage = "";
+
+      switch (messageType) {
+        case "JSON":
+          try {
+            JSON.parse(source);
+            isValid = true;
+          } catch (e) {
+            errorMessage = "유효하지 않은 JSON 형식입니다.";
+          }
+          break;
+        case "XML":
+          isValid = source.includes("<") && source.includes(">");
+          if (!isValid) {
+            errorMessage = "유효하지 않은 XML 형식입니다.";
+          }
+          break;
+        case "YAML":
+          isValid = source.trim().length > 0;
+          break;
+        default:
+          errorMessage = "지원되지 않는 메시지 타입입니다.";
+      }
+
+      if (isValid) {
+        this.showToast("클론 데이터 검증이 성공했습니다.", "success");
+      } else {
+        this.showToast(errorMessage, "error");
+      }
+    } catch (error) {
+      this.showToast("검증 중 오류가 발생했습니다.", "error");
+    }
+  }
+
+  clearCloneMapping() {
+    document.getElementById("cloneMessageType").value = "XML";
+    document.getElementById("cloneDataType").value = "";
+    document.getElementById("cloneRootElement").value = "";
+    document.getElementById("cloneNamespace").value = "";
+    document.getElementById("cloneEncoding").value = "UTF-8";
+    document.getElementById("cloneVersion").value = "1.0";
+    document.getElementById("cloneSourceInput").value = "";
+    document.getElementById("cloneStatementInput").value = "";
+    document.getElementById("cloneTestDataInput").value = "";
+    document.getElementById("cloneDataTypeInput").value = "";
+
+    const resultSection = document.getElementById("cloneResultSection");
+    if (resultSection) {
+      resultSection.style.display = "none";
+    }
+
+    this.showToast("클론 매핑이 클리어되었습니다.", "info");
+  }
+
+  addCloneMappingRule() {
+    this.showToast("클론 매핑 규칙 추가 기능이 준비 중입니다.", "info");
+  }
+
+  clearCloneMappingRules() {
+    this.showToast("클론 매핑 규칙이 클리어되었습니다.", "info");
+  }
+
+  showCloneMappingResult(mapping) {
+    const resultSection = document.getElementById("cloneResultSection");
+
+    const xmlOutput = this.generateXmlOutput(mapping);
+    const jsonOutput = JSON.stringify(mapping, null, 2);
+    const mappingOutput = JSON.stringify(mapping.mappings, null, 2);
+
+    resultSection.style.display = "block";
+
+    document.getElementById("cloneXmlOutput").textContent = xmlOutput;
+    document.getElementById("cloneJsonOutput").textContent = jsonOutput;
+    document.getElementById("cloneMappingOutput").textContent = mappingOutput;
+
+    this.setupCloneResultActions(mapping.id, xmlOutput, jsonOutput, mappingOutput);
+  }
+
+  setupCloneResultActions(mappingId, xmlOutput, jsonOutput, mappingOutput) {
+    document.getElementById("cloneDownloadResultBtn").onclick = () => {
+      const activeTab = document.querySelector("#cloneResultSection .result-tab-btn.active").dataset.tab;
+      let content, filename, mimeType;
+
+      switch (activeTab) {
+        case "xml":
+          content = xmlOutput;
+          filename = `clone-mapping-result-${mappingId}.xml`;
+          mimeType = "application/xml";
+          break;
+        case "json":
+          content = jsonOutput;
+          filename = `clone-mapping-result-${mappingId}.json`;
+          mimeType = "application/json";
+          break;
+        case "mapping":
+          content = mappingOutput;
+          filename = `clone-mapping-rules-${mappingId}.json`;
+          mimeType = "application/json";
+          break;
+        default:
+          content = xmlOutput;
+          filename = `clone-mapping-result-${mappingId}.xml`;
+          mimeType = "application/xml";
+      }
+
+      this.downloadContent(content, filename, mimeType);
+    };
+
+    document.getElementById("cloneCopyResultBtn").onclick = () => {
+      const activeTab = document.querySelector("#cloneResultSection .result-tab-btn.active").dataset.tab;
+      let content;
+
+      switch (activeTab) {
+        case "xml":
+          content = xmlOutput;
+          break;
+        case "json":
+          content = jsonOutput;
+          break;
+        case "mapping":
+          content = mappingOutput;
+          break;
+        default:
+          content = xmlOutput;
+      }
+
+      navigator.clipboard.writeText(content);
+      this.showToast("클론 결과가 클립보드에 복사되었습니다.", "success");
+    };
+
+    document.getElementById("cloneShareResultBtn").onclick = () => {
+      if (navigator.share) {
+        navigator.share({
+          title: "EAI Schema Toolkit Clone Result",
+          text: "Generated clone mapping result",
+          url: window.location.href,
+        });
+      } else {
+        this.showToast("공유 기능이 지원되지 않습니다.", "warning");
+      }
+    };
+  }
+}
 }
   }
 }

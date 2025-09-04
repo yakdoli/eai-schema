@@ -8,7 +8,7 @@ echo "==========================================="
 echo ""
 echo "Testing backend API endpoints..."
 
-BACKEND_URL="https://eai-schema-api-8128681f739e.herokuapp.com"
+BACKEND_URL="${BACKEND_URL:-"https://eai-schema-api-8128681f739e.herokuapp.com"}"
 echo "Backend URL: $BACKEND_URL"
 
 # Test 1: Health endpoint

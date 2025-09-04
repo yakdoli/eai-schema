@@ -9,6 +9,7 @@
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
             rel="stylesheet"
         />
+        <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     </head>
     <body>
         <div class="container">
@@ -41,6 +42,9 @@
                         </button>
                         <button class="tab-button" data-tab="message-mapping">
                             메시지 매핑
+                        </button>
+                        <button class="tab-button" data-tab="eai-work-tool-clone">
+                            <i class="fas fa-clone"></i> EAI Work Tool 클론
                         </button>
                     </div>
 
@@ -352,6 +356,183 @@
                                                 <i class="fas fa-copy"></i> Copy
                                             </button>
                                             <button class="btn btn-outline-primary" id="shareResultBtn">
+                                                <i class="fas fa-share"></i> Share
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- EAI Work Tool 클론 탭 -->
+                    <div id="eai-work-tool-clone" class="tab-content">
+                        <div class="eai-work-tool-layout">
+                            <!-- 상단 섹션들 -->
+                            <div class="top-sections">
+                                <div class="section-box" id="clone-configuration">
+                                    <h4><i class="fas fa-cogs"></i> Configuration</h4>
+                                    <div class="section-content">
+                                        <div class="config-fields">
+                                            <div class="field-group">
+                                                <label for="cloneMessageType">Message Type:</label>
+                                                <select id="cloneMessageType">
+                                                    <option value="XML">XML</option>
+                                                    <option value="JSON">JSON</option>
+                                                    <option value="YAML">YAML</option>
+                                                </select>
+                                            </div>
+                                            <div class="field-group">
+                                                <label for="cloneDataType">Data Type:</label>
+                                                <input type="text" id="cloneDataType" placeholder="Enter data type" />
+                                            </div>
+                                            <div class="field-group">
+                                                <label for="cloneRootElement">Root Element:</label>
+                                                <input type="text" id="cloneRootElement" placeholder="Root element name" />
+                                            </div>
+                                            <div class="field-group">
+                                                <label for="cloneNamespace">Namespace:</label>
+                                                <input type="text" id="cloneNamespace" placeholder="XML namespace URI" />
+                                            </div>
+                                            <div class="field-group">
+                                                <label for="cloneEncoding">Encoding:</label>
+                                                <select id="cloneEncoding">
+                                                    <option value="UTF-8">UTF-8</option>
+                                                    <option value="UTF-16">UTF-16</option>
+                                                    <option value="ISO-8859-1">ISO-8859-1</option>
+                                                </select>
+                                            </div>
+                                            <div class="field-group">
+                                                <label for="cloneVersion">Version:</label>
+                                                <input type="text" id="cloneVersion" placeholder="1.0" value="1.0" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="section-box" id="clone-source">
+                                    <h4><i class="fas fa-code"></i> Source</h4>
+                                    <div class="section-content">
+                                        <textarea id="cloneSourceInput" placeholder="Enter source data here (JSON, XML, or plain text)..." rows="8"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 중간 섹션들 -->
+                            <div class="middle-sections">
+                                <div class="section-box" id="clone-messageType">
+                                    <h4><i class="fas fa-envelope"></i> Message Type</h4>
+                                    <div class="section-content">
+                                        <div class="message-type-selector">
+                                            <button class="msg-type-btn active" data-type="XML">XML</button>
+                                            <button class="msg-type-btn" data-type="JSON">JSON</button>
+                                            <button class="msg-type-btn" data-type="YAML">YAML</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="section-box" id="clone-dataType">
+                                    <h4><i class="fas fa-database"></i> Data Type</h4>
+                                    <div class="section-content">
+                                        <input type="text" id="cloneDataTypeInput" placeholder="Specify data type" readonly />
+                                        <small class="field-help">Auto-populated from Configuration</small>
+                                    </div>
+                                </div>
+
+                                <div class="section-box" id="clone-statement">
+                                    <h4><i class="fas fa-terminal"></i> Statement</h4>
+                                    <div class="section-content">
+                                        <textarea id="cloneStatementInput" placeholder="SQL query, XSLT, or processing statement" rows="4"></textarea>
+                                        <small class="field-help">Optional processing instructions</small>
+                                    </div>
+                                </div>
+
+                                <div class="section-box" id="clone-testData">
+                                    <h4><i class="fas fa-flask"></i> Test Data</h4>
+                                    <div class="section-content">
+                                        <textarea id="cloneTestDataInput" placeholder="Sample data for validation and testing" rows="4"></textarea>
+                                        <small class="field-help">Used for validation and preview</small>
+                                    </div>
+                                </div>
+
+                                <div class="section-box" id="clone-messageMapping">
+                                    <h4><i class="fas fa-sitemap"></i> Message Mapping</h4>
+                                    <div class="section-content">
+                                        <div class="mapping-grid-container">
+                                            <div class="mapping-toolbar">
+                                                <button class="btn btn-secondary" id="cloneAddMappingRuleBtn">
+                                                    <i class="fas fa-plus"></i> 매핑 규칙 추가
+                                                </button>
+                                                <button class="btn btn-danger" id="cloneClearMappingRulesBtn">
+                                                    <i class="fas fa-trash"></i> 모두 삭제
+                                                </button>
+                                            </div>
+                                            <div class="mapping-grid-wrapper">
+                                                <div class="mapping-grid" id="cloneMappingGrid">
+                                                    <div class="mapping-placeholder">
+                                                        <i class="fas fa-project-diagram"></i>
+                                                        <p>매핑 규칙이 생성되지 않았습니다</p>
+                                                        <small>Generate 버튼을 클릭하거나 수동으로 규칙을 추가하세요</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mapping-rules" id="cloneMappingRules">
+                                            <div class="mapping-placeholder">
+                                                <i class="fas fa-project-diagram"></i>
+                                                <p>Mapping rules will be generated here...</p>
+                                                <small>Click Generate to create mappings</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 액션 버튼들 -->
+                            <div class="action-buttons">
+                                <button class="btn btn-primary action-btn" id="cloneGenerateMappingBtn">
+                                    <i class="fas fa-play"></i> Generate
+                                </button>
+                                <button class="btn btn-warning action-btn" id="cloneValidateMappingBtn">
+                                    <i class="fas fa-check-circle"></i> Validate
+                                </button>
+                                <button class="btn btn-secondary action-btn" id="cloneClearMappingBtn">
+                                    <i class="fas fa-trash"></i> Clear
+                                </button>
+                            </div>
+
+                            <!-- 결과 섹션 -->
+                            <div class="result-section" id="cloneResultSection" style="display: none;">
+                                <div class="section-box result-box">
+                                    <h4><i class="fas fa-chart-bar"></i> Result</h4>
+                                    <div class="section-content">
+                                        <div class="result-tabs">
+                                            <button class="result-tab-btn active" data-tab="xml">XML</button>
+                                            <button class="result-tab-btn" data-tab="json">JSON</button>
+                                            <button class="result-tab-btn" data-tab="preview">Preview</button>
+                                            <button class="result-tab-btn" data-tab="mapping">Mapping</button>
+                                        </div>
+                                        <div class="result-content">
+                                            <div id="cloneXmlResult" class="result-panel active">
+                                                <pre id="cloneXmlOutput"></pre>
+                                            </div>
+                                            <div id="cloneJsonResult" class="result-panel">
+                                                <pre id="cloneJsonOutput"></pre>
+                                            </div>
+                                            <div id="clonePreviewResult" class="result-panel">
+                                                <div id="clonePreviewContent"></div>
+                                            </div>
+                                            <div id="cloneMappingResult" class="result-panel">
+                                                <pre id="cloneMappingOutput"></pre>
+                                            </div>
+                                        </div>
+                                        <div class="result-actions">
+                                            <button class="btn btn-success" id="cloneDownloadResultBtn">
+                                                <i class="fas fa-download"></i> Download
+                                            </button>
+                                            <button class="btn btn-info" id="cloneCopyResultBtn">
+                                                <i class="fas fa-copy"></i> Copy
+                                            </button>
+                                            <button class="btn btn-outline-primary" id="cloneShareResultBtn">
                                                 <i class="fas fa-share"></i> Share
                                             </button>
                                         </div>

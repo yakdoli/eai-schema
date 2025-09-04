@@ -7,7 +7,7 @@ echo "==========================================="
 
 echo ""
 echo "Checking backend API..."
-BACKEND_URL="https://eai-schema-api-8128681f739e.herokuapp.com"
+BACKEND_URL="${BACKEND_URL:-"https://eai-schema-api-8128681f739e.herokuapp.com"}"
 echo "Backend URL: $BACKEND_URL"
 
 # Test backend health endpoint
@@ -36,7 +36,7 @@ fi
 
 echo ""
 echo "Checking frontend..."
-FRONTEND_URL="https://yakdoli.github.io/eai-schema"
+FRONTEND_URL="${FRONTEND_URL:-"https://yakdoli.github.io/eai-schema"}"
 echo "Frontend URL: $FRONTEND_URL"
 
 # Test frontend accessibility

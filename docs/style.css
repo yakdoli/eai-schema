@@ -835,6 +835,19 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.file-item:hover {
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+}
+
+.file-item.selected {
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
 .file-item-info h4 {
@@ -1179,6 +1192,12 @@ body.dark-mode .files-list-section h2 {
 body.dark-mode .file-item {
     background-color: #2c3e50;
     border-color: #7f8c8d;
+}
+
+body.dark-mode .file-item.selected {
+    background-color: #1e3a5f;
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.25);
 }
 
 body.dark-mode .file-item-info h4 {
@@ -2842,6 +2861,342 @@ body.dark-mode .grid-selection {
     .grid-actions .btn {
         padding: 6px 12px;
         font-size: 12px;
+    }
+}
+}
+
+/* Clone Tab Styles */
+#eai-work-tool-clone .eai-work-tool-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+#eai-work-tool-clone .top-sections {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+#eai-work-tool-clone .middle-sections {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+#eai-work-tool-clone .section-box {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+#eai-work-tool-clone .section-box h4 {
+    margin-bottom: 15px;
+    color: #495057;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#eai-work-tool-clone .config-fields {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+}
+
+#eai-work-tool-clone .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+#eai-work-tool-clone .field-group label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+}
+
+#eai-work-tool-clone .field-group select,
+#eai-work-tool-clone .field-group input {
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+#eai-work-tool-clone .field-group select:focus,
+#eai-work-tool-clone .field-group input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+#eai-work-tool-clone .field-group textarea {
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+}
+
+#eai-work-tool-clone .message-type-selector {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+#eai-work-tool-clone .msg-type-btn {
+    padding: 8px 16px;
+    border: 2px solid #ddd;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+#eai-work-tool-clone .msg-type-btn.active {
+    background-color: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+#eai-work-tool-clone .msg-type-btn:hover {
+    border-color: #667eea;
+}
+
+#eai-work-tool-clone .action-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+#eai-work-tool-clone .action-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#eai-work-tool-clone .action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+#eai-work-tool-clone .mapping-grid-container {
+    margin-bottom: 20px;
+}
+
+#eai-work-tool-clone .mapping-toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    justify-content: flex-end;
+}
+
+#eai-work-tool-clone .mapping-grid {
+    min-height: 200px;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    background-color: #fafafa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#eai-work-tool-clone .mapping-placeholder {
+    text-align: center;
+    color: #6c757d;
+}
+
+#eai-work-tool-clone .mapping-placeholder i {
+    font-size: 3em;
+    margin-bottom: 10px;
+    color: #667eea;
+}
+
+#eai-work-tool-clone .mapping-placeholder p {
+    margin-bottom: 5px;
+    font-size: 16px;
+}
+
+#eai-work-tool-clone .mapping-placeholder small {
+    font-size: 14px;
+}
+
+#eai-work-tool-clone .field-help {
+    font-size: 12px;
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* Clone Result Section */
+#eai-work-tool-clone .result-section {
+    margin-top: 30px;
+}
+
+#eai-work-tool-clone .result-tabs {
+    display: flex;
+    border-bottom: 2px solid #e9ecef;
+    margin-bottom: 20px;
+}
+
+#eai-work-tool-clone .result-tab-btn {
+    padding: 12px 20px;
+    border: none;
+    background: none;
+    color: #666;
+    font-size: 14px;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+
+#eai-work-tool-clone .result-tab-btn.active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+}
+
+#eai-work-tool-clone .result-tab-btn:hover {
+    background-color: #f8f9fa;
+}
+
+#eai-work-tool-clone .result-content {
+    position: relative;
+}
+
+#eai-work-tool-clone .result-panel {
+    display: none;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    min-height: 300px;
+}
+
+#eai-work-tool-clone .result-panel.active {
+    display: block;
+}
+
+#eai-work-tool-clone .result-panel pre {
+    background-color: white;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 15px;
+    margin: 0;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    font-family: "Courier New", monospace;
+    font-size: 14px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+#eai-work-tool-clone .result-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+/* Dark Mode for Clone Tab */
+body.dark-mode #eai-work-tool-clone .section-box {
+    background-color: #2c3e50;
+    border-color: #7f8c8d;
+}
+
+body.dark-mode #eai-work-tool-clone .section-box h4 {
+    color: #ecf0f1;
+}
+
+body.dark-mode #eai-work-tool-clone .field-group label {
+    color: #ecf0f1;
+}
+
+body.dark-mode #eai-work-tool-clone .field-group select,
+body.dark-mode #eai-work-tool-clone .field-group input,
+body.dark-mode #eai-work-tool-clone .field-group textarea {
+    background-color: #34495e;
+    border-color: #7f8c8d;
+    color: #ecf0f1;
+}
+
+body.dark-mode #eai-work-tool-clone .field-group select:focus,
+body.dark-mode #eai-work-tool-clone .field-group input:focus,
+body.dark-mode #eai-work-tool-clone .field-group textarea:focus {
+    border-color: #3498db;
+}
+
+body.dark-mode #eai-work-tool-clone .msg-type-btn {
+    background-color: #34495e;
+    border-color: #7f8c8d;
+    color: #ecf0f1;
+}
+
+body.dark-mode #eai-work-tool-clone .msg-type-btn.active {
+    background-color: #3498db;
+    border-color: #3498db;
+}
+
+body.dark-mode #eai-work-tool-clone .mapping-grid {
+    background-color: #2c3e50;
+    border-color: #7f8c8d;
+}
+
+body.dark-mode #eai-work-tool-clone .mapping-placeholder {
+    color: #bdc3c7;
+}
+
+body.dark-mode #eai-work-tool-clone .result-panel {
+    background-color: #2c3e50;
+    border-color: #7f8c8d;
+}
+
+body.dark-mode #eai-work-tool-clone .result-panel pre {
+    background-color: #34495e;
+    border-color: #7f8c8d;
+    color: #ecf0f1;
+}
+
+body.dark-mode #eai-work-tool-clone .field-help {
+    color: #bdc3c7;
+}
+
+/* Responsive for Clone Tab */
+@media (max-width: 768px) {
+    #eai-work-tool-clone .top-sections {
+        grid-template-columns: 1fr;
+    }
+
+    #eai-work-tool-clone .middle-sections {
+        grid-template-columns: 1fr;
+    }
+
+    #eai-work-tool-clone .action-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #eai-work-tool-clone .mapping-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #eai-work-tool-clone .result-actions {
+        flex-direction: column;
+        align-items: center;
     }
 }
 }
