@@ -36,6 +36,9 @@
                         <button class="tab-button" data-tab="url-upload">
                             URL에서 가져오기
                         </button>
+                        <button class="tab-button" data-tab="data-grid">
+                            <i class="fas fa-table"></i> 데이터 그리드
+                        </button>
                         <button class="tab-button" data-tab="message-mapping">
                             메시지 매핑
                         </button>
@@ -43,6 +46,38 @@
 
                     <!-- 파일 업로드 탭 -->
                     <div id="file-upload" class="tab-content active">
+                        <!-- 업로드 옵션 -->
+                        <div class="upload-options">
+                            <h4><i class="fas fa-sliders-h"></i> 업로드 옵션</h4>
+                            <div class="options-grid">
+                                <div class="option-item">
+                                    <input type="checkbox" id="advancedUpload" />
+                                    <label for="advancedUpload">고급 업로드 모드</label>
+                                </div>
+                                <div class="option-item">
+                                    <input type="checkbox" id="enableValidation" checked />
+                                    <label for="enableValidation">파일 검증 활성화</label>
+                                </div>
+                                <div class="option-item">
+                                    <input type="checkbox" id="enableProcessing" />
+                                    <label for="enableProcessing">파일 처리 활성화</label>
+                                </div>
+                                <div class="option-item">
+                                    <input type="checkbox" id="multipleFiles" />
+                                    <label for="multipleFiles">다중 파일 선택</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 업로드 큐 -->
+                        <div class="upload-queue">
+                            <h4><i class="fas fa-list"></i> 업로드 대기열</h4>
+                            <div class="queue-container" id="uploadQueue">
+                                <p class="no-queue">업로드 대기열이 비어 있습니다.</p>
+                            </div>
+                        </div>
+
+                        <!-- 드래그 앤 드롭 영역 -->
                         <div class="drop-zone" id="dropZone">
                             <div class="drop-zone-content">
                                 <i class="fas fa-cloud-upload-alt"></i>
@@ -51,18 +86,44 @@
                                     선택하세요
                                 </p>
                                 <p class="file-info">
-                                    지원 형식: XML, JSON, YAML (최대 50MB)
+                                    지원 형식: XML, JSON, YAML, CSV (최대 50MB)
                                 </p>
                                 <input
                                     type="file"
                                     id="fileInput"
-                                    accept=".xml,.json,.yaml,.yml"
+                                    accept=".xml,.json,.yaml,.yml,.csv"
+                                    multiple
                                     hidden
                                 />
                             </div>
                         </div>
+
+                        <!-- 업로드 진행률 -->
+                        <div class="upload-progress-container" id="uploadProgressContainer">
+                            <h4><i class="fas fa-spinner fa-spin"></i> 업로드 진행률</h4>
+                            <div class="upload-progress-bar-container">
+                                <div class="upload-progress-bar" id="uploadProgressBar"></div>
+                            </div>
+                            <p class="upload-progress-text" id="uploadProgressText">준비 중...</p>
+                        </div>
+
+                        <!-- 일괄 결과 -->
+                        <div class="batch-results-section" id="batchResultsSection">
+                            <h4><i class="fas fa-chart-bar"></i> 업로드 결과</h4>
+                            <div class="results-grid">
+                                <div class="results-column">
+                                    <h5 class="successful"><i class="fas fa-check-circle"></i> 성공한 파일</h5>
+                                    <div id="successfulUploads"></div>
+                                </div>
+                                <div class="results-column">
+                                    <h5 class="failed"><i class="fas fa-exclamation-circle"></i> 실패한 파일</h5>
+                                    <div id="failedUploads"></div>
+                                </div>
+                            </div>
+                        </div>
+
                         <button class="btn btn-primary" id="uploadBtn" disabled>
-                            <i class="fas fa-upload"></i> 업로드
+                            <i class="fas fa-upload"></i> 업로드 시작
                         </button>
                     </div>
 
@@ -77,6 +138,48 @@
                             <button class="btn btn-primary" id="fetchBtn">
                                 <i class="fas fa-download"></i> 가져오기
                             </button>
+                        </div>
+                    </div>
+                    <!-- 데이터 그리드 탭 -->
+                    <div id="data-grid" class="tab-content">
+                        <div class="data-grid-container">
+                            <div class="grid-toolbar">
+                                <div class="grid-actions">
+                                    <button class="btn btn-secondary" id="addRowBtn">
+                                        <i class="fas fa-plus"></i> 행 추가
+                                    </button>
+                                    <button class="btn btn-secondary" id="addColumnBtn">
+                                        <i class="fas fa-plus"></i> 열 추가
+                                    </button>
+                                    <button class="btn btn-danger" id="clearGridBtn">
+                                        <i class="fas fa-trash"></i> 초기화
+                                    </button>
+                                </div>
+                                <div class="grid-info">
+                                    <span id="gridInfo">행: 0, 열: 0</span>
+                                </div>
+                            </div>
+                            <div class="grid-wrapper">
+                                <div class="data-grid" id="dataGrid">
+                                    <div class="grid-placeholder">
+                                        <i class="fas fa-table"></i>
+                                        <p>데이터 그리드가 비어 있습니다</p>
+                                        <small>행 추가 버튼을 클릭하여 시작하세요</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="grid-footer">
+                                <div class="grid-controls">
+                                    <label for="autoSave">자동 저장:</label>
+                                    <input type="checkbox" id="autoSave" checked />
+                                    <button class="btn btn-success" id="exportGridBtn">
+                                        <i class="fas fa-download"></i> 내보내기
+                                    </button>
+                                    <button class="btn btn-info" id="importGridBtn">
+                                        <i class="fas fa-upload"></i> 가져오기
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -173,6 +276,25 @@
                                 <div class="section-box" id="messageMapping">
                                     <h4><i class="fas fa-sitemap"></i> Message Mapping</h4>
                                     <div class="section-content">
+                                        <div class="mapping-grid-container">
+                                            <div class="mapping-toolbar">
+                                                <button class="btn btn-secondary" id="addMappingRuleBtn">
+                                                    <i class="fas fa-plus"></i> 매핑 규칙 추가
+                                                </button>
+                                                <button class="btn btn-danger" id="clearMappingRulesBtn">
+                                                    <i class="fas fa-trash"></i> 모두 삭제
+                                                </button>
+                                            </div>
+                                            <div class="mapping-grid-wrapper">
+                                                <div class="mapping-grid" id="mappingGrid">
+                                                    <div class="mapping-placeholder">
+                                                        <i class="fas fa-project-diagram"></i>
+                                                        <p>매핑 규칙이 생성되지 않았습니다</p>
+                                                        <small>Generate 버튼을 클릭하거나 수동으로 규칙을 추가하세요</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                         <div class="mapping-rules" id="mappingRules">
                                             <div class="mapping-placeholder">
                                                 <i class="fas fa-project-diagram"></i>
@@ -337,9 +459,22 @@
                     <div class="files-container" id="filesContainer">
                         <p class="no-files">업로드된 파일이 없습니다.</p>
                     </div>
-                    <button class="btn btn-secondary" id="refreshFilesBtn">
-                        <i class="fas fa-refresh"></i> 새로고침
-                    </button>
+                    <div class="files-actions">
+                        <button class="btn btn-secondary" id="refreshFilesBtn">
+                            <i class="fas fa-refresh"></i> 새로고침
+                        </button>
+                        <div class="grid-integration">
+                            <h4><i class="fas fa-table"></i> 그리드 연동</h4>
+                            <div class="grid-actions">
+                                <button class="btn btn-info" id="loadToGridBtn">
+                                    <i class="fas fa-upload"></i> 그리드에 로드
+                                </button>
+                                <button class="btn btn-success" id="exportFromGridBtn">
+                                    <i class="fas fa-download"></i> 그리드에서 내보내기
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </section>
             </main>
 

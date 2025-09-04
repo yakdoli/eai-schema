@@ -1,5 +1,8 @@
 import { Router, Request, Response } from "express";
 import multer from "multer";
+import path from "path";
+import fs from "fs/promises";
+import crypto from "crypto";
 import { asyncHandler, ValidationError } from "../middleware/errorHandler";
 import { fileUploadService } from "../services/fileUploadService";
 import { urlFetchService } from "../services/urlFetchService";
@@ -13,10 +16,22 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
     fileSize: 50 * 1024 * 1024, // 50MB
-    files: 1, // 한 번에 하나의 파일만
+    files: 1, // 기본적으로 하나의 파일만 (다중 파일 엔드포인트에서 별도 설정)
   },
   fileFilter: (req, file, cb) => {
     // 기본적인 파일 타입 검증은 서비스에서 수행
+    cb(null, true);
+  },
+});
+
+// 다중 파일 업로드용 Multer 설정
+const uploadMultiple = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB per file
+    files: 10, // 최대 10개 파일
+  },
+  fileFilter: (req, file, cb) => {
     cb(null, true);
   },
 });
@@ -280,6 +295,203 @@ router.post(
       });
     }
   }),
+);
+
+// 고급 파일 업로드 엔드포인트 (청킹, 고급 검증 지원)
+router.post(
+  "/file/advanced",
+  upload.single("file"),
+  asyncHandler(async (req: Request, res: Response) => {
+    if (!req.file) {
+      throw new ValidationError("업로드할 파일이 없습니다.");
+    }
+
+    const { enableAdvancedValidation, enableProcessing, chunkSize, compressionEnabled } = req.body;
+
+    logger.info(
+      `고급 파일 업로드 요청: ${req.file.originalname} (크기: ${req.file.size} bytes)`
+    );
+
+    try {
+      const fileInfo = await fileUploadService.saveFileAdvanced(req.file, {
+        enableAdvancedValidation: enableAdvancedValidation === 'true',
+        enableProcessing: enableProcessing === 'true',
+        chunkSize: chunkSize ? parseInt(chunkSize) : undefined,
+        compressionEnabled: compressionEnabled === 'true'
+      });
+
+      res.status(200).json({
+        success: true,
+        message: "파일이 성공적으로 업로드되었습니다.",
+        data: {
+          fileId: fileInfo.id,
+          originalName: fileInfo.originalName,
+          size: fileInfo.size,
+          mimetype: fileInfo.mimetype,
+          uploadedAt: fileInfo.uploadedAt,
+          expiresAt: fileInfo.expiresAt,
+          detectedType: fileInfo.detectedType,
+          checksum: fileInfo.checksum,
+          validationResult: fileInfo.validationResult,
+          processingResult: fileInfo.processingResult
+        },
+      });
+    } catch (error) {
+      logger.error("고급 파일 업로드 실패:", error);
+      throw error;
+    }
+  })
+);
+
+// 다중 파일 업로드 엔드포인트
+router.post(
+  "/files",
+  uploadMultiple.array("files", 10),
+  asyncHandler(async (req: Request, res: Response) => {
+    if (!req.files || (req.files as Express.Multer.File[]).length === 0) {
+      throw new ValidationError("업로드할 파일이 없습니다.");
+    }
+
+    const files = req.files as Express.Multer.File[];
+    const { enableAdvancedValidation, enableProcessing, maxConcurrent } = req.body;
+
+    logger.info(`다중 파일 업로드 요청: ${files.length}개 파일`);
+
+    try {
+      const batchResult = await fileUploadService.processBatchFiles(files, {
+        enableAdvancedValidation: enableAdvancedValidation === 'true',
+        enableProcessing: enableProcessing === 'true',
+        maxConcurrent: maxConcurrent ? parseInt(maxConcurrent) : 3
+      });
+
+      res.status(200).json({
+        success: true,
+        message: `${batchResult.successful.length}개 파일이 성공적으로 업로드되었습니다.`,
+        data: {
+          successful: batchResult.successful.map(file => ({
+            fileId: file.id,
+            originalName: file.originalName,
+            size: file.size,
+            mimetype: file.mimetype,
+            uploadedAt: file.uploadedAt,
+            expiresAt: file.expiresAt,
+            detectedType: file.detectedType,
+            checksum: file.checksum
+          })),
+          failed: batchResult.failed.map(failure => ({
+            originalName: failure.file.originalname,
+            error: failure.error
+          })),
+          summary: {
+            total: files.length,
+            successful: batchResult.successful.length,
+            failed: batchResult.failed.length
+          }
+        },
+      });
+    } catch (error) {
+      logger.error("다중 파일 업로드 실패:", error);
+      throw error;
+    }
+  })
+);
+
+// 파일 업로드 진행률 조회 엔드포인트
+router.get(
+  "/file/:fileId/progress",
+  asyncHandler(async (req: Request, res: Response) => {
+    const { fileId } = req.params;
+
+    if (!fileId) {
+      throw new ValidationError("파일 ID가 필요합니다.");
+    }
+
+    const fileInfo = fileUploadService.getFileInfo(fileId);
+
+    if (!fileInfo) {
+      throw new ValidationError("파일을 찾을 수 없습니다.");
+    }
+
+    const validationStatus = fileUploadService.getFileValidationStatus(fileId);
+    const processingStatus = fileUploadService.getFileProcessingStatus(fileId);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        fileId: fileInfo.id,
+        originalName: fileInfo.originalName,
+        size: fileInfo.size,
+        status: {
+          validation: validationStatus ? {
+            isValid: validationStatus.isValid,
+            errors: validationStatus.errors,
+            warnings: validationStatus.warnings,
+            metadata: validationStatus.metadata
+          } : null,
+          processing: processingStatus ? {
+            success: processingStatus.success,
+            errors: processingStatus.errors,
+            metadata: processingStatus.metadata
+          } : null
+        },
+        isComplete: !!(validationStatus && processingStatus),
+        completedAt: fileInfo.uploadedAt
+      },
+    });
+  })
+);
+
+// 파일 형식 변환 엔드포인트
+router.post(
+  "/file/:fileId/convert",
+  asyncHandler(async (req: Request, res: Response) => {
+    const { fileId } = req.params;
+    const { targetFormat, compressionEnabled } = req.body;
+
+    if (!fileId) {
+      throw new ValidationError("파일 ID가 필요합니다.");
+    }
+
+    if (!targetFormat) {
+      throw new ValidationError("대상 형식이 필요합니다.");
+    }
+
+    logger.info(`파일 형식 변환 요청: ${fileId} -> ${targetFormat}`);
+
+    try {
+      const result = await fileUploadService.convertFile(fileId, targetFormat, {
+        compressionEnabled: compressionEnabled === 'true'
+      });
+
+      if (result.success && result.outputPath) {
+        // 변환된 파일을 새로운 파일로 등록
+        const convertedFileId = crypto.randomUUID();
+        const convertedFilename = `${convertedFileId}_converted.${targetFormat}`;
+        const convertedPath = path.join(path.dirname(result.outputPath), convertedFilename);
+
+        // 파일 이동
+        await fs.rename(result.outputPath, convertedPath);
+
+        res.status(200).json({
+          success: true,
+          message: "파일 형식이 성공적으로 변환되었습니다.",
+          data: {
+            originalFileId: fileId,
+            convertedFileId,
+            targetFormat,
+            size: result.metadata.processedSize,
+            processingTime: result.metadata.processingTime,
+            compressionRatio: result.metadata.compressionRatio
+          },
+        });
+      } else {
+        throw new ValidationError("파일 변환에 실패했습니다.");
+      }
+    } catch (error) {
+      logger.error("파일 형식 변환 실패:", error);
+      throw error;
+    }
+  })
 );
 
 // 헬퍼 함수들

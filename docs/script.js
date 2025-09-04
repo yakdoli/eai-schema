@@ -6,6 +6,18 @@ class EAISchemaApp {
     this.currentMappingId = null;
     this.currentUsername = "Anonymous";
     this.collaborators = [];
+    this.gridData = [];
+    this.gridColumns = 0;
+    this.gridRows = 0;
+    this.selectedCell = null;
+    this.mappingRules = [];
+    this.currentMappingRuleId = 0;
+    this.selectedCell = null;
+    this.collaborators = [];
+    this.uploadQueue = []; // 업로드 큐
+    this.uploadProgress = new Map(); // 업로드 진행률 추적
+    this.retryAttempts = new Map(); // 재시도 횟수 추적
+    this.maxRetries = 3; // 최대 재시도 횟수
     this.init();
   }
 
@@ -15,6 +27,9 @@ class EAISchemaApp {
     this.setupDropZone();
     this.loadFiles();
     this.initializeCollaboration();
+    this.initializeCollaboration();
+    this.loadGridData();
+    this.showToast("애플리케이션이 시작되었습니다.", "success");
     this.showToast("애플리케이션이 시작되었습니다.", "success");
   }
 
@@ -28,6 +43,16 @@ class EAISchemaApp {
     document.getElementById("fileInput").addEventListener("change", (e) => this.handleFileSelect(e));
     document.getElementById("uploadBtn").addEventListener("click", () => this.uploadFile());
 
+    // Data Grid
+    document.getElementById("addRowBtn").addEventListener("click", () => this.addGridRow());
+    document.getElementById("addColumnBtn").addEventListener("click", () => this.addGridColumn());
+    document.getElementById("clearGridBtn").addEventListener("click", () => this.clearGrid());
+    document.getElementById("exportGridBtn").addEventListener("click", () => this.exportGrid());
+    document.getElementById("importGridBtn").addEventListener("click", () => this.importGrid());
+
+    // Mapping Grid
+    document.getElementById("addMappingRuleBtn").addEventListener("click", () => this.addMappingRule());
+    document.getElementById("clearMappingRulesBtn").addEventListener("click", () => this.clearMappingRules());
     // URL fetch
     document.getElementById("urlInput").addEventListener("input", (e) => this.validateUrl(e.target.value));
     document.getElementById("fetchBtn").addEventListener("click", () => this.fetchFromUrl());
@@ -36,6 +61,12 @@ class EAISchemaApp {
     document.getElementById("generateMappingBtn").addEventListener("click", () => this.generateMapping());
     document.getElementById("validateMappingBtn").addEventListener("click", () => this.validateMapping());
     document.getElementById("clearMappingBtn").addEventListener("click", () => this.clearMapping());
+    // Data Grid
+    document.getElementById("addRowBtn").addEventListener("click", () => this.addGridRow());
+    document.getElementById("addColumnBtn").addEventListener("click", () => this.addGridColumn());
+    document.getElementById("clearGridBtn").addEventListener("click", () => this.clearGrid());
+    document.getElementById("exportGridBtn").addEventListener("click", () => this.exportGrid());
+    document.getElementById("importGridBtn").addEventListener("click", () => this.importGrid());
 
     // Actions
     document.getElementById("downloadBtn").addEventListener("click", () => this.downloadFile());
@@ -53,6 +84,10 @@ class EAISchemaApp {
     document.getElementById("closeSettingsModal").addEventListener("click", () => this.closeSettings());
     document.getElementById("cancelSettings").addEventListener("click", () => this.closeSettings());
     document.getElementById("saveSettings").addEventListener("click", () => this.saveSettings());
+
+    // Grid integration
+    document.getElementById("loadToGridBtn").addEventListener("click", () => this.loadSelectedFileToGrid());
+    document.getElementById("exportFromGridBtn").addEventListener("click", () => this.exportGridToFile('csv'));
 
     // Modal backdrop click
     document.getElementById("settingsModal").addEventListener("click", (e) => {
@@ -315,66 +350,202 @@ class EAISchemaApp {
   }
 
   handleFileSelect(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+    const files = Array.from(event.target.files);
+    if (files.length === 0) return;
 
     const uploadBtn = document.getElementById("uploadBtn");
+    const validTypes = [".xml", ".json", ".yaml", ".yml", ".csv"];
+    let validFiles = [];
+    let invalidFiles = [];
 
-    // Validate file size (50MB limit)
-    if (file.size > 50 * 1024 * 1024) {
-      this.showToast("파일 크기가 50MB를 초과합니다.", "error");
-      return;
+    // 각 파일 검증
+    files.forEach(file => {
+      // 파일 크기 검증 (50MB 제한)
+      if (file.size > 50 * 1024 * 1024) {
+        invalidFiles.push(`${file.name}: 크기가 50MB를 초과합니다.`);
+        return;
+      }
+
+      // 파일 타입 검증
+      const fileExtension = "." + file.name.split(".").pop().toLowerCase();
+      if (!validTypes.includes(fileExtension)) {
+        invalidFiles.push(`${file.name}: 지원되지 않는 파일 형식입니다.`);
+        return;
+      }
+
+      validFiles.push(file);
+    });
+
+    // 유효하지 않은 파일이 있는 경우 경고 표시
+    if (invalidFiles.length > 0) {
+      this.showToast(`일부 파일이 검증에 실패했습니다:\n${invalidFiles.join('\n')}`, "warning");
     }
 
-    // Validate file type
-    const validTypes = [".xml", ".json", ".yaml", ".yml"];
-    const fileExtension = "." + file.name.split(".").pop().toLowerCase();
+    // 유효한 파일이 있는 경우 업로드 큐에 추가
+    if (validFiles.length > 0) {
+      this.addFilesToQueue(validFiles);
+      uploadBtn.disabled = false;
 
-    if (!validTypes.includes(fileExtension)) {
-      this.showToast("지원되지 않는 파일 형식입니다.", "error");
-      return;
+      if (validFiles.length === 1) {
+        this.showToast(`파일 선택됨: ${validFiles[0].name}`, "success");
+      } else {
+        this.showToast(`${validFiles.length}개 파일이 선택되었습니다.`, "success");
+      }
+    } else {
+      uploadBtn.disabled = true;
+      this.showToast("유효한 파일이 없습니다.", "error");
     }
-
-    uploadBtn.disabled = false;
-    this.showToast(`파일 선택됨: ${file.name}`, "success");
   }
 
   async uploadFile() {
-    const fileInput = document.getElementById("fileInput");
-    const file = fileInput.files[0];
-
-    if (!file) {
-      this.showToast("업로드할 파일을 선택하세요.", "error");
+    if (this.uploadQueue.length === 0) {
+      this.showToast("업로드할 파일이 없습니다.", "error");
       return;
     }
 
+    // 업로드 옵션 확인
+    const useAdvancedUpload = document.getElementById("advancedUpload").checked;
+    const enableValidation = document.getElementById("enableValidation").checked;
+    const enableProcessing = document.getElementById("enableProcessing").checked;
+
     this.showLoading();
+    this.showUploadProgress();
 
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const response = await fetch(`${this.apiUrl}/api/upload/file`, {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        this.currentFileId = data.data.fileId;
-        this.showResults(data.data);
-        this.loadFiles();
-        this.showToast("파일이 성공적으로 업로드되었습니다.", "success");
+      if (this.uploadQueue.length === 1) {
+        // 단일 파일 업로드
+        await this.uploadSingleFile(this.uploadQueue[0], {
+          useAdvanced: useAdvancedUpload,
+          enableValidation,
+          enableProcessing
+        });
       } else {
-        this.showToast(data.message || "업로드에 실패했습니다.", "error");
+        // 다중 파일 업로드
+        await this.uploadMultipleFiles({
+          useAdvanced: useAdvancedUpload,
+          enableValidation,
+          enableProcessing
+        });
       }
+
+      // 업로드 완료 후 큐 비우기
+      this.uploadQueue = [];
+      this.updateUploadQueueDisplay();
+
     } catch (error) {
       console.error("Upload error:", error);
-      this.showToast("서버 연결에 실패했습니다.", "error");
+      this.showToast("업로드 중 오류가 발생했습니다.", "error");
     } finally {
       this.hideLoading();
+      this.hideUploadProgress();
     }
+  }
+
+  async uploadSingleFile(file, options = {}) {
+    const uploadUrl = options.useAdvanced ? "/api/upload/file/advanced" : "/api/upload/file";
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    if (options.useAdvanced) {
+      formData.append("enableAdvancedValidation", options.enableValidation.toString());
+      formData.append("enableProcessing", options.enableProcessing.toString());
+      formData.append("chunkSize", "1048576"); // 1MB 청크
+      formData.append("compressionEnabled", "false");
+    }
+
+    // 진행률 추적을 위한 XMLHttpRequest 사용
+    const xhr = new XMLHttpRequest();
+
+    return new Promise((resolve, reject) => {
+      xhr.upload.addEventListener("progress", (e) => {
+        if (e.lengthComputable) {
+          const percentComplete = (e.loaded / e.total) * 100;
+          this.updateUploadProgress(file.name, percentComplete);
+        }
+      });
+
+      xhr.addEventListener("load", async () => {
+        if (xhr.status === 200) {
+          try {
+            const data = JSON.parse(xhr.responseText);
+            if (data.success) {
+              this.currentFileId = data.data.fileId;
+              this.showResults(data.data);
+              this.loadFiles();
+              this.showToast("파일이 성공적으로 업로드되었습니다.", "success");
+              resolve(data);
+            } else {
+              this.showToast(data.message || "업로드에 실패했습니다.", "error");
+              reject(new Error(data.message));
+            }
+          } catch (error) {
+            reject(error);
+          }
+        } else {
+          reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
+        }
+      });
+
+      xhr.addEventListener("error", () => {
+        reject(new Error("네트워크 오류가 발생했습니다."));
+      });
+
+      xhr.open("POST", `${this.apiUrl}${uploadUrl}`);
+      xhr.send(formData);
+    });
+  }
+
+  async uploadMultipleFiles(options = {}) {
+    const files = this.uploadQueue.map(item => item.file);
+    const formData = new FormData();
+
+    files.forEach((file, index) => {
+      formData.append("files", file);
+    });
+
+    formData.append("enableAdvancedValidation", options.enableValidation.toString());
+    formData.append("enableProcessing", options.enableProcessing.toString());
+    formData.append("maxConcurrent", "3");
+
+    const xhr = new XMLHttpRequest();
+
+    return new Promise((resolve, reject) => {
+      xhr.upload.addEventListener("progress", (e) => {
+        if (e.lengthComputable) {
+          const percentComplete = (e.loaded / e.total) * 100;
+          this.updateUploadProgress("다중 파일", percentComplete);
+        }
+      });
+
+      xhr.addEventListener("load", async () => {
+        if (xhr.status === 200) {
+          try {
+            const data = JSON.parse(xhr.responseText);
+            if (data.success) {
+              this.showBatchResults(data.data);
+              this.loadFiles();
+              this.showToast(`${data.data.summary.successful}개 파일이 업로드되었습니다.`, "success");
+              resolve(data);
+            } else {
+              this.showToast(data.message || "업로드에 실패했습니다.", "error");
+              reject(new Error(data.message));
+            }
+          } catch (error) {
+            reject(error);
+          }
+        } else {
+          reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
+        }
+      });
+
+      xhr.addEventListener("error", () => {
+        reject(new Error("네트워크 오류가 발생했습니다."));
+      });
+
+      xhr.open("POST", `${this.apiUrl}/api/upload/files`);
+      xhr.send(formData);
+    });
   }
 
   validateUrl(url) {
@@ -765,6 +936,26 @@ class EAISchemaApp {
 
       if (response.ok) {
         this.currentMappingId = data.id;
+        this.currentMappingId = data.id;
+        this.showEnhancedMappingResult(data);
+
+        // Generate mapping rules for the grid
+        if (data.mappings && data.mappings.mappingRules) {
+          this.mappingRules = data.mappings.mappingRules.map((rule, index) => ({
+            id: ++this.currentMappingRuleId,
+            sourceField: rule.sourceField || rule.source || "",
+            targetField: rule.targetField || rule.target || "",
+            mappingType: rule.mappingType || "direct",
+            transformation: rule.transformation || "",
+            description: rule.description || ""
+          }));
+          this.updateMappingGridDisplay();
+        } else {
+          // Fallback: generate rules from source data
+          this.generateMappingRulesFromSource(source);
+        }
+
+        this.showToast("메시지 매핑이 생성되었습니다.", "success");
         this.showEnhancedMappingResult(data);
         this.showToast("메시지 매핑이 생성되었습니다.", "success");
       } else {
@@ -1265,6 +1456,811 @@ class EAISchemaApp {
     setTimeout(() => {
       toast.classList.remove("show");
     }, 3000);
+  }
+
+  // Data Grid Methods
+  addGridRow() {
+    if (this.gridColumns === 0) {
+      this.addGridColumn(); // Ensure at least one column exists
+    }
+
+    const newRow = new Array(this.gridColumns).fill("");
+    this.gridData.push(newRow);
+    this.gridRows++;
+    this.updateGridDisplay();
+    this.updateGridInfo();
+    this.showToast("행이 추가되었습니다.", "success");
+  }
+
+  addGridColumn() {
+    if (this.gridRows === 0) {
+      this.gridData.push([]);
+      this.gridRows = 1;
+    }
+
+    this.gridData.forEach(row => row.push(""));
+    this.gridColumns++;
+    this.updateGridDisplay();
+    this.updateGridInfo();
+    this.showToast("열이 추가되었습니다.", "success");
+  }
+
+  clearGrid() {
+    if (!confirm("정말로 모든 데이터를 삭제하시겠습니까?")) {
+      return;
+    }
+
+    this.gridData = [];
+    this.gridRows = 0;
+    this.gridColumns = 0;
+    this.selectedCell = null;
+    this.updateGridDisplay();
+    this.updateGridInfo();
+    this.showToast("그리드가 초기화되었습니다.", "info");
+  }
+
+  updateGridDisplay() {
+    const gridContainer = document.getElementById("dataGrid");
+
+    if (this.gridRows === 0 || this.gridColumns === 0) {
+      gridContainer.innerHTML = `
+        <div class="grid-placeholder">
+          <i class="fas fa-table"></i>
+          <p>데이터 그리드가 비어 있습니다</p>
+          <small>행 추가 버튼을 클릭하여 시작하세요</small>
+        </div>
+      `;
+      return;
+    }
+
+    let html = '<table class="grid-table"><thead><tr>';
+
+    // Column headers
+    for (let col = 0; col < this.gridColumns; col++) {
+      html += `<th class="col-header">${String.fromCharCode(65 + col)}</th>`;
+    }
+    html += '</tr></thead><tbody>';
+
+    // Data rows
+    for (let row = 0; row < this.gridRows; row++) {
+      html += `<tr><td class="row-header">${row + 1}</td>`;
+      for (let col = 0; col < this.gridColumns; col++) {
+        const value = this.gridData[row][col] || "";
+        const cellId = `cell-${row}-${col}`;
+        const selectedClass = this.selectedCell === cellId ? "selected" : "";
+        html += `<td class="grid-cell ${selectedClass}" id="${cellId}" contenteditable="true" data-row="${row}" data-col="${col}">${value}</td>`;
+      }
+      html += '</tr>';
+    }
+
+    html += '</tbody></table>';
+    gridContainer.innerHTML = html;
+
+    // Add event listeners to cells
+    this.attachCellEventListeners();
+  }
+
+  attachCellEventListeners() {
+    const cells = document.querySelectorAll(".grid-cell");
+    cells.forEach(cell => {
+      cell.addEventListener("click", (e) => this.selectCell(e.target));
+      cell.addEventListener("input", (e) => this.updateCellValue(e.target));
+      cell.addEventListener("keydown", (e) => this.handleCellKeydown(e));
+    });
+  }
+
+  selectCell(cell) {
+    // Remove previous selection
+    if (this.selectedCell) {
+      const prevCell = document.getElementById(this.selectedCell);
+      if (prevCell) prevCell.classList.remove("selected");
+    }
+
+    // Set new selection
+    this.selectedCell = cell.id;
+    cell.classList.add("selected");
+    cell.focus();
+  }
+
+  updateCellValue(cell) {
+    const row = parseInt(cell.dataset.row);
+    const col = parseInt(cell.dataset.col);
+    this.gridData[row][col] = cell.textContent;
+
+    // Auto-save if enabled
+    if (document.getElementById("autoSave").checked) {
+      this.saveGridData();
+    }
+  }
+
+  handleCellKeydown(e) {
+    const cell = e.target;
+    const row = parseInt(cell.dataset.row);
+    const col = parseInt(cell.dataset.col);
+
+    switch (e.key) {
+      case "Enter":
+        e.preventDefault();
+        // Move to next row
+        const nextRow = row + 1;
+        if (nextRow < this.gridRows) {
+          const nextCell = document.getElementById(`cell-${nextRow}-${col}`);
+          if (nextCell) this.selectCell(nextCell);
+        }
+        break;
+      case "Tab":
+        e.preventDefault();
+        // Move to next column
+        const nextCol = col + 1;
+        if (nextCol < this.gridColumns) {
+          const nextCell = document.getElementById(`cell-${row}-${nextCol}`);
+          if (nextCell) this.selectCell(nextCell);
+        }
+        break;
+      case "ArrowUp":
+        if (row > 0) {
+          const upCell = document.getElementById(`cell-${row - 1}-${col}`);
+          if (upCell) this.selectCell(upCell);
+        }
+        break;
+      case "ArrowDown":
+        if (row < this.gridRows - 1) {
+          const downCell = document.getElementById(`cell-${row + 1}-${col}`);
+          if (downCell) this.selectCell(downCell);
+        }
+        break;
+      case "ArrowLeft":
+        if (col > 0) {
+          const leftCell = document.getElementById(`cell-${row}-${col - 1}`);
+          if (leftCell) this.selectCell(leftCell);
+        }
+        break;
+      case "ArrowRight":
+        if (col < this.gridColumns - 1) {
+          const rightCell = document.getElementById(`cell-${row}-${col + 1}`);
+          if (rightCell) this.selectCell(rightCell);
+        }
+        break;
+    }
+  }
+
+  updateGridInfo() {
+    const infoElement = document.getElementById("gridInfo");
+    infoElement.textContent = `행: ${this.gridRows}, 열: ${this.gridColumns}`;
+  }
+
+  exportGrid() {
+    if (this.gridRows === 0 || this.gridColumns === 0) {
+      this.showToast("내보낼 데이터가 없습니다.", "warning");
+      return;
+    }
+
+    const csvContent = this.generateCSV();
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", `data-grid-${Date.now()}.csv`);
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      this.showToast("데이터가 CSV 파일로 내보내졌습니다.", "success");
+    }
+  }
+
+  importGrid() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".csv,.xlsx,.xls";
+
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        this.processImportFile(file);
+      }
+    };
+
+    input.click();
+  }
+
+  processImportFile(file) {
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      const content = e.target.result;
+      if (file.name.endsWith(".csv")) {
+        this.importFromCSV(content);
+      } else {
+        this.showToast("지원되지 않는 파일 형식입니다.", "error");
+      }
+    };
+
+    reader.readAsText(file);
+  }
+
+  importFromCSV(csvContent) {
+    const lines = csvContent.split("\n");
+    const data = [];
+
+    lines.forEach((line, index) => {
+      if (line.trim()) {
+        const values = line.split(",").map(val => val.trim());
+        data.push(values);
+      }
+    });
+
+    if (data.length > 0) {
+      this.gridData = data;
+      this.gridRows = data.length;
+      this.gridColumns = Math.max(...data.map(row => row.length));
+      this.updateGridDisplay();
+      this.updateGridInfo();
+      this.showToast("데이터가 성공적으로 가져와졌습니다.", "success");
+    }
+  }
+
+  generateCSV() {
+    let csv = "";
+
+    // Add headers
+    for (let col = 0; col < this.gridColumns; col++) {
+      csv += `${String.fromCharCode(65 + col)},`;
+    }
+    csv = csv.slice(0, -1) + "\n";
+
+    // Add data
+    for (let row = 0; row < this.gridRows; row++) {
+      for (let col = 0; col < this.gridColumns; col++) {
+        const value = this.gridData[row][col] || "";
+        csv += `"${value.replace(/"/g, '""')}",`;
+      }
+      csv = csv.slice(0, -1) + "\n";
+    }
+
+    return csv;
+  }
+
+  saveGridData() {
+    const gridData = {
+      data: this.gridData,
+      rows: this.gridRows,
+      columns: this.gridColumns,
+      timestamp: Date.now()
+    };
+
+    localStorage.setItem("eaiGridData", JSON.stringify(gridData));
+  }
+
+  loadGridData() {
+    const savedData = localStorage.getItem("eaiGridData");
+    if (savedData) {
+      try {
+        const gridData = JSON.parse(savedData);
+        this.gridData = gridData.data || [];
+        this.gridRows = gridData.rows || 0;
+        this.gridColumns = gridData.columns || 0;
+        this.updateGridDisplay();
+        this.updateGridInfo();
+      } catch (error) {
+        console.error("Failed to load grid data:", error);
+      }
+    }
+  }
+
+  // Mapping Grid Methods
+  addMappingRule() {
+    const newRule = {
+      id: ++this.currentMappingRuleId,
+      sourceField: "",
+      targetField: "",
+      mappingType: "direct",
+      transformation: "",
+      description: ""
+    };
+
+    this.mappingRules.push(newRule);
+    this.updateMappingGridDisplay();
+    this.showToast("매핑 규칙이 추가되었습니다.", "success");
+  }
+
+  clearMappingRules() {
+    if (!confirm("정말로 모든 매핑 규칙을 삭제하시겠습니까?")) {
+      return;
+    }
+
+    this.mappingRules = [];
+    this.currentMappingRuleId = 0;
+    this.updateMappingGridDisplay();
+    this.showToast("모든 매핑 규칙이 삭제되었습니다.", "info");
+  }
+
+  deleteMappingRule(ruleId) {
+    this.mappingRules = this.mappingRules.filter(rule => rule.id !== ruleId);
+    this.updateMappingGridDisplay();
+    this.showToast("매핑 규칙이 삭제되었습니다.", "info");
+  }
+
+  updateMappingRule(ruleId, field, value) {
+    const rule = this.mappingRules.find(r => r.id === ruleId);
+    if (rule) {
+      rule[field] = value;
+    }
+  }
+
+  updateMappingGridDisplay() {
+    const mappingGrid = document.getElementById("mappingGrid");
+
+    if (this.mappingRules.length === 0) {
+      mappingGrid.innerHTML = `
+        <div class="mapping-placeholder">
+          <i class="fas fa-project-diagram"></i>
+          <p>매핑 규칙이 생성되지 않았습니다</p>
+          <small>Generate 버튼을 클릭하거나 수동으로 규칙을 추가하세요</small>
+        </div>
+      `;
+      return;
+    }
+
+    let html = '<table class="mapping-table"><thead><tr>';
+    html += '<th>소스 필드</th>';
+    html += '<th>대상 필드</th>';
+    html += '<th>매핑 타입</th>';
+    html += '<th>변환</th>';
+    html += '<th>설명</th>';
+    html += '<th>작업</th>';
+    html += '</tr></thead><tbody>';
+
+    this.mappingRules.forEach((rule, index) => {
+      html += `<tr class="mapping-rule-row">`;
+      html += `<td><input type="text" class="mapping-cell source-cell" data-rule-id="${rule.id}" data-field="sourceField" value="${rule.sourceField}" placeholder="소스 필드명"></td>`;
+      html += `<td><input type="text" class="mapping-cell target-cell" data-rule-id="${rule.id}" data-field="targetField" value="${rule.targetField}" placeholder="대상 필드명"></td>`;
+      html += `<td>
+        <select class="mapping-cell" data-rule-id="${rule.id}" data-field="mappingType">
+          <option value="direct" ${rule.mappingType === 'direct' ? 'selected' : ''}>직접 매핑</option>
+          <option value="transform" ${rule.mappingType === 'transform' ? 'selected' : ''}>변환</option>
+          <option value="lookup" ${rule.mappingType === 'lookup' ? 'selected' : ''}>룩업</option>
+          <option value="concat" ${rule.mappingType === 'concat' ? 'selected' : ''}>병합</option>
+        </select>
+      </td>`;
+      html += `<td><input type="text" class="mapping-cell" data-rule-id="${rule.id}" data-field="transformation" value="${rule.transformation}" placeholder="변환 규칙"></td>`;
+      html += `<td><input type="text" class="mapping-cell" data-rule-id="${rule.id}" data-field="description" value="${rule.description}" placeholder="설명"></td>`;
+      html += `<td class="mapping-actions">
+        <button class="mapping-action-btn delete" onclick="app.deleteMappingRule(${rule.id})">
+          <i class="fas fa-trash"></i>
+        </button>
+      </td>`;
+      html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    mappingGrid.innerHTML = html;
+
+    // Add event listeners to mapping cells
+    this.attachMappingCellEventListeners();
+  }
+
+  attachMappingCellEventListeners() {
+    const mappingCells = document.querySelectorAll(".mapping-cell");
+    mappingCells.forEach(cell => {
+      cell.addEventListener("input", (e) => {
+        const ruleId = parseInt(e.target.dataset.ruleId);
+        const field = e.target.dataset.field;
+        const value = e.target.value;
+        this.updateMappingRule(ruleId, field, value);
+      });
+    });
+  }
+
+  // Generate mapping rules from source data
+  generateMappingRulesFromSource(sourceData) {
+    try {
+      let parsedData;
+      if (typeof sourceData === 'string') {
+        parsedData = JSON.parse(sourceData);
+      } else {
+        parsedData = sourceData;
+      }
+
+      const rules = this.extractMappingRules(parsedData);
+      this.mappingRules = rules.map((rule, index) => ({
+        id: ++this.currentMappingRuleId,
+        sourceField: rule.source,
+        targetField: rule.target,
+        mappingType: "direct",
+        transformation: "",
+        description: rule.description || ""
+      }));
+
+      this.updateMappingGridDisplay();
+      this.showToast(`${rules.length}개의 매핑 규칙이 생성되었습니다.`, "success");
+    } catch (error) {
+      console.error("Failed to generate mapping rules:", error);
+      this.showToast("매핑 규칙 생성에 실패했습니다.", "error");
+    }
+  }
+
+  extractMappingRules(data, prefix = "") {
+    const rules = [];
+
+    if (Array.isArray(data) && data.length > 0) {
+      // Handle array of objects
+      const firstItem = data[0];
+      if (typeof firstItem === 'object' && firstItem !== null) {
+        Object.keys(firstItem).forEach(key => {
+          rules.push({
+            source: prefix ? `${prefix}.${key}` : key,
+            target: this.toCamelCase(key),
+            description: `Array item field: ${key}`
+          });
+        });
+      }
+    } else if (typeof data === 'object' && data !== null) {
+      // Handle object
+      Object.keys(data).forEach(key => {
+        const value = data[key];
+        const currentPath = prefix ? `${prefix}.${key}` : key;
+
+        if (typeof value === 'object' && value !== null) {
+          // Nested object or array
+          rules.push(...this.extractMappingRules(value, currentPath));
+        } else {
+          // Primitive value
+          rules.push({
+            source: currentPath,
+            target: this.toCamelCase(key),
+            description: `Field: ${key}`
+          });
+        }
+      });
+    }
+
+    return rules;
+  }
+
+  toCamelCase(str) {
+    return str
+      .replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => {
+        return index === 0 ? word.toLowerCase() : word.toUpperCase();
+      })
+      .replace(/\s+/g, '');
+  }
+
+  getMappingRules() {
+    return this.mappingRules;
+  }
+
+  exportMappingRules() {
+    if (this.mappingRules.length === 0) {
+      this.showToast("내보낼 매핑 규칙이 없습니다.", "warning");
+      return;
+    }
+
+    const mappingData = {
+      rules: this.mappingRules,
+      exportDate: new Date().toISOString(),
+      version: "1.0"
+    };
+
+    const blob = new Blob([JSON.stringify(mappingData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `mapping-rules-${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    this.showToast("매핑 규칙이 JSON 파일로 내보내졌습니다.", "success");
+  }
+
+  importMappingRules() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
+
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const data = JSON.parse(event.target.result);
+            if (data.rules && Array.isArray(data.rules)) {
+              this.mappingRules = data.rules.map((rule, index) => ({
+                ...rule,
+                id: ++this.currentMappingRuleId
+              }));
+              this.updateMappingGridDisplay();
+              this.showToast(`${data.rules.length}개의 매핑 규칙이 가져와졌습니다.`, "success");
+            } else {
+              this.showToast("유효하지 않은 매핑 규칙 파일입니다.", "error");
+            }
+          } catch (error) {
+            console.error("Failed to import mapping rules:", error);
+            this.showToast("매핑 규칙 파일을 읽을 수 없습니다.", "error");
+          }
+        };
+        reader.readAsText(file);
+      }
+    };
+
+    input.click();
+  }
+
+  // 업로드 큐 관리 메서드들
+  addFilesToQueue(files) {
+    files.forEach(file => {
+      this.uploadQueue.push({
+        file,
+        id: Date.now() + Math.random(),
+        status: 'pending',
+        progress: 0
+      });
+    });
+    this.updateUploadQueueDisplay();
+  }
+
+  updateUploadQueueDisplay() {
+    const queueContainer = document.getElementById("uploadQueue");
+    if (!queueContainer) return;
+
+    if (this.uploadQueue.length === 0) {
+      queueContainer.innerHTML = '<p class="no-queue">업로드 대기열이 비어 있습니다.</p>';
+      return;
+    }
+
+    const queueHtml = this.uploadQueue.map(item => `
+      <div class="queue-item ${item.status}" data-id="${item.id}">
+        <div class="queue-item-info">
+          <span class="queue-item-name">${item.file.name}</span>
+          <span class="queue-item-size">(${this.formatFileSize(item.file.size)})</span>
+        </div>
+        <div class="queue-item-progress">
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${item.progress}%"></div>
+          </div>
+          <span class="progress-text">${item.progress}%</span>
+        </div>
+        <div class="queue-item-status">${this.getStatusText(item.status)}</div>
+      </div>
+    `).join("");
+
+    queueContainer.innerHTML = queueHtml;
+  }
+
+  updateUploadProgress(filename, progress) {
+    // 큐에서 해당 파일 찾기
+    const queueItem = this.uploadQueue.find(item => item.file.name === filename);
+    if (queueItem) {
+      queueItem.progress = progress;
+      this.updateUploadQueueDisplay();
+    }
+
+    // 진행률 표시 업데이트
+    const progressContainer = document.getElementById("uploadProgressContainer");
+    const progressBar = document.getElementById("uploadProgressBar");
+    const progressText = document.getElementById("uploadProgressText");
+
+    if (progressContainer && progressBar && progressText) {
+      progressContainer.style.display = "block";
+      progressBar.style.width = `${progress}%`;
+      progressText.textContent = `${filename}: ${progress}% 완료`;
+    }
+  }
+
+  showUploadProgress() {
+    const progressContainer = document.getElementById("uploadProgressContainer");
+    if (progressContainer) {
+      progressContainer.style.display = "block";
+    }
+  }
+
+  hideUploadProgress() {
+    const progressContainer = document.getElementById("uploadProgressContainer");
+    if (progressContainer) {
+      progressContainer.style.display = "none";
+    }
+  }
+
+  showBatchResults(data) {
+    const resultsSection = document.getElementById("batchResultsSection");
+    const successfulList = document.getElementById("successfulUploads");
+    const failedList = document.getElementById("failedUploads");
+
+    if (!resultsSection || !successfulList || !failedList) return;
+
+    // 성공한 파일들 표시
+    if (data.successful && data.successful.length > 0) {
+      successfulList.innerHTML = data.successful.map(file => `
+        <div class="result-item success">
+          <i class="fas fa-check-circle"></i>
+          <span>${file.originalName}</span>
+          <small>${this.formatFileSize(file.size)}</small>
+        </div>
+      `).join("");
+    }
+
+    // 실패한 파일들 표시
+    if (data.failed && data.failed.length > 0) {
+      failedList.innerHTML = data.failed.map(failure => `
+        <div class="result-item error">
+          <i class="fas fa-exclamation-circle"></i>
+          <span>${failure.originalName}</span>
+          <small>${failure.error}</small>
+        </div>
+      `).join("");
+    }
+
+    resultsSection.style.display = "block";
+  }
+
+  getStatusText(status) {
+    const statusMap = {
+      'pending': '대기 중',
+      'uploading': '업로드 중',
+      'completed': '완료',
+      'failed': '실패',
+      'retrying': '재시도 중'
+    };
+    return statusMap[status] || status;
+  }
+
+  formatFileSize(bytes) {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  }
+
+  // 재시도 로직
+  async retryUpload(fileId, maxRetries = this.maxRetries) {
+    const queueItem = this.uploadQueue.find(item => item.id === fileId);
+    if (!queueItem) return;
+
+    const currentRetries = this.retryAttempts.get(fileId) || 0;
+
+    if (currentRetries >= maxRetries) {
+      queueItem.status = 'failed';
+      this.showToast(`${queueItem.file.name} 업로드가 ${maxRetries}회 재시도 후 실패했습니다.`, "error");
+      return;
+    }
+
+    this.retryAttempts.set(fileId, currentRetries + 1);
+    queueItem.status = 'retrying';
+    this.updateUploadQueueDisplay();
+
+    // 지수 백오프 (1초, 2초, 4초...)
+    const delay = Math.pow(2, currentRetries) * 1000;
+    await new Promise(resolve => setTimeout(resolve, delay));
+
+    try {
+      await this.uploadSingleFile(queueItem.file, {
+        useAdvanced: document.getElementById("advancedUpload").checked,
+        enableValidation: document.getElementById("enableValidation").checked,
+        enableProcessing: document.getElementById("enableProcessing").checked
+      });
+
+      queueItem.status = 'completed';
+      this.retryAttempts.delete(fileId);
+    } catch (error) {
+      if (currentRetries + 1 >= maxRetries) {
+        queueItem.status = 'failed';
+        this.showToast(`${queueItem.file.name} 업로드가 최종 실패했습니다.`, "error");
+      } else {
+        // 재시도 계속
+        this.retryUpload(fileId, maxRetries);
+      }
+    }
+
+    this.updateUploadQueueDisplay();
+  }
+
+  // 그리드 연동 기능
+  async loadFileToGrid(fileId) {
+    try {
+      const response = await fetch(`${this.apiUrl}/api/upload/file/${fileId}/content`);
+      if (!response.ok) {
+        throw new Error('파일을 불러올 수 없습니다.');
+      }
+
+      const content = await response.text();
+      const fileInfo = await this.getFileInfo(fileId);
+
+      if (fileInfo.mimetype.includes('csv') || fileInfo.originalName.endsWith('.csv')) {
+        this.importFromCSV(content);
+        this.showToast("CSV 파일이 그리드에 로드되었습니다.", "success");
+      } else if (fileInfo.mimetype.includes('json') || fileInfo.originalName.endsWith('.json')) {
+        const jsonData = JSON.parse(content);
+        this.importFromJSON(jsonData);
+        this.showToast("JSON 파일이 그리드에 로드되었습니다.", "success");
+      } else {
+        this.showToast("지원되지 않는 파일 형식입니다.", "warning");
+      }
+    } catch (error) {
+      console.error("그리드 로드 오류:", error);
+      this.showToast("파일을 그리드에 로드할 수 없습니다.", "error");
+    }
+  }
+
+  importFromJSON(jsonData) {
+    if (Array.isArray(jsonData)) {
+      // 배열인 경우
+      if (jsonData.length > 0) {
+        const headers = Object.keys(jsonData[0]);
+        this.gridColumns = headers.length;
+        this.gridRows = jsonData.length;
+
+        this.gridData = jsonData.map(row =>
+          headers.map(header => row[header] || "")
+        );
+      }
+    } else if (typeof jsonData === 'object') {
+      // 객체인 경우
+      const entries = Object.entries(jsonData);
+      this.gridColumns = 2;
+      this.gridRows = entries.length;
+
+      this.gridData = entries.map(([key, value]) => [key, String(value)]);
+    }
+
+    this.updateGridDisplay();
+    this.updateGridInfo();
+  }
+
+  async exportGridToFile(format = 'csv') {
+    if (this.gridRows === 0 || this.gridColumns === 0) {
+      this.showToast("내보낼 데이터가 없습니다.", "warning");
+      return;
+    }
+
+    let content = '';
+    let filename = '';
+    let mimeType = '';
+
+    switch (format) {
+      case 'csv':
+        content = this.generateCSV();
+        filename = `grid-export-${Date.now()}.csv`;
+        mimeType = 'text/csv';
+        break;
+      case 'json':
+        content = JSON.stringify(this.gridData, null, 2);
+        filename = `grid-export-${Date.now()}.json`;
+        mimeType = 'application/json';
+        break;
+      default:
+        this.showToast("지원되지 않는 형식입니다.", "error");
+        return;
+    }
+
+    // 파일로 저장
+    const blob = new Blob([content], { type: mimeType });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+
+    this.showToast(`${filename} 파일이 다운로드되었습니다.`, "success");
+  }
+
+  async getFileInfo(fileId) {
+    const response = await fetch(`${this.apiUrl}/api/upload/file/${fileId}`);
+    if (!response.ok) {
+      throw new Error('파일 정보를 가져올 수 없습니다.');
+    }
+    const data = await response.json();
+    return data.data;
+  }
+}
   }
 }
 
