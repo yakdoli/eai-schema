@@ -78,7 +78,7 @@
                         </div>
 
                         <!-- 드래그 앤 드롭 영역 -->
-                        <div class="drop-zone" id="dropZone">
+                        <label class="drop-zone" id="dropZone" for="fileInput">
                             <div class="drop-zone-content">
                                 <i class="fas fa-cloud-upload-alt"></i>
                                 <p>
@@ -88,15 +88,15 @@
                                 <p class="file-info">
                                     지원 형식: XML, JSON, YAML, CSV (최대 50MB)
                                 </p>
-                                <input
-                                    type="file"
-                                    id="fileInput"
-                                    accept=".xml,.json,.yaml,.yml,.csv"
-                                    multiple
-                                    hidden
-                                />
                             </div>
-                        </div>
+                        </label>
+                        <input
+                            type="file"
+                            id="fileInput"
+                            accept=".xml,.json,.yaml,.yml,.csv"
+                            multiple
+                            style="display: none;"
+                        />
 
                         <!-- 업로드 진행률 -->
                         <div class="upload-progress-container" id="uploadProgressContainer">

@@ -31,14 +31,39 @@ class EAISchemaApp {
   }
 
   setupEventListeners() {
+    console.log("Setting up event listeners...");
+
     // Tab switching
     document.querySelectorAll(".tab-button").forEach((button) => {
       button.addEventListener("click", (e) => this.switchTab(e.target.dataset.tab));
     });
 
     // File upload
-    document.getElementById("fileInput").addEventListener("change", (e) => this.handleFileSelect(e));
-    document.getElementById("uploadBtn").addEventListener("click", () => this.uploadFile());
+    const fileInput = document.getElementById("fileInput");
+    const uploadBtn = document.getElementById("uploadBtn");
+
+    console.log("fileInput element:", fileInput);
+    console.log("uploadBtn element:", uploadBtn);
+
+    if (fileInput) {
+      fileInput.addEventListener("change", (e) => {
+        console.log("fileInput change event triggered:", e);
+        this.handleFileSelect(e);
+      });
+      console.log("fileInput change event listener added");
+    } else {
+      console.error("fileInput element not found!");
+    }
+
+    if (uploadBtn) {
+      uploadBtn.addEventListener("click", () => {
+        console.log("uploadBtn clicked");
+        this.uploadFile();
+      });
+      console.log("uploadBtn click event listener added");
+    } else {
+      console.error("uploadBtn element not found!");
+    }
 
     // Data Grid
     document.getElementById("addRowBtn").addEventListener("click", () => this.addGridRow());
@@ -304,11 +329,25 @@ class EAISchemaApp {
   }
 
   setupDropZone() {
+    console.log("Setting up drop zone...");
     const dropZone = document.getElementById("dropZone");
     const fileInput = document.getElementById("fileInput");
 
-    // Click to select file
-    dropZone.addEventListener("click", () => fileInput.click());
+    console.log("dropZone element:", dropZone);
+    console.log("fileInput element:", fileInput);
+
+    if (!dropZone) {
+      console.error("dropZone element not found!");
+      return;
+    }
+
+    if (!fileInput) {
+      console.error("fileInput element not found!");
+      return;
+    }
+
+    // Note: Click handling is now done via label element in HTML
+    // No need for programmatic click() call
 
     // Drag and drop events
     dropZone.addEventListener("dragover", (e) => {
@@ -347,8 +386,14 @@ class EAISchemaApp {
   }
 
   handleFileSelect(event) {
+    console.log("handleFileSelect called with event:", event);
     const files = Array.from(event.target.files);
-    if (files.length === 0) return;
+    console.log("Files selected:", files.length, "files");
+
+    if (files.length === 0) {
+      console.log("No files selected");
+      return;
+    }
 
     const uploadBtn = document.getElementById("uploadBtn");
     const validTypes = [".xml", ".json", ".yaml", ".yml", ".csv"];
