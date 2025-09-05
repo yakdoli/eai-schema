@@ -2392,7 +2392,6 @@ class EAISchemaApp {
     const data = await response.json();
     return data.data;
   }
-  }
 
   // Clone tab methods
   updateCloneDataTypeFromConfig() {
@@ -2609,9 +2608,6 @@ class EAISchemaApp {
         this.showToast("공유 기능이 지원되지 않습니다.", "warning");
       }
     };
-  }
-}
-}
   }
 }
 

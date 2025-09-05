@@ -1,5 +1,5 @@
 import { logger } from "../utils/logger";
-import { SecurityError, ValidationError } from "../middleware/errorHandler";
+// import { SecurityError, ValidationError } from "../middleware/errorHandler"; // TODO: 필요시 사용
 
 export interface ValidationResult {
   isValid: boolean;
@@ -146,10 +146,10 @@ export class FileValidationService {
     }
 
     // MIME 타입 기반 폴백
-    if (mimetype.includes('xml')) return 'xml';
-    if (mimetype.includes('json')) return 'json';
-    if (mimetype.includes('yaml')) return 'yaml';
-    if (mimetype.includes('csv')) return 'csv';
+    if (mimetype.includes('xml')) {return 'xml';}
+    if (mimetype.includes('json')) {return 'json';}
+    if (mimetype.includes('yaml')) {return 'yaml';}
+    if (mimetype.includes('csv')) {return 'csv';}
 
     return 'unknown';
   }
@@ -352,12 +352,13 @@ export class FileValidationService {
 
     // 파일 타입별 추가 메타데이터
     switch (fileType) {
-      case 'xml':
+      case 'xml': {
         const xmlMatches = content.match(/<[^>]+>/g);
         if (xmlMatches) {
           (result.metadata as any).elementCount = xmlMatches.length;
         }
         break;
+      }
       case 'json':
         try {
           const parsed = JSON.parse(content);
@@ -401,7 +402,7 @@ export class FileValidationService {
     let currentDepth = 0;
 
     const matches = content.match(/<\/?[^>]+>/g);
-    if (!matches) return 0;
+    if (!matches) {return 0;}
 
     for (const match of matches) {
       if (!match.startsWith('</')) {

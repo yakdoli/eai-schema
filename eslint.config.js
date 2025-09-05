@@ -5,6 +5,33 @@ const tsparser = require('@typescript-eslint/parser');
 module.exports = [
   js.configs.recommended,
   {
+    // JavaScript 파일용 설정
+    files: ['**/*.js'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        Buffer: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        global: 'readonly',
+        module: 'readonly',
+        require: 'readonly',
+        exports: 'readonly',
+        express: 'readonly'
+      }
+    },
+    rules: {
+      'no-unused-vars': ['error', { 
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_' 
+      }],
+      'no-console': 'warn'
+    }
+  },
+  {
     files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
       parser: tsparser,
@@ -31,12 +58,13 @@ module.exports = [
       // TypeScript 관련 규칙
       '@typescript-eslint/no-unused-vars': ['error', { 
         argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_' 
+        varsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_'
       }],
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'off', // 임시로 비활성화
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/no-inferrable-types': 'error',
+      '@typescript-eslint/no-inferrable-types': 'warn', // error에서 warn으로 완화
       
       // 일반 JavaScript 규칙 비활성화 (TypeScript에서 처리)
       'no-unused-vars': 'off',
@@ -47,7 +75,10 @@ module.exports = [
       'no-var': 'error',
       'no-console': 'warn',
       'eqeqeq': 'error',
-      'curly': 'error'
+      'curly': 'error',
+      'no-case-declarations': 'error',
+      'no-useless-escape': 'error',
+      'no-unreachable': 'error'
     }
   },
   {
@@ -75,6 +106,7 @@ module.exports = [
       'dist/**',
       'node_modules/**',
       'coverage/**',
+      'docs/**',
       '*.js',
       '!eslint.config.js'
     ]

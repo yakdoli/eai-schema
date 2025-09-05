@@ -57,9 +57,9 @@ export const withTimeout = <T>(
  */
 export const withRetry = async <T>(
   fn: () => Promise<T>,
-  maxAttempts: number = 3,
-  delayMs: number = 1000,
-  backoffMultiplier: number = 2
+  maxAttempts = 3,
+  delayMs = 1000,
+  backoffMultiplier = 2
 ): Promise<T> => {
   let lastError: Error;
   

@@ -6,7 +6,7 @@ import client from "prom-client";
 jest.mock("prom-client");
 jest.mock("../../utils/logger");
 
-const mockClient = client as jest.Mocked<typeof client>;
+const _mockClient = client as jest.Mocked<typeof client>;
 
 describe("PerformanceMonitoringService", () => {
   beforeEach(() => {

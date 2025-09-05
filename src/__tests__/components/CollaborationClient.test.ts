@@ -5,8 +5,7 @@ jest.mock('socket.io-client', () => ({
   io: jest.fn()
 }));
 
-import { CollaborationClient, CollaborationUI } from "../../components/CollaborationClient";
-import { GridChange, ActiveUser } from "../../types/collaboration";
+import { CollaborationClient } from "../../components/CollaborationClient";
 import { io } from 'socket.io-client';
 
 // Mock Socket.IO

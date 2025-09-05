@@ -8,7 +8,7 @@ import { schemasRouter } from './schemas';
 import { collaborationRouter } from './collaboration';
 import { versionRouter } from './version';
 import { docsRouter } from './docs';
-import { validationMiddleware } from '../../middleware/validationMiddleware';
+// import { validationMiddleware } from '../../middleware/validationMiddleware'; // TODO: 필요시 사용
 import { authMiddleware } from '../../middleware/authMiddleware';
 import { rateLimitMiddleware } from '../../middleware/rateLimitMiddleware';
 import { createApiV2MiddlewareStack } from '../../middleware/apiV2Middleware';
@@ -63,7 +63,7 @@ router.use((req, res) => {
 });
 
 // 에러 핸들러
-router.use((error: any, req: any, res: any, next: any) => {
+router.use((error: any, req: any, res: any, _next: any) => {
   logger.error('API v2 에러', {
     error: error.message,
     stack: error.stack,

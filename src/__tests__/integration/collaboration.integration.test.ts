@@ -148,8 +148,8 @@ describe('협업 기능 통합 테스트', () => {
     });
 
     afterEach(() => {
-      if (client1) client1.disconnect();
-      if (client2) client2.disconnect();
+      if (client1) {client1.disconnect();}
+      if (client2) {client2.disconnect();}
     });
 
     test('다중 사용자 세션 참여', async () => {
@@ -555,7 +555,7 @@ describe('협업 기능 통합 테스트', () => {
       }
 
       // 모든 클라이언트에서 일관된 상태 확인
-      const statePromises = clients.map((client, index) => {
+      const statePromises = clients.map((client, _index) => {
         return new Promise((resolve) => {
           client.emit('get-session-state', { sessionId });
           client.on('session-state', (data) => {
@@ -568,7 +568,7 @@ describe('협업 기능 통합 테스트', () => {
       
       // 모든 상태가 동일한지 확인
       const firstState = JSON.stringify(states[0]);
-      states.forEach((state, index) => {
+      states.forEach((state, _index) => {
         expect(JSON.stringify(state)).toBe(firstState);
       });
 

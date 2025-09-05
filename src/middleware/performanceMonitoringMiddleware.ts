@@ -1,15 +1,13 @@
 // 개선된 성능 모니터링 미들웨어
 
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import { performanceMonitoringService } from "../services/PerformanceMonitoringService";
 import { Logger } from "../core/logging/Logger";
 import { 
   generateRequestId, 
   getClientIp, 
-  getUserAgent, 
-  calculateResponseTime,
-  getRequestBodySize,
-  getResponseBodySize
+  getUserAgent,
+  calculateResponseTime
 } from "../core/utils/httpUtils";
 import { AuthenticatedRequest } from "../types/api";
 import { RequestMetrics } from "../types/performance";

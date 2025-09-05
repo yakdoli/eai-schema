@@ -46,7 +46,7 @@ export function createApp(): express.Application {
     cors({
       origin: (origin, callback) => {
         // Allow requests with no origin (like mobile apps, curl, etc.)
-        if (!origin) return callback(null, true);
+        if (!origin) {return callback(null, true);}
 
         // 개발 환경에서는 모든 origin 허용
         if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
@@ -55,7 +55,7 @@ export function createApp(): express.Application {
 
         // 허용된 origin 체크
         if (allowedOrigins.some((allowed) => {
-          if (!allowed) return false;
+          if (!allowed) {return false;}
           return origin === allowed || origin.startsWith(allowed);
         })) {
           return callback(null, true);

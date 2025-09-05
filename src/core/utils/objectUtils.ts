@@ -19,7 +19,7 @@ export const deepClone = <T>(obj: T): T => {
   if (typeof obj === 'object') {
     const cloned = {} as T;
     for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
         cloned[key] = deepClone(obj[key]);
       }
     }
@@ -33,13 +33,13 @@ export const deepClone = <T>(obj: T): T => {
  * 객체 병합 (깊은 병합)
  */
 export const deepMerge = <T extends Record<string, any>>(target: T, ...sources: Partial<T>[]): T => {
-  if (!sources.length) return target;
+  if (!sources.length) {return target;}
   const source = sources.shift();
   
   if (isObject(target) && isObject(source)) {
     for (const key in source) {
       if (isObject(source[key])) {
-        if (!target[key]) Object.assign(target, { [key]: {} });
+        if (!target[key]) {Object.assign(target, { [key]: {} });}
         deepMerge(target[key], source[key]);
       } else {
         Object.assign(target, { [key]: source[key] });
@@ -61,9 +61,11 @@ export const isObject = (item: any): item is Record<string, any> => {
  * 빈 객체인지 확인
  */
 export const isEmpty = (obj: any): boolean => {
-  if (obj == null) return true;
-  if (Array.isArray(obj) || typeof obj === 'string') return obj.length === 0;
-  if (obj instanceof Map || obj instanceof Set) return obj.size === 0;
+  if (obj === null || obj === undefined) {
+    return true;
+  }
+  if (Array.isArray(obj) || typeof obj === 'string') {return obj.length === 0;}
+  if (obj instanceof Map || obj instanceof Set) {return obj.size === 0;}
   return Object.keys(obj).length === 0;
 };
 
@@ -105,7 +107,7 @@ export const getNestedValue = (obj: any, path: string, defaultValue?: any): any 
   let current = obj;
   
   for (const key of keys) {
-    if (current == null || typeof current !== 'object') {
+    if (current === null || current === undefined || typeof current !== 'object') {
       return defaultValue;
     }
     current = current[key];
@@ -195,8 +197,8 @@ export const filterObject = <T>(
  */
 export const flattenObject = (
   obj: Record<string, any>,
-  prefix: string = '',
-  separator: string = '.'
+  prefix = '',
+  separator = '.'
 ): Record<string, any> => {
   const result: Record<string, any> = {};
   
@@ -218,7 +220,7 @@ export const flattenObject = (
  */
 export const unflattenObject = (
   obj: Record<string, any>,
-  separator: string = '.'
+  separator = '.'
 ): Record<string, any> => {
   const result: Record<string, any> = {};
   
@@ -237,7 +239,7 @@ export const deepEqual = (obj1: any, obj2: any): boolean => {
     return true;
   }
   
-  if (obj1 == null || obj2 == null) {
+  if (obj1 === null || obj1 === undefined || obj2 === null || obj2 === undefined) {
     return obj1 === obj2;
   }
   
@@ -280,7 +282,7 @@ export const removeNullish = <T extends Record<string, any>>(obj: T): Partial<T>
   const result: Partial<T> = {};
   
   for (const [key, value] of Object.entries(obj)) {
-    if (value != null) {
+    if (value !== null && value !== undefined) {
       result[key as keyof T] = value;
     }
   }
@@ -341,7 +343,7 @@ export const objectToQueryString = (obj: Record<string, any>): string => {
   const params = new URLSearchParams();
   
   const addParam = (key: string, value: any): void => {
-    if (value != null) {
+    if (value !== null && value !== undefined) {
       if (Array.isArray(value)) {
         value.forEach(item => addParam(key, item));
       } else {

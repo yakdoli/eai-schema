@@ -8,10 +8,7 @@ import {
   EditConflict,
   ConflictResolution,
   CollaborationEvent,
-  CollaborationEventType,
-  UserColorManager,
-  SessionSettings,
-  UserPermission
+  UserColorManager
 } from "../types/collaboration";
 
 /**
@@ -165,7 +162,7 @@ export class CollaborationService implements CollaborationManager {
    */
   async leaveSession(sessionId: string, userId: string): Promise<void> {
     const session = this.sessions.get(sessionId);
-    if (!session) return;
+    if (!session) {return;}
 
     // 사용자를 오프라인으로 표시
     const user = session.activeUsers.find(u => u.id === userId);
@@ -204,7 +201,7 @@ export class CollaborationService implements CollaborationManager {
    */
   async broadcastChange(sessionId: string, change: GridChange): Promise<void> {
     const session = this.sessions.get(sessionId);
-    if (!session) return;
+    if (!session) {return;}
 
     // 충돌 감지
     const conflict = await this.detectConflict(sessionId, change);
@@ -239,7 +236,7 @@ export class CollaborationService implements CollaborationManager {
    */
   async destroySession(sessionId: string): Promise<void> {
     const session = this.sessions.get(sessionId);
-    if (!session) return;
+    if (!session) {return;}
 
     // 모든 사용자에게 알림
     this.broadcastEvent(sessionId, {
@@ -320,7 +317,7 @@ export class CollaborationService implements CollaborationManager {
    * Socket.IO 이벤트 핸들러 설정
    */
   private setupSocketHandlers(): void {
-    if (!this.io) return;
+    if (!this.io) {return;}
 
     this.io.on('connection', (socket: Socket) => {
       this.logger.debug(`소켓 연결: ${socket.id}`);
@@ -402,7 +399,7 @@ export class CollaborationService implements CollaborationManager {
    * 이벤트 브로드캐스트
    */
   private broadcastEvent(sessionId: string, event: CollaborationEvent, excludeSocketId?: string): void {
-    if (!this.io) return;
+    if (!this.io) {return;}
 
     if (excludeSocketId) {
       this.io.to(sessionId).except(excludeSocketId).emit('collaboration-event', event);

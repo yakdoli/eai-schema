@@ -4,7 +4,7 @@
  */
 
 import { GridComponent } from './GridComponent';
-import { FilterCondition, SortCondition, DataType } from '../types/grid';
+import { FilterCondition, SortCondition } from '../types/grid';
 import { Logger } from '../core/logging/Logger';
 
 export class GridAdvancedUI {
@@ -202,7 +202,7 @@ export class GridAdvancedUI {
    * 필터 패널 표시
    */
   public showFilterPanel(column: number, x: number, y: number): void {
-    if (!this.filterPanel) return;
+    if (!this.filterPanel) {return;}
 
     this.filterPanel.style.display = 'block';
     this.filterPanel.style.left = `${x}px`;
@@ -244,10 +244,10 @@ export class GridAdvancedUI {
    * 현재 필터 적용
    */
   private applyCurrentFilter(): void {
-    if (!this.filterPanel) return;
+    if (!this.filterPanel) {return;}
 
     const column = (this.filterPanel as any).currentColumn;
-    if (column === undefined) return;
+    if (column === undefined) {return;}
 
     const filterTypeSelect = this.filterPanel.querySelector('#filterType') as HTMLSelectElement;
     const filterValue = this.filterPanel.querySelector('#filterValue') as HTMLInputElement;
@@ -274,10 +274,10 @@ export class GridAdvancedUI {
    * 현재 필터 지우기
    */
   private clearCurrentFilter(): void {
-    if (!this.filterPanel) return;
+    if (!this.filterPanel) {return;}
 
     const column = (this.filterPanel as any).currentColumn;
-    if (column === undefined) return;
+    if (column === undefined) {return;}
 
     this.gridComponent.removeFilter(column);
     this.hideFilterPanel();
@@ -331,7 +331,7 @@ export class GridAdvancedUI {
   /**
    * 클립보드 피드백 표시
    */
-  public showClipboardFeedback(message: string, duration: number = 2000): void {
+  public showClipboardFeedback(message: string, duration = 2000): void {
     // 기존 피드백 제거
     const existingFeedback = document.querySelector('.clipboard-feedback');
     if (existingFeedback) {

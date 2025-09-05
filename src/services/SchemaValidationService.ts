@@ -1,4 +1,4 @@
-import Ajv, { ErrorObject } from "ajv";
+import Ajv from "ajv";
 import addFormats from "ajv-formats";
 import libxmljs from "libxmljs2";
 import { logger } from "../utils/logger";

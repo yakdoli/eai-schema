@@ -17,7 +17,7 @@ export class CollaborationClient {
   private isConnected = false;
   private eventHandlers = new Map<string, Function[]>();
 
-  constructor(private serverUrl: string = '') {
+  constructor(private serverUrl = '') {
     // 이벤트 핸들러 초기화
     this.initializeEventHandlers();
   }
@@ -216,7 +216,7 @@ export class CollaborationClient {
    * Socket.IO 이벤트 핸들러 설정
    */
   private setupSocketEventHandlers(): void {
-    if (!this.socket) return;
+    if (!this.socket) {return;}
 
     // 협업 이벤트 수신
     this.socket.on('collaboration-event', (event: CollaborationEvent) => {
@@ -344,7 +344,7 @@ export class CollaborationUI {
    */
   showUserCursor(userId: string, position: CursorPosition): void {
     const user = this.activeUsers.get(userId);
-    if (!user) return;
+    if (!user) {return;}
 
     let cursor = this.userCursors.get(userId);
     if (!cursor) {
@@ -361,7 +361,7 @@ export class CollaborationUI {
    */
   showUserSelection(userId: string, selection: SelectionRange | null): void {
     const user = this.activeUsers.get(userId);
-    if (!user) return;
+    if (!user) {return;}
 
     let selectionElement = this.userSelections.get(userId);
     

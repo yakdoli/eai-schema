@@ -75,7 +75,7 @@ export const stripHtml = (str: string): string => {
 /**
  * 문자열 자르기 (말줄임표 추가)
  */
-export const truncate = (str: string, maxLength: number, suffix: string = '...'): string => {
+export const truncate = (str: string, maxLength: number, suffix = '...'): string => {
   if (str.length <= maxLength) {
     return str;
   }
@@ -85,7 +85,7 @@ export const truncate = (str: string, maxLength: number, suffix: string = '...')
 /**
  * 단어 단위로 문자열 자르기
  */
-export const truncateWords = (str: string, maxWords: number, suffix: string = '...'): string => {
+export const truncateWords = (str: string, maxWords: number, suffix = '...'): string => {
   const words = str.split(/\s+/);
   if (words.length <= maxWords) {
     return str;
@@ -137,7 +137,7 @@ export const toSlug = (str: string): string => {
  */
 export const generateRandomString = (
   length: number,
-  charset: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 ): string => {
   let result = '';
   for (let i = 0; i < length; i++) {
@@ -181,7 +181,7 @@ export const calculateSimilarity = (str1: string, str2: string): number => {
 /**
  * 문자열 마스킹 (개인정보 보호)
  */
-export const maskString = (str: string, visibleStart: number = 2, visibleEnd: number = 2, maskChar: string = '*'): string => {
+export const maskString = (str: string, visibleStart = 2, visibleEnd = 2, maskChar = '*'): string => {
   if (str.length <= visibleStart + visibleEnd) {
     return maskChar.repeat(str.length);
   }
@@ -198,7 +198,7 @@ export const maskString = (str: string, visibleStart: number = 2, visibleEnd: nu
  */
 export const maskEmail = (email: string): string => {
   const [localPart, domain] = email.split('@');
-  if (!domain) return maskString(email);
+  if (!domain) {return maskString(email);}
   
   const maskedLocal = maskString(localPart, 1, 1);
   return `${maskedLocal}@${domain}`;
@@ -209,7 +209,7 @@ export const maskEmail = (email: string): string => {
  */
 export const maskPhoneNumber = (phone: string): string => {
   const cleaned = phone.replace(/\D/g, '');
-  if (cleaned.length < 4) return maskString(phone);
+  if (cleaned.length < 4) {return maskString(phone);}
   
   return maskString(cleaned, 3, 4);
 };

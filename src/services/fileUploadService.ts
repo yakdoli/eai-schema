@@ -1,4 +1,4 @@
-import multer from "multer";
+// import multer from "multer"; // TODO: 필요시 사용
 import path from "path";
 import fs from "fs/promises";
 import crypto from "crypto";
@@ -145,7 +145,7 @@ export class FileUploadService {
     if (mimetype.includes("json")) {
       try {
         JSON.parse(content);
-      } catch (error) {
+      } catch {
         // 부분 내용으로 파싱 실패는 정상 (전체 파일이 아니므로)
         // 실제 파싱은 나중에 전체 내용으로 수행
       }

@@ -2,7 +2,7 @@
  * 그리드 고급 기능 테스트
  */
 
-import { GridAdvancedFeatures, CellRange, FilterCondition, SortCondition } from '../../services/GridAdvancedFeatures';
+import { GridAdvancedFeatures, FilterCondition, SortCondition } from '../../services/GridAdvancedFeatures';
 import { DataType } from '../../types/grid';
 
 // Handsontable 모킹

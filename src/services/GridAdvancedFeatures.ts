@@ -5,11 +5,7 @@
 
 import Handsontable from 'handsontable';
 import {
-  GridColumn,
-  SchemaGridData,
-  DataType,
-  ValidationResult,
-  CellChangeEvent
+  DataType
 } from '../types/grid';
 import { Logger } from '../core/logging/Logger';
 
@@ -94,7 +90,7 @@ export class GridAdvancedFeatures {
    * 선택된 범위 시각적 표시
    */
   private highlightSelectedRange(): void {
-    if (!this.selectedRange) return;
+    if (!this.selectedRange) {return;}
 
     const { startRow, startCol, endRow, endCol } = this.selectedRange;
     
@@ -493,9 +489,10 @@ export class GridAdvancedFeatures {
         return Number(value) > Number(filter.value);
       case 'lessThan':
         return Number(value) < Number(filter.value);
-      case 'between':
+      case 'between': {
         const numValue = Number(value);
         return numValue >= Number(filter.value) && numValue <= Number(filter.value2 || 0);
+      }
       case 'empty':
         return !value || String(value).trim() === '';
       case 'notEmpty':
@@ -534,7 +531,9 @@ export class GridAdvancedFeatures {
    * 정렬 실행
    */
   private executeSort(): void {
-    if (this.activeSorts.length === 0) return;
+    if (this.activeSorts.length === 0) {
+      return;
+    }
 
     // 다중 컬럼 정렬 설정
     const sortConfig = this.activeSorts.map(sort => ({
@@ -622,9 +621,10 @@ export class GridAdvancedFeatures {
   /**
    * 클립보드 알림 표시
    */
-  private showClipboardNotification(action: string, rows: number, cols: number): void {
+  private showClipboardNotification(_action: string, _rows: number, _cols: number): void {
     // 실제 구현에서는 UI 알림 시스템 사용
-    console.log(`${action}: ${rows}행 × ${cols}열`);
+    // console.log(`${action}: ${rows}행 × ${cols}열`);
+    // TODO: UI 알림 시스템으로 대체
   }
 
   /**

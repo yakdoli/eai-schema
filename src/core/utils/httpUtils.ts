@@ -172,7 +172,7 @@ export const setCorsHeaders = (res: Response, origin?: string): void => {
 /**
  * 캐시 헤더 설정
  */
-export const setCacheHeaders = (res: Response, maxAge: number = 3600): void => {
+export const setCacheHeaders = (res: Response, maxAge = 3600): void => {
   res.setHeader('Cache-Control', `public, max-age=${maxAge}`);
   res.setHeader('ETag', `"${Date.now()}"`);
 };

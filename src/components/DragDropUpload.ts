@@ -38,8 +38,8 @@ export class DragDropUploadManager {
   private options: UploadOptions;
   private callbacks: UploadCallbacks;
   private files: Map<string, UploadFile> = new Map();
-  private isDragOver: boolean = false;
-  private dragCounter: number = 0;
+  private isDragOver = false;
+  private dragCounter = 0;
 
   constructor(
     container: HTMLElement,
@@ -770,9 +770,9 @@ export class DragDropUploadManager {
    * 파일 타입 레이블 반환
    */
   private getFileTypeLabel(type: string): string {
-    if (type.includes('json')) return 'JSON';
-    if (type.includes('xml')) return 'XML';
-    if (type.includes('yaml')) return 'YAML';
+    if (type.includes('json')) {return 'JSON';}
+    if (type.includes('xml')) {return 'XML';}
+    if (type.includes('yaml')) {return 'YAML';}
     return '파일';
   }
 
@@ -780,7 +780,7 @@ export class DragDropUploadManager {
    * 파일 크기 포맷팅
    */
   private formatFileSize(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) {return '0 Bytes';}
     
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
@@ -794,7 +794,7 @@ export class DragDropUploadManager {
    */
   private removeFile(fileId: string): void {
     const file = this.files.get(fileId);
-    if (!file) return;
+    if (!file) {return;}
     
     this.files.delete(fileId);
     this.renderFileList();
@@ -821,7 +821,7 @@ export class DragDropUploadManager {
    */
   private async uploadFile(fileId: string): Promise<void> {
     const file = this.files.get(fileId);
-    if (!file) return;
+    if (!file) {return;}
     
     file.status = 'uploading';
     file.progress = 0;

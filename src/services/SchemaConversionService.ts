@@ -279,7 +279,7 @@ export class SchemaConversionService implements ISchemaConversionService {
           });
           return format;
         }
-      } catch (error) {
+      } catch {
         // 검증 실패는 정상적인 과정이므로 로그하지 않음
         continue;
       }

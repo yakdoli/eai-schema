@@ -35,7 +35,7 @@ class MemoryRateLimitStore {
 
   get(key: string): { count: number; resetTime: number } | null {
     const item = this.store[key];
-    if (!item) return null;
+    if (!item) {return null;}
     
     // 만료된 항목 확인
     if (Date.now() > item.resetTime) {
@@ -280,7 +280,7 @@ export const rateLimitMiddleware = (options: { windowMs?: number; max?: number; 
 /**
  * Rate Limit 상태 조회 엔드포인트용 미들웨어
  */
-export const getRateLimitStatus = (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+export const getRateLimitStatus = (req: AuthenticatedRequest, res: Response, _next: NextFunction): void => {
   const key = req.user?.id || req.ip || 'unknown';
   const current = rateLimitStore.get(key);
   

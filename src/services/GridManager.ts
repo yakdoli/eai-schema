@@ -12,7 +12,6 @@ import {
   StructureChange,
   ValidationResult,
   DataType,
-  CustomDataType,
   GridMetadata
 } from '../types/grid';
 import { GridValidationService } from './GridValidationService';
@@ -429,9 +428,8 @@ export class GridManager {
           break;
         case 'enum':
           if (value) {
-            property[key] = value.replace(/[\[\]]/g, '').split(',').map(s => s.trim());
+            property[key] = value.replace(/[[\]]/g, '').split(',').map(s => s.trim());
           }
-          break;
           break;
       }
     });

@@ -10,8 +10,7 @@ import {
   isValidUrl, 
   isValidFileExtension, 
   isValidMimeType, 
-  sanitizeInput, 
-  escapeHtml 
+  sanitizeInput 
 } from '../core/utils/validation';
 
 const logger = new Logger();
@@ -313,7 +312,7 @@ function scanFileContent(file: any, req: AuthenticatedRequest): void {
 /**
  * URL 검증 미들웨어
  */
-export const validateUrl = (paramName: string = 'url') => {
+export const validateUrl = (paramName = 'url') => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
     try {
       const url = req.body[paramName] || req.query[paramName];
@@ -414,7 +413,7 @@ export const preventSQLInjection = (req: AuthenticatedRequest, res: Response, ne
     }
     
     // 요청 본문 검사 (재귀적)
-    const checkObject = (obj: any, path: string = 'body'): void => {
+    const checkObject = (obj: any, path = 'body'): void => {
       if (typeof obj === 'string') {
         checkForSQLInjection(obj, path);
       } else if (Array.isArray(obj)) {

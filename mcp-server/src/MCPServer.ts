@@ -6,7 +6,7 @@ class MCPServer {
   private app: Application;
   private port: number;
 
-  constructor(port: number = 3002) {
+  constructor(port = 3002) {
     this.app = express();
     this.port = port;
     this.setupMiddleware();
@@ -64,8 +64,8 @@ class MCPServer {
       const qwenPath = path.join(__dirname, "..", "..", "QWEN.md");
       
       let packageJson: any = {};
-      let readme: string = "";
-      let qwen: string = "";
+      let readme = "";
+      let qwen = "";
       
       if (fs.existsSync(packageJsonPath)) {
         packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));

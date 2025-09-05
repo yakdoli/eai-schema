@@ -6,7 +6,7 @@
 import { Router, Request, Response } from 'express';
 import { body, param, query } from 'express-validator';
 import { validationMiddleware } from '../../middleware/validationMiddleware';
-import { authMiddleware } from '../../middleware/authMiddleware';
+// import { authMiddleware } from '../../middleware/authMiddleware'; // 현재 사용되지 않음
 import { CollaborationService } from '../../services/CollaborationService';
 import { Logger } from '../../core/logging/Logger';
 import { 
@@ -97,8 +97,8 @@ router.get('/sessions',
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 20;
-      const status = req.query.status as string;
-      const schemaId = req.query.schemaId as string;
+      const _status = req.query.status as string;
+      const _schemaId = req.query.schemaId as string;
 
       // 세션 목록 조회 (임시 구현)
       const sessions: SessionResponse[] = [];
@@ -145,7 +145,7 @@ router.post('/sessions',
       const createRequest: CreateSessionRequest = req.body;
       
       // 세션 생성 로직
-      const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const _sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       
       const session: SessionResponse = {
         id: sessionId,
@@ -200,7 +200,7 @@ router.get('/sessions/:sessionId',
       const sessionId = req.params.sessionId;
       
       // 세션 정보 조회 (임시 구현)
-      let activeUsers: ActiveUser[] = [];
+      const activeUsers: ActiveUser[] = [];
 
       const session: SessionResponse = {
         id: sessionId,
@@ -297,10 +297,10 @@ router.delete('/sessions/:sessionId',
   ],
   async (req: Request, res: Response) => {
     try {
-      const sessionId = req.params.sessionId;
+      const _sessionId = req.params.sessionId;
       
       // 세션 종료 로직 (임시 구현)
-      // await collaborationService.deleteSession(sessionId);
+      // await collaborationService.deleteSession(_sessionId);
 
       const response: ApiResponse = {
         success: true,
@@ -330,7 +330,7 @@ router.post('/sessions/:sessionId/join',
   async (req: Request, res: Response) => {
     try {
       const sessionId = req.params.sessionId;
-      const { userId, userName } = req.body;
+      const { userId, userName: _userName } = req.body;
 
       // 세션 참여 로직 (임시 구현)
       // await collaborationService.joinSession(sessionId, userId);
@@ -402,10 +402,10 @@ router.get('/sessions/:sessionId/users',
   ],
   async (req: Request, res: Response) => {
     try {
-      const sessionId = req.params.sessionId;
+      const _sessionId = req.params.sessionId;
       
       // 활성 사용자 조회 (임시 구현)
-      let activeUsers: ActiveUser[] = [];
+      const activeUsers: ActiveUser[] = [];
 
       const response: ApiResponse<ActiveUser[]> = {
         success: true,

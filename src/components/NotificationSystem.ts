@@ -746,7 +746,7 @@ export class NotificationManager {
    */
   public hide(id: string): void {
     const notification = this.notifications.get(id);
-    if (!notification) return;
+    if (!notification) {return;}
 
     notification.classList.remove('show');
     
@@ -778,7 +778,7 @@ export class NotificationManager {
    */
   private scheduleHide(id: string, duration: number): void {
     const notification = this.notifications.get(id);
-    if (!notification) return;
+    if (!notification) {return;}
 
     // 진행률 바 표시
     const progressBar = document.createElement('div');
@@ -878,7 +878,7 @@ export class NotificationManager {
     
     closeBtn?.addEventListener('click', closeModal);
     modal.addEventListener('click', (e) => {
-      if (e.target === modal) closeModal();
+      if (e.target === modal) {closeModal();}
     });
 
     document.body.appendChild(modal);

@@ -1,7 +1,7 @@
 // 레거시 에러 핸들러 - 새로운 구조로 마이그레이션됨
 // 새로운 에러 핸들러는 src/core/errors/ErrorHandler.ts에 있습니다.
 
-import { Request, Response, NextFunction } from "express";
+// import { Request, Response, NextFunction } from "express"; // 현재 사용되지 않음
 import { ErrorHandler } from "../core/errors/ErrorHandler";
 import { Logger } from "../core/logging/Logger";
 
@@ -23,7 +23,7 @@ export {
 export { asyncHandler } from "../core/utils/asyncHandler";
 
 // 사용자 친화적인 에러 메시지 생성 함수
-function getUserFriendlyMessage(error: AppError): string {
+function _getUserFriendlyMessage(error: AppError): string {
   const errorMessages: { [key: string]: string } = {
     'ValidationError': '입력 데이터가 올바르지 않습니다. 다시 확인해주세요.',
     'FileUploadError': '파일 업로드 중 문제가 발생했습니다. 파일 형식과 크기를 확인해주세요.',

@@ -73,7 +73,7 @@ export class AuthenticationError extends AppError {
   readonly isOperational = true;
   readonly errorCode = 'AUTHENTICATION_ERROR';
   
-  constructor(message: string = '인증이 필요합니다', requestId?: string) {
+  constructor(message = '인증이 필요합니다', requestId?: string) {
     super(message, requestId);
   }
 }
@@ -84,7 +84,7 @@ export class AuthorizationError extends AppError {
   readonly errorCode = 'AUTHORIZATION_ERROR';
   
   constructor(
-    message: string = '권한이 없습니다',
+    message = '권한이 없습니다',
     public readonly requiredPermission?: string,
     requestId?: string
   ) {
@@ -98,7 +98,7 @@ export class NotFoundError extends AppError {
   readonly errorCode = 'NOT_FOUND_ERROR';
   
   constructor(
-    message: string = '리소스를 찾을 수 없습니다',
+    message = '리소스를 찾을 수 없습니다',
     public readonly resourceType?: string,
     public readonly resourceId?: string,
     requestId?: string
@@ -127,7 +127,7 @@ export class InternalServerError extends AppError {
   readonly errorCode = 'INTERNAL_SERVER_ERROR';
   
   constructor(
-    message: string = '내부 서버 오류가 발생했습니다',
+    message = '내부 서버 오류가 발생했습니다',
     public readonly originalError?: Error,
     requestId?: string
   ) {
@@ -156,7 +156,7 @@ export class RateLimitError extends AppError {
   readonly errorCode = 'RATE_LIMIT_ERROR';
   
   constructor(
-    message: string = '요청 한도를 초과했습니다',
+    message = '요청 한도를 초과했습니다',
     public readonly retryAfter?: number,
     requestId?: string
   ) {

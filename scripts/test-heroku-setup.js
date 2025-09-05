@@ -8,7 +8,7 @@ console.log("- NODE_ENV:", process.env.NODE_ENV || "Not set (defaulting to devel
 
 // Try to import a simple module
 try {
-  const express = require("express");
+  const _express = require("express");
   console.log("✓ Express imported successfully");
 } catch (error) {
   console.error("✗ Failed to import Express:", error.message);
@@ -16,7 +16,7 @@ try {
 
 // Try to import our main module
 try {
-  const app = require("./dist/index.js");
+  const _app = require("./dist/index.js");
   console.log("✓ Main application imported successfully");
 } catch (error) {
   console.error("✗ Failed to import main application:", error.message);

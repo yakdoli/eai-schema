@@ -34,7 +34,7 @@ test.describe('스키마 변환 E2E 테스트', () => {
     };
 
     // 임시 파일 생성
-    const tempFile = path.join(__dirname, 'temp-schema.json');
+    const _tempFile = path.join(__dirname, 'temp-schema.json');
     await page.evaluate(async (content) => {
       const blob = new Blob([content], { type: 'application/json' });
       const file = new File([blob], 'test-schema.json', { type: 'application/json' });

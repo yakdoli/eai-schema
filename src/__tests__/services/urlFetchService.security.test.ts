@@ -62,7 +62,7 @@ describe("UrlFetchService Security Tests", () => {
       };
 
       mockHttp.request.mockImplementation((options, callback) => {
-        if (callback) callback(mockResponse);
+        if (callback) {callback(mockResponse);}
         return mockRequest;
       });
 
@@ -143,7 +143,7 @@ describe("UrlFetchService Security Tests", () => {
       };
 
       mockHttps.request.mockImplementation((options, callback) => {
-        if (callback) callback(mockResponse);
+        if (callback) {callback(mockResponse);}
         return mockRequest;
       });
 
@@ -185,7 +185,7 @@ describe("UrlFetchService Security Tests", () => {
       };
 
       mockHttps.request.mockImplementation((options, callback) => {
-        if (callback) callback(mockResponse);
+        if (callback) {callback(mockResponse);}
         return mockRequest;
       });
 
@@ -207,7 +207,7 @@ describe("UrlFetchService Security Tests", () => {
       };
 
       mockHttps.request.mockImplementation((options, callback) => {
-        if (callback) callback(mockResponse);
+        if (callback) {callback(mockResponse);}
         return mockRequest;
       });
 
@@ -239,7 +239,7 @@ describe("UrlFetchService Security Tests", () => {
       };
 
       mockHttps.request.mockImplementation((options, callback) => {
-        if (callback) callback(mockResponse);
+        if (callback) {callback(mockResponse);}
         return mockRequest;
       });
 
@@ -261,7 +261,7 @@ describe("UrlFetchService Security Tests", () => {
       };
 
       mockHttps.request.mockImplementation((options, callback) => {
-        if (callback) callback(mockResponse);
+        if (callback) {callback(mockResponse);}
         return mockRequest;
       });
 
@@ -285,7 +285,7 @@ describe("UrlFetchService Security Tests", () => {
       };
 
       mockHttps.request.mockImplementation((options, callback) => {
-        if (callback) callback(mockResponse);
+        if (callback) {callback(mockResponse);}
         return mockRequest;
       });
 
@@ -309,7 +309,7 @@ describe("UrlFetchService Security Tests", () => {
       };
 
       mockHttps.request.mockImplementation((options, callback) => {
-        if (callback) callback(mockResponse);
+        if (callback) {callback(mockResponse);}
         return mockRequest;
       });
 
@@ -331,7 +331,7 @@ describe("UrlFetchService Security Tests", () => {
         };
 
         mockHttps.request.mockImplementation((options, callback) => {
-          if (callback) callback(mockResponse);
+          if (callback) {callback(mockResponse);}
           return mockRequest;
         });
 
@@ -406,7 +406,7 @@ describe("UrlFetchService Security Tests", () => {
       };
 
       mockHttps.request.mockImplementation((options, callback) => {
-        if (callback) callback(mockResponse);
+        if (callback) {callback(mockResponse);}
         return mockRequest;
       });
 
@@ -439,7 +439,7 @@ describe("UrlFetchService Security Tests", () => {
       };
 
       mockHttps.request.mockImplementation((options, callback) => {
-        if (callback) callback(mockResponse);
+        if (callback) {callback(mockResponse);}
         return mockRequest;
       });
 

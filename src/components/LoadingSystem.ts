@@ -539,7 +539,7 @@ export class LoadingManager {
    * 오버레이 로딩 표시
    */
   private showOverlayLoading(state: LoadingState, options: LoadingOptions): void {
-    if (!this.overlayElement) return;
+    if (!this.overlayElement) {return;}
 
     const theme = options.theme || 'light';
     const size = options.size || 'medium';
@@ -633,7 +633,7 @@ export class LoadingManager {
    */
   public updateProgress(id: string, progress: number, message?: string): void {
     const state = this.loadingStates.get(id);
-    if (!state) return;
+    if (!state) {return;}
 
     state.progress = Math.max(0, Math.min(100, progress));
     
@@ -678,7 +678,7 @@ export class LoadingManager {
    */
   public hideLoading(id: string): void {
     const state = this.loadingStates.get(id);
-    if (!state) return;
+    if (!state) {return;}
 
     this.loadingStates.delete(id);
 
@@ -707,7 +707,7 @@ export class LoadingManager {
    */
   public showInlineLoading(
     container: HTMLElement, 
-    message: string = '로딩 중...',
+    message = '로딩 중...',
     options: { showProgress?: boolean; size?: string } = {}
   ): string {
     const id = this.generateId();
@@ -778,7 +778,7 @@ export class LoadingManager {
   /**
    * 스켈레톤 로딩 생성
    */
-  public createSkeleton(container: HTMLElement, type: 'text' | 'avatar' | 'button' | 'custom', count: number = 1): void {
+  public createSkeleton(container: HTMLElement, type: 'text' | 'avatar' | 'button' | 'custom', count = 1): void {
     container.innerHTML = '';
     
     for (let i = 0; i < count; i++) {

@@ -1,7 +1,7 @@
 // API 관련 타입 정의
 
 import { Request, Response } from 'express';
-import { Schema, SchemaFormat, SchemaGridData, ValidationResult, ConversionResult } from './schema';
+import { Schema, SchemaFormat, SchemaGridData, ValidationResult } from './schema';
 import { CollaborationSession, GridChange } from './collaboration';
 
 // 요청 타입들

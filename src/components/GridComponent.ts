@@ -12,9 +12,6 @@ import {
   StructureChange,
   ValidationResult,
   DataType,
-  GridSettings,
-  GridEventHandlers,
-  AdvancedGridFeatures,
   CellRange,
   FilterCondition,
   SortCondition
@@ -116,7 +113,7 @@ export class GridComponent {
     return this.props.data.map(row => 
       this.props.columns.map((col, colIndex) => {
         const cellData = row[colIndex];
-        if (!cellData) return '';
+        if (!cellData) {return '';}
         
         switch (col.id) {
           case 'fieldName':
@@ -209,7 +206,7 @@ export class GridComponent {
    * 셀 변경 이벤트 핸들러
    */
   private handleAfterChange(changes: [number, string | number, any, any][] | null, source: string): void {
-    if (!changes || source === 'loadData') return;
+    if (!changes || source === 'loadData') {return;}
 
     const cellChanges: CellChangeEvent[] = changes.map(([row, prop, oldValue, newValue]) => ({
       row,
@@ -229,7 +226,7 @@ export class GridComponent {
   /**
    * 행 추가 이벤트 핸들러
    */
-  private handleAfterCreateRow(index: number, amount: number, source?: string): void {
+  private handleAfterCreateRow(index: number, amount: number, _source?: string): void {
     const change: StructureChange = {
       type: 'insert_row',
       index,
@@ -242,7 +239,7 @@ export class GridComponent {
   /**
    * 행 삭제 이벤트 핸들러
    */
-  private handleAfterRemoveRow(index: number, amount: number, physicalRows: number[], source?: string): void {
+  private handleAfterRemoveRow(index: number, amount: number, _physicalRows: number[], _source?: string): void {
     const change: StructureChange = {
       type: 'remove_row',
       index,
@@ -255,7 +252,7 @@ export class GridComponent {
   /**
    * 열 추가 이벤트 핸들러
    */
-  private handleAfterCreateCol(index: number, amount: number, source?: string): void {
+  private handleAfterCreateCol(index: number, amount: number, _source?: string): void {
     const change: StructureChange = {
       type: 'insert_col',
       index,
@@ -268,7 +265,7 @@ export class GridComponent {
   /**
    * 열 삭제 이벤트 핸들러
    */
-  private handleAfterRemoveCol(index: number, amount: number, physicalColumns: number[], source?: string): void {
+  private handleAfterRemoveCol(index: number, amount: number, _physicalColumns: number[], _source?: string): void {
     const change: StructureChange = {
       type: 'remove_col',
       index,
@@ -281,7 +278,7 @@ export class GridComponent {
   /**
    * 검증 전 이벤트 핸들러
    */
-  private handleBeforeValidate(value: any, row: number, prop: string | number, source?: string): boolean | void {
+  private handleBeforeValidate(_value: any, _row: number, _prop: string | number, _source?: string): boolean | void {
     // 커스텀 검증 로직 적용 가능
     return true;
   }
@@ -289,7 +286,7 @@ export class GridComponent {
   /**
    * 검증 후 이벤트 핸들러
    */
-  private handleAfterValidate(isValid: boolean, value: any, row: number, prop: string | number, source?: string): boolean | void {
+  private handleAfterValidate(isValid: boolean, value: any, _row: number, prop: string | number, _source?: string): boolean | void {
     const col = typeof prop === 'string' ? this.getColumnIndex(prop) : prop;
     const column = this.props.columns[col];
     
@@ -308,7 +305,7 @@ export class GridComponent {
   /**
    * 선택 영역 변경 이벤트 핸들러
    */
-  private handleAfterSelection(row: number, column: number, row2: number, column2: number): void {
+  private handleAfterSelection(_row: number, _column: number, _row2: number, _column2: number): void {
     // 협업 모드에서 선택 영역 동기화
     if (this.props.collaborationMode) {
       // TODO: 협업 기능 구현 시 추가
@@ -341,7 +338,7 @@ export class GridComponent {
    * 셀 스타일 업데이트
    */
   private updateCellStyle(row: number, col: number, validationResult: ValidationResult): void {
-    if (!this.hot) return;
+    if (!this.hot) {return;}
 
     let className = '';
     if (!validationResult.isValid) {
@@ -367,7 +364,7 @@ export class GridComponent {
    * 데이터 업데이트
    */
   public updateData(data: SchemaGridData[][]): void {
-    if (!this.hot) return;
+    if (!this.hot) {return;}
 
     const handsontableData = this.convertDataForHandsontable();
     this.hot.loadData(handsontableData);
@@ -378,7 +375,7 @@ export class GridComponent {
    * 컬럼 설정 업데이트
    */
   public updateColumns(columns: GridColumn[]): void {
-    if (!this.hot) return;
+    if (!this.hot) {return;}
 
     this.props.columns = columns;
     const columnSettings = this.createColumnSettings();
@@ -413,7 +410,7 @@ export class GridComponent {
    * 행 추가
    */
   public addRow(index?: number): void {
-    if (!this.hot || this.props.readOnly) return;
+    if (!this.hot || this.props.readOnly) {return;}
     
     const insertIndex = index !== undefined ? index : this.hot.countRows();
     this.hot.alter('insert_row_above', insertIndex);
@@ -423,7 +420,7 @@ export class GridComponent {
    * 행 삭제
    */
   public removeRow(index: number): void {
-    if (!this.hot || this.props.readOnly) return;
+    if (!this.hot || this.props.readOnly) {return;}
     
     this.hot.alter('remove_row', index);
   }
@@ -432,7 +429,7 @@ export class GridComponent {
    * 열 추가
    */
   public addColumn(index?: number): void {
-    if (!this.hot || this.props.readOnly) return;
+    if (!this.hot || this.props.readOnly) {return;}
     
     const insertIndex = index !== undefined ? index : this.hot.countCols();
     this.hot.alter('insert_col_start', insertIndex);
@@ -442,7 +439,7 @@ export class GridComponent {
    * 열 삭제
    */
   public removeColumn(index: number): void {
-    if (!this.hot || this.props.readOnly) return;
+    if (!this.hot || this.props.readOnly) {return;}
     
     this.hot.alter('remove_col', index);
   }
@@ -451,7 +448,7 @@ export class GridComponent {
    * 그리드 새로고침
    */
   public refresh(): void {
-    if (!this.hot) return;
+    if (!this.hot) {return;}
     
     this.hot.render();
   }
@@ -485,7 +482,7 @@ export class GridComponent {
    * 오류가 있는 셀 하이라이트
    */
   public highlightErrors(): void {
-    if (!this.hot) return;
+    if (!this.hot) {return;}
 
     this.validationResults.forEach((result, cellKey) => {
       if (!result.isValid && result.errors.length > 0) {
@@ -501,7 +498,7 @@ export class GridComponent {
    * 경고가 있는 셀 하이라이트
    */
   public highlightWarnings(): void {
-    if (!this.hot) return;
+    if (!this.hot) {return;}
 
     this.validationResults.forEach((result, cellKey) => {
       if (result.warnings.length > 0) {
@@ -519,7 +516,7 @@ export class GridComponent {
    * 셀 범위 선택
    */
   public selectRange(startRow: number, startCol: number, endRow: number, endCol: number): void {
-    if (!this.hot) return;
+    if (!this.hot) {return;}
     this.hot.selectCell(startRow, startCol, endRow, endCol);
   }
 
@@ -680,7 +677,7 @@ export class GridComponent {
    * 셀 포맷 설정
    */
   public setCellFormat(row: number, col: number, format: any): void {
-    if (!this.hot) return;
+    if (!this.hot) {return;}
 
     Object.keys(format).forEach(key => {
       this.hot!.setCellMeta(row, col, key, format[key]);
@@ -693,7 +690,7 @@ export class GridComponent {
    * 셀 포맷 가져오기
    */
   public getCellFormat(row: number, col: number): any {
-    if (!this.hot) return {};
+    if (!this.hot) {return {};}
 
     const cellMeta = this.hot.getCellMeta(row, col);
     return {
@@ -710,7 +707,7 @@ export class GridComponent {
    * 필터 패널 표시
    */
   public showFilterPanel(column: number, x?: number, y?: number): void {
-    if (!this.advancedUI) return;
+    if (!this.advancedUI) {return;}
 
     // 좌표가 제공되지 않으면 컬럼 헤더 위치 계산
     if (x === undefined || y === undefined) {
@@ -754,7 +751,7 @@ export class GridComponent {
    * 데이터 타입 자동 감지 및 적용
    */
   public autoDetectDataTypes(): void {
-    if (!this.hot) return;
+    if (!this.hot) {return;}
 
     const data = this.hot.getData();
     const columns = this.props.columns;
@@ -762,7 +759,7 @@ export class GridComponent {
     for (let col = 0; col < columns.length; col++) {
       const columnData = data.map(row => row[col]).filter(value => value !== null && value !== undefined && value !== '');
       
-      if (columnData.length === 0) continue;
+      if (columnData.length === 0) {continue;}
 
       const detectedType = this.detectDataType(columnData);
       
@@ -828,7 +825,7 @@ export class GridComponent {
    * 셀 수준 검증 규칙 설정
    */
   public setCellValidationRule(row: number, col: number, validator: (value: any) => boolean, message: string): void {
-    if (!this.hot) return;
+    if (!this.hot) {return;}
 
     this.hot.setCellMeta(row, col, 'validator', (value: any, callback: (valid: boolean) => void) => {
       const isValid = validator(value);
@@ -850,7 +847,7 @@ export class GridComponent {
    * 조건부 포맷팅 적용
    */
   public applyConditionalFormatting(condition: (value: any, row: number, col: number) => boolean, className: string): void {
-    if (!this.hot) return;
+    if (!this.hot) {return;}
 
     const data = this.hot.getData();
     
@@ -911,7 +908,7 @@ export class GridComponent {
    * 그리드 성능 최적화
    */
   public optimizePerformance(): void {
-    if (!this.hot) return;
+    if (!this.hot) {return;}
 
     // 가상화 활성화 (대용량 데이터용)
     this.hot.updateSettings({

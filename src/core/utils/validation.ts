@@ -87,8 +87,8 @@ export const isValidFileSize = (size: number, maxSize: number): boolean => {
  */
 export const isValidStringLength = (
   str: string, 
-  minLength: number = 0, 
-  maxLength: number = Infinity
+  minLength = 0, 
+  maxLength = Infinity
 ): boolean => {
   return str.length >= minLength && str.length <= maxLength;
 };
@@ -98,8 +98,8 @@ export const isValidStringLength = (
  */
 export const isValidNumberRange = (
   num: number, 
-  min: number = -Infinity, 
-  max: number = Infinity
+  min = -Infinity, 
+  max = Infinity
 ): boolean => {
   return num >= min && num <= max;
 };

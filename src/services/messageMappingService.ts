@@ -1,4 +1,4 @@
-import { logger } from "../utils/logger";
+// import { logger } from "../utils/logger"; // TODO: 필요시 사용
 
 interface MessageMapping {
   id: string;
@@ -187,23 +187,23 @@ class MessageMappingService {
     }
   }
 
-  private validateXsdSchema(content: string, schemaContent: string): boolean {
+  private validateXsdSchema(_content: string, _schemaContent: string): boolean {
     // Placeholder for XSD validation implementation
     // In a real implementation, you would use a library like libxmljs or similar
-    this.logger.info("XSD validation performed (placeholder)");
+    // this.logger.info("XSD validation performed (placeholder)");
     return true;
   }
 
-  private validateJsonSchema(content: string, schemaContent: string): boolean {
+  private validateJsonSchema(_content: string, _schemaContent: string): boolean {
     // Placeholder for JSON schema validation implementation
     // In a real implementation, you would use AJV or similar
-    this.logger.info("JSON schema validation performed (placeholder)");
+    // this.logger.info("JSON schema validation performed (placeholder)");
     return true;
   }
 
-  private validateYamlSchema(content: string, schemaContent: string): boolean {
+  private validateYamlSchema(_content: string, _schemaContent: string): boolean {
     // Placeholder for YAML schema validation implementation
-    this.logger.info("YAML schema validation performed (placeholder)");
+    // this.logger.info("YAML schema validation performed (placeholder)");
     return true;
   }
 
@@ -239,7 +239,7 @@ class MessageMappingService {
       try {
         const jsonData = JSON.parse(source);
         xmlContent += this.jsonToXml(jsonData, 1);
-      } catch (error) {
+      } catch {
         // Handle invalid JSON gracefully
         xmlContent += "  <error type=\"invalid-json\">Invalid JSON format</error>\n";
         xmlContent += `  <source><![CDATA[${source}]]></source>\n`;
@@ -348,11 +348,15 @@ transformed: true
   }
 
   private countNodes(content: string): number {
-    if (!content) return 0;
+    if (!content) {
+      return 0;
+    }
 
     // Count XML nodes
     const xmlMatches = content.match(/<[^>]+>/g);
-    if (xmlMatches) return xmlMatches.length;
+    if (xmlMatches) {
+      return xmlMatches.length;
+    }
 
     // Count JSON objects/arrays
     try {
@@ -414,7 +418,7 @@ transformed: true
     }
   }
 
-  private jsonToXml(obj: any, indent: number = 0): string {
+  private jsonToXml(obj: any, indent = 0): string {
     const indentStr = "  ".repeat(indent);
     let xml = "";
 

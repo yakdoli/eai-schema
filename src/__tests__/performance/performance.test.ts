@@ -174,7 +174,7 @@ describe('성능 테스트', () => {
 
     test('동시 요청 처리 성능', async () => {
       const concurrentRequests = 20;
-      const requestsPerBatch = 5;
+      const _requestsPerBatch = 5;
       
       const testSchema = {
         type: 'object',
@@ -217,7 +217,7 @@ describe('성능 테스트', () => {
         요청당 평균 시간: ${avgTimePerRequest.toFixed(2)}ms`);
 
       // 모든 요청이 성공했는지 확인
-      results.forEach((result, index) => {
+      results.forEach((result, _index) => {
         expect(result.status).toBe(200);
         expect(result.body.success).toBe(true);
       });
@@ -240,7 +240,7 @@ describe('성능 테스트', () => {
             .get('/health')
             .timeout(5000);
           requestCount++;
-        } catch (error) {
+        } catch (_error) {
           errorCount++;
         }
       };

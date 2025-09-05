@@ -45,7 +45,7 @@ export class UrlFetchService {
 
     try {
       parsedUrl = new URL(urlString);
-    } catch (error) {
+    } catch {
       throw new ValidationError("유효하지 않은 URL 형식입니다.");
     }
 

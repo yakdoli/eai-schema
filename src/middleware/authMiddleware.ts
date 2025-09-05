@@ -166,7 +166,7 @@ export const requireAdmin = requireRole('admin');
 /**
  * 소유자 확인 미들웨어 (리소스 소유자 또는 관리자만 접근 가능)
  */
-export const requireOwnership = (resourceIdParam: string = 'id') => {
+export const requireOwnership = (resourceIdParam = 'id') => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
     try {
       if (!req.user) {
@@ -252,7 +252,7 @@ function isValidApiKey(apiKey: string): boolean {
 /**
  * API 키로부터 사용자 정보 추출 (실제 구현에서는 데이터베이스 조회)
  */
-function getUserFromApiKey(apiKey: string): any {
+function getUserFromApiKey(_apiKey: string): any {
   // 실제 구현에서는 데이터베이스에서 사용자 정보 조회
   return {
     id: 'api_user',

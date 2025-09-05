@@ -271,7 +271,7 @@ describe('DragDropUploadManager', () => {
   describe('파일 관리', () => {
     test('파일을 제거할 수 있어야 함', () => {
       // 먼저 파일 추가
-      const testFile = new MockFile('test.json', 1024, 'application/json') as any;
+      const _testFile = new MockFile('test.json', 1024, 'application/json') as any;
       const files = uploadManager.getFiles();
       
       // 파일이 추가되었다고 가정하고 직접 테스트
@@ -329,7 +329,7 @@ describe('DragDropUploadManager', () => {
 
   describe('정리', () => {
     test('컴포넌트를 올바르게 정리해야 함', () => {
-      const initialHTML = container.innerHTML;
+      const _initialHTML = container.innerHTML;
       
       uploadManager.destroy();
       

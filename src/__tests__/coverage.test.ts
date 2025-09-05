@@ -6,7 +6,7 @@
  */
 
 import { logger } from "../utils/logger";
-import { errorHandler } from "../middleware/errorHandler";
+import { errorHandler as _errorHandler } from "../middleware/errorHandler";
 // import performanceMonitoringMiddleware from "../middleware/performanceMonitoringMiddleware";
 
 // Mock dependencies

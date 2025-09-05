@@ -5,7 +5,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { Logger } from '../core/logging/Logger';
-import { ApiResponse, ApiError } from '../types/api-v2';
+import { ApiResponse } from '../types/api-v2';
 
 const logger = new Logger('APIv2Middleware');
 
@@ -22,7 +22,7 @@ export const requestIdMiddleware = (req: Request, res: Response, next: NextFunct
 /**
  * API 버전 헤더 설정 미들웨어
  */
-export const apiVersionMiddleware = (version: string = '2.0') => {
+export const apiVersionMiddleware = (version = '2.0') => {
   return (req: Request, res: Response, next: NextFunction): void => {
     res.setHeader('API-Version', version);
     res.setHeader('X-API-Version', version);

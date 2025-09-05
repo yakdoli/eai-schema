@@ -32,6 +32,7 @@ const API_VERSIONS: Record<string, VersionInfo> = {
 };
 
 // API 기능 매트릭스 (버전별 지원 기능)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const API_FEATURES: Record<string, Record<string, boolean>> = {
   '1.0': {
     'schema-crud': true,

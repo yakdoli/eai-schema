@@ -6,7 +6,6 @@ import {
   ValidationError, 
   SchemaConversionError, 
   CollaborationError,
-  AuthenticationError,
   AuthorizationError,
   NotFoundError,
   InternalServerError,
@@ -30,7 +29,7 @@ export class ErrorHandler {
     error: Error,
     req: Request,
     res: Response,
-    next: NextFunction
+    _next: NextFunction
   ): void => {
     const requestId = (req as any).requestId || 'unknown';
     
@@ -175,7 +174,7 @@ export class ErrorHandler {
   /**
    * 처리되지 않은 Promise rejection 핸들러
    */
-  public handleUnhandledRejection = (reason: any, promise: Promise<any>): void => {
+  public handleUnhandledRejection = (reason: any, _promise: Promise<any>): void => {
     this.logger.error('처리되지 않은 Promise rejection', {
       reason: reason?.message || reason,
       stack: reason?.stack

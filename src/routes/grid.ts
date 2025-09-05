@@ -11,8 +11,7 @@ import { AppError } from '../core/errors/ErrorHandler';
 import {
   GridColumn,
   SchemaGridData,
-  DataType,
-  ValidationResult
+  DataType
 } from '../types/grid';
 
 const router = Router();
@@ -314,7 +313,7 @@ router.post('/export', asyncHandler(async (req: Request, res: Response) => {
   try {
     // 임시 그리드 생성하여 내보내기 기능 사용
     const tempContainer = { innerHTML: '' } as HTMLElement;
-    const tempGrid = gridManager.createGrid('temp-export', tempContainer, {
+    const _tempGrid = gridManager.createGrid('temp-export', tempContainer, {
       data: gridData,
       columns: [],
       onCellChange: () => {},

@@ -6,21 +6,14 @@
 import { Router, Request, Response } from 'express';
 import { body, param, query } from 'express-validator';
 import { validationMiddleware } from '../../middleware/validationMiddleware';
-import { authMiddleware } from '../../middleware/authMiddleware';
-import { SchemaConversionService } from '../../services/SchemaConversionService';
-import { GridManager } from '../../services/GridManager';
+// import { authMiddleware } from '../../middleware/authMiddleware'; // TODO: 필요시 사용
+// import { SchemaConversionService } from '../../services/SchemaConversionService'; // TODO: 필요시 사용
+// import { GridManager } from '../../services/GridManager'; // TODO: 필요시 사용
 import { Logger } from '../../core/logging/Logger';
 import { 
   ApiResponse, 
-  CreateSchemaRequest, 
-  UpdateSchemaRequest,
-  SchemaResponse,
-  ConvertToGridRequest,
-  UpdateGridRequest,
-  ExportSchemaRequest,
-  SearchRequest,
-  BatchRequest,
-  BatchResponse
+  CreateSchemaRequest,
+  SchemaResponse
 } from '../../types/api-v2';
 
 // Request 인터페이스 확장
@@ -31,8 +24,8 @@ interface AuthenticatedRequest extends Request {
 
 const router = Router();
 const logger = new Logger('SchemasAPIv2');
-const schemaService = new SchemaConversionService();
-const gridManager = new GridManager();
+// const schemaService = new SchemaConversionService(); // TODO: 필요시 사용
+// const gridManager = new GridManager(); // TODO: 필요시 사용
 
 // 스키마 목록 조회
 router.get('/', 
@@ -48,9 +41,9 @@ router.get('/',
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 20;
-      const format = req.query.format as string;
-      const tags = req.query.tags as string;
-      const search = req.query.search as string;
+      // const format = req.query.format as string; // TODO: 필요시 사용
+      // const tags = req.query.tags as string; // TODO: 필요시 사용
+      // const search = req.query.search as string; // TODO: 필요시 사용
 
       // 임시 구현 - 실제로는 데이터베이스에서 조회
       const schemas: SchemaResponse[] = [];

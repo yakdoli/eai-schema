@@ -10,7 +10,6 @@ import {
 } from '../core/utils/crypto';
 import { 
   AuthenticationError, 
-  AuthorizationError, 
   ValidationError 
 } from '../types/errors';
 import { Logger } from '../core/logging/Logger';
@@ -21,7 +20,8 @@ import { z } from 'zod';
 const logger = new Logger();
 const config = ConfigManager.getInstance();
 
-// 사용자 스키마 정의
+// 사용자 스키마 정의 (타입 추론용)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const UserSchema = z.object({
   id: z.string().uuid(),
   email: z.string().email(),

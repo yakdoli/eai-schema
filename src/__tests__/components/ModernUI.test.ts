@@ -226,7 +226,7 @@ describe('ModernUIManager', () => {
       }));
 
       // 새 인스턴스 생성하여 환경설정 감지 테스트
-      const newModernUI = new ModernUIManager();
+      const _newModernUI = new ModernUIManager();
       
       // 다크 모드가 감지되었는지 확인
       expect(document.body.getAttribute('data-theme')).toBe('dark');
@@ -244,7 +244,7 @@ describe('ModernUIManager', () => {
         dispatchEvent: jest.fn(),
       }));
 
-      const newModernUI = new ModernUIManager();
+      const _newModernUI = new ModernUIManager();
       
       expect(document.body.classList.contains('reduced-motion')).toBe(true);
     });
@@ -261,7 +261,7 @@ describe('ModernUIManager', () => {
         dispatchEvent: jest.fn(),
       }));
 
-      const newModernUI = new ModernUIManager();
+      const _newModernUI = new ModernUIManager();
       
       expect(document.body.classList.contains('high-contrast')).toBe(true);
     });

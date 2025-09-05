@@ -253,7 +253,7 @@ export class GridValidationService {
         }
         break;
 
-      case 'pattern':
+      case 'pattern': {
         const regex = new RegExp(rule.value);
         if (!regex.test(String(value))) {
           warnings.push({
@@ -265,8 +265,9 @@ export class GridValidationService {
           });
         }
         break;
+      }
 
-      case 'range':
+      case 'range': {
         const numValue = Number(value);
         if (!isNaN(numValue)) {
           const [min, max] = rule.value;
@@ -281,6 +282,7 @@ export class GridValidationService {
           }
         }
         break;
+      }
 
       case 'custom':
         if (rule.validator && !rule.validator(value)) {
@@ -305,7 +307,7 @@ export class GridValidationService {
   /**
    * 전역 제약 조건 검증
    */
-  private validateGlobalConstraints(data: SchemaGridData[][], columns: GridColumn[]): ValidationResult {
+  private validateGlobalConstraints(data: SchemaGridData[][], _columns: GridColumn[]): ValidationResult {
     const errors: ValidationError[] = [];
     const warnings: ValidationWarning[] = [];
 
@@ -401,7 +403,7 @@ export class GridValidationService {
     row: number,
     col: number,
     callback: (result: ValidationResult) => void,
-    delay: number = 300
+    delay = 300
   ): void {
     // 디바운싱을 위한 타이머 설정
     setTimeout(() => {

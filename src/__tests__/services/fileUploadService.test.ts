@@ -2,7 +2,7 @@
 import { FileUploadService } from "../../services/fileUploadService";
 import { FileUploadError, SecurityError } from "../../middleware/errorHandler";
 import fs from "fs/promises";
-import path from "path";
+// import path from "path"; // 현재 사용되지 않음
 
 // Mock dependencies
 jest.mock("fs/promises");

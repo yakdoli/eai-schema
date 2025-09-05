@@ -25,7 +25,7 @@ export const fileExists = async (filePath: string): Promise<boolean> => {
 export const ensureDirectory = async (dirPath: string): Promise<void> => {
   try {
     await fs.mkdir(dirPath, { recursive: true });
-  } catch (error) {
+  } catch (_error) {
     throw new FileProcessingError(
       `디렉토리 생성 실패: ${dirPath}`,
       dirPath,
@@ -40,7 +40,7 @@ export const ensureDirectory = async (dirPath: string): Promise<void> => {
 export const readTextFile = async (filePath: string): Promise<string> => {
   try {
     return await fs.readFile(filePath, 'utf-8');
-  } catch (error) {
+  } catch (_error) {
     throw new FileProcessingError(
       `파일 읽기 실패: ${filePath}`,
       filePath,
@@ -56,7 +56,7 @@ export const writeTextFile = async (filePath: string, content: string): Promise<
   try {
     await ensureDirectory(path.dirname(filePath));
     await fs.writeFile(filePath, content, 'utf-8');
-  } catch (error) {
+  } catch (_error) {
     throw new FileProcessingError(
       `파일 쓰기 실패: ${filePath}`,
       filePath,
@@ -71,7 +71,7 @@ export const writeTextFile = async (filePath: string, content: string): Promise<
 export const readBinaryFile = async (filePath: string): Promise<Buffer> => {
   try {
     return await fs.readFile(filePath);
-  } catch (error) {
+  } catch (_error) {
     throw new FileProcessingError(
       `바이너리 파일 읽기 실패: ${filePath}`,
       filePath,
@@ -87,7 +87,7 @@ export const writeBinaryFile = async (filePath: string, buffer: Buffer): Promise
   try {
     await ensureDirectory(path.dirname(filePath));
     await fs.writeFile(filePath, buffer);
-  } catch (error) {
+  } catch (_error) {
     throw new FileProcessingError(
       `바이너리 파일 쓰기 실패: ${filePath}`,
       filePath,
@@ -119,7 +119,7 @@ export const deleteFile = async (filePath: string): Promise<void> => {
 export const deleteDirectory = async (dirPath: string): Promise<void> => {
   try {
     await fs.rm(dirPath, { recursive: true, force: true });
-  } catch (error) {
+  } catch (_error) {
     throw new FileProcessingError(
       `디렉토리 삭제 실패: ${dirPath}`,
       dirPath,
@@ -147,7 +147,7 @@ export const getFileInfo = async (filePath: string): Promise<{
       isFile: stats.isFile(),
       isDirectory: stats.isDirectory()
     };
-  } catch (error) {
+  } catch (_error) {
     throw new FileProcessingError(
       `파일 정보 조회 실패: ${filePath}`,
       filePath
@@ -158,7 +158,7 @@ export const getFileInfo = async (filePath: string): Promise<{
 /**
  * 디렉토리 내 파일 목록 조회
  */
-export const listFiles = async (dirPath: string, recursive: boolean = false): Promise<string[]> => {
+export const listFiles = async (dirPath: string, recursive = false): Promise<string[]> => {
   try {
     const files: string[] = [];
     const entries = await fs.readdir(dirPath, { withFileTypes: true });
@@ -175,7 +175,7 @@ export const listFiles = async (dirPath: string, recursive: boolean = false): Pr
     }
     
     return files;
-  } catch (error) {
+  } catch (_error) {
     throw new FileProcessingError(
       `디렉토리 목록 조회 실패: ${dirPath}`,
       dirPath,
@@ -191,7 +191,7 @@ export const copyFile = async (sourcePath: string, destPath: string): Promise<vo
   try {
     await ensureDirectory(path.dirname(destPath));
     await fs.copyFile(sourcePath, destPath);
-  } catch (error) {
+  } catch (_error) {
     throw new FileProcessingError(
       `파일 복사 실패: ${sourcePath} -> ${destPath}`,
       sourcePath
@@ -206,7 +206,7 @@ export const moveFile = async (sourcePath: string, destPath: string): Promise<vo
   try {
     await ensureDirectory(path.dirname(destPath));
     await fs.rename(sourcePath, destPath);
-  } catch (error) {
+  } catch (_error) {
     throw new FileProcessingError(
       `파일 이동 실패: ${sourcePath} -> ${destPath}`,
       sourcePath
@@ -219,8 +219,8 @@ export const moveFile = async (sourcePath: string, destPath: string): Promise<vo
  */
 export const createTempFile = async (
   content: string | Buffer,
-  extension: string = '.tmp',
-  tempDir: string = './temp'
+  extension = '.tmp',
+  tempDir = './temp'
 ): Promise<string> => {
   const filename = `${generateUuid()}${extension}`;
   const filePath = path.join(tempDir, filename);
@@ -245,7 +245,7 @@ export const streamCopy = async (sourcePath: string, destPath: string): Promise<
     const readStream = createReadStream(sourcePath);
     const writeStream = createWriteStream(destPath);
     await pipeline(readStream, writeStream);
-  } catch (error) {
+  } catch (_error) {
     throw new FileProcessingError(
       `스트림 복사 실패: ${sourcePath} -> ${destPath}`,
       sourcePath
@@ -261,7 +261,7 @@ export const verifyFileChecksum = async (filePath: string, expectedChecksum: str
     const buffer = await readBinaryFile(filePath);
     const actualChecksum = generateFileChecksum(buffer);
     return actualChecksum === expectedChecksum;
-  } catch (error) {
+  } catch (_error) {
     throw new FileProcessingError(
       `체크섬 검증 실패: ${filePath}`,
       filePath

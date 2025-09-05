@@ -1,6 +1,6 @@
 import { MCPIntegrationService } from "../MCPIntegrationService";
 import { MessageMappingService } from "../../services/messageMappingService";
-import { logger } from "../../utils/logger";
+// import { logger } from "../../utils/logger"; // 현재 사용되지 않음
 
 // Mock logger for testing
 const mockLogger = {

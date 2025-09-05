@@ -4,7 +4,7 @@ import { Response, NextFunction } from 'express';
 import { validationResult } from 'express-validator';
 import { z } from 'zod';
 import { AuthenticatedRequest, ValidationMiddlewareOptions } from '../types/api';
-import { ValidationError } from '../types/errors';
+// import { ValidationError } from '../types/errors'; // 현재 사용되지 않음
 import { validateData } from '../core/utils/validation';
 import { Logger } from '../core/logging/Logger';
 import { ApiResponse, ApiError } from '../types/api-v2';

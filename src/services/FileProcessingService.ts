@@ -369,11 +369,11 @@ export class FileProcessingService {
 
   private async createReadStream(filePath: string): Promise<Readable> {
     const fileHandle = await fs.open(filePath, 'r');
-    const stream = new Readable({
-      read(size) {
-        // 스트림 읽기 로직
-      }
-    });
+    // const stream = new Readable({
+    //   read(_size) {
+    //     // 스트림 읽기 로직
+    //   }
+    // });
 
     // 실제 구현에서는 fs.createReadStream 사용
     await fileHandle.close();
@@ -502,7 +502,7 @@ export class FileProcessingService {
     lines.forEach(line => {
       const match = line.match(/^(\s*)([\w]+):\s*(.*)$/);
       if (match) {
-        const [, indent, key, value] = match;
+        const [, _indent, key, value] = match;
         result[key!] = value;
       }
     });
@@ -511,7 +511,7 @@ export class FileProcessingService {
   }
 
   private jsonToYamlString(obj: any): string {
-    let yaml = '';
+    // const yaml = '';
 
     const convert = (obj: any, indent = 0): string => {
       const indentStr = '  '.repeat(indent);
@@ -537,7 +537,7 @@ export class FileProcessingService {
 
   private csvToJsonObject(csv: string): any[] {
     const lines = csv.split('\n').filter(line => line.trim());
-    if (lines.length === 0) return [];
+    if (lines.length === 0) {return [];}
 
     const headers = this.parseCSVLine(lines[0]!);
     const result: any[] = [];

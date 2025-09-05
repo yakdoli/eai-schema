@@ -1,5 +1,5 @@
 import { UrlFetchService } from "../../services/urlFetchService";
-import { SecurityError, ValidationError, NetworkError } from "../../middleware/errorHandler";
+import { SecurityError, ValidationError } from "../../middleware/errorHandler";
 
 // Mock dependencies
 jest.mock("../../utils/logger");

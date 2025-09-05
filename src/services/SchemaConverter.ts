@@ -3,7 +3,7 @@
  * 그리드 데이터와 다양한 스키마 형식 간의 변환을 담당
  */
 
-import { SchemaGridData, SchemaFormat, ConversionResult, ValidationResult, ConversionError, ConversionWarning } from '../types/schema';
+import { SchemaGridData, SchemaFormat, ConversionResult, ValidationResult } from '../types/schema';
 import { Logger } from '../core/logging/Logger';
 import * as xml2js from 'xml2js';
 import * as yaml from 'js-yaml';
@@ -278,7 +278,7 @@ export class SchemaConverter implements ISchemaConverter {
         try {
           const constraints = JSON.parse(row.constraints);
           Object.assign(schemaObject.properties[row.fieldName], constraints);
-        } catch (error) {
+        } catch {
           // 제약 조건 파싱 실패 시 문자열로 저장
           schemaObject.properties[row.fieldName].constraints = row.constraints;
         }
@@ -524,7 +524,7 @@ export class SchemaConverter implements ISchemaConverter {
         if (field.constraints) {
           try {
             JSON.parse(field.constraints);
-          } catch (error) {
+          } catch {
             result.warnings.push({
               field: 'constraints',
               message: `제약 조건이 유효한 JSON 형식이 아닙니다: ${field.constraints}`,

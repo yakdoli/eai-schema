@@ -31,7 +31,7 @@ export class ModernUIManager {
   private theme: UITheme;
   private breakpoints: ResponsiveBreakpoints;
   private accessibility: AccessibilityOptions;
-  private currentViewport: string = 'desktop';
+  private currentViewport = 'desktop';
 
   constructor() {
     this.theme = this.getDefaultTheme();
@@ -321,7 +321,7 @@ export class ModernUIManager {
     const toolbar = document.querySelector('.grid-toolbar') as HTMLElement;
     const actionsPanel = document.querySelector('.actions-panel') as HTMLElement;
 
-    if (!gridContainer || !toolbar || !actionsPanel) return;
+    if (!gridContainer || !toolbar || !actionsPanel) {return;}
 
     switch (this.currentViewport) {
       case 'mobile':
@@ -362,7 +362,7 @@ export class ModernUIManager {
   /**
    * 태블릿 레이아웃 적용
    */
-  private applyTabletLayout(grid: HTMLElement, toolbar: HTMLElement, actions: HTMLElement): void {
+  private applyTabletLayout(grid: HTMLElement, toolbar: HTMLElement, _actions: HTMLElement): void {
     // 툴바를 가로로 배치하되 줄바꿈 허용
     toolbar.style.flexDirection = 'row';
     toolbar.style.flexWrap = 'wrap';
@@ -381,7 +381,7 @@ export class ModernUIManager {
   /**
    * 데스크톱 레이아웃 적용
    */
-  private applyDesktopLayout(grid: HTMLElement, toolbar: HTMLElement, actions: HTMLElement): void {
+  private applyDesktopLayout(grid: HTMLElement, toolbar: HTMLElement, _actions: HTMLElement): void {
     // 기본 레이아웃 복원
     toolbar.style.flexDirection = 'row';
     toolbar.style.flexWrap = 'nowrap';
@@ -507,7 +507,7 @@ export class ModernUIManager {
    */
   private handleMenuNavigation(event: KeyboardEvent): void {
     const container = (event.target as HTMLElement).closest('.grid-toolbar, .actions-grid');
-    if (!container) return;
+    if (!container) {return;}
 
     const buttons = Array.from(container.querySelectorAll('button, [role="button"]')) as HTMLElement[];
     const currentIndex = buttons.indexOf(event.target as HTMLElement);
@@ -542,7 +542,7 @@ export class ModernUIManager {
   /**
    * 고유 ID 생성
    */
-  private generateId(prefix: string = 'ui'): string {
+  private generateId(prefix = 'ui'): string {
     return `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 

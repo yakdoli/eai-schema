@@ -52,7 +52,7 @@ export const verifyJwtToken = (token: string): any => {
 /**
  * 랜덤 문자열 생성
  */
-export const generateRandomString = (length: number = 32): string => {
+export const generateRandomString = (length = 32): string => {
   return crypto.randomBytes(length).toString('hex');
 };
 
@@ -126,7 +126,7 @@ export const generateFileChecksum = (buffer: Buffer): string => {
 /**
  * 보안 토큰 생성 (API 키 등)
  */
-export const generateSecureToken = (prefix: string = ''): string => {
+export const generateSecureToken = (prefix = ''): string => {
   const randomPart = crypto.randomBytes(32).toString('base64url');
   return prefix ? `${prefix}_${randomPart}` : randomPart;
 };
@@ -134,7 +134,7 @@ export const generateSecureToken = (prefix: string = ''): string => {
 /**
  * 시간 기반 원타임 패스워드 (TOTP) 생성
  */
-export const generateTotp = (secret: string, window: number = 0): string => {
+export const generateTotp = (secret: string, window = 0): string => {
   const time = Math.floor(Date.now() / 1000 / 30) + window;
   const timeBuffer = Buffer.alloc(8);
   timeBuffer.writeUInt32BE(time, 4);
@@ -155,7 +155,7 @@ export const generateTotp = (secret: string, window: number = 0): string => {
 /**
  * 비밀번호 강도 기반 솔트 생성
  */
-export const generateSalt = (rounds: number = 12): string => {
+export const generateSalt = (rounds = 12): string => {
   return bcrypt.genSaltSync(rounds);
 };
 

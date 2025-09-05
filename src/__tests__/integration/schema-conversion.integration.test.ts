@@ -1,8 +1,8 @@
 import request from 'supertest';
 import { Express } from 'express';
 import { createApp } from '../../index';
-import fs from 'fs';
-import path from 'path';
+// import fs from 'fs'; // 현재 사용되지 않음
+// import path from 'path'; // 현재 사용되지 않음
 
 describe('스키마 변환 통합 테스트', () => {
   let app: Express;
