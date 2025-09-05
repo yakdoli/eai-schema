@@ -1,0 +1,39 @@
+# Git 속성 설정
+
+# 텍스트 파일 줄바꿈 정규화
+* text=auto
+
+# 스크립트 파일
+*.sh text eol=lf
+*.bash text eol=lf
+
+# 설정 파일
+*.json text
+*.yml text
+*.yaml text
+*.toml text
+*.md text
+
+# 소스 코드
+*.ts text
+*.js text
+*.css text
+*.html text
+
+# 바이너리 파일
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+
+# 로그 파일
+*.log text
+
+# 환경 설정 파일
+.env* text
+
+# 패키지 파일
+package-lock.json text -diff
+yarn.lock text -diff

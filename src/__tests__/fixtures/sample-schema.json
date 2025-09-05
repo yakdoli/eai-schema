@@ -1,0 +1,97 @@
+{
+  "type": "object",
+  "properties": {
+    "user": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "사용자 고유 식별자"
+        },
+        "name": {
+          "type": "string",
+          "description": "사용자 이름",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "사용자 이메일 주소"
+        },
+        "age": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 150,
+          "description": "사용자 나이"
+        },
+        "address": {
+          "type": "object",
+          "properties": {
+            "street": {
+              "type": "string",
+              "description": "도로명 주소"
+            },
+            "city": {
+              "type": "string",
+              "description": "도시"
+            },
+            "postalCode": {
+              "type": "string",
+              "pattern": "^[0-9]{5}$",
+              "description": "우편번호"
+            },
+            "country": {
+              "type": "string",
+              "default": "KR",
+              "description": "국가 코드"
+            }
+          },
+          "required": ["street", "city", "postalCode"]
+        },
+        "preferences": {
+          "type": "object",
+          "properties": {
+            "theme": {
+              "type": "string",
+              "enum": ["light", "dark", "auto"],
+              "default": "auto"
+            },
+            "language": {
+              "type": "string",
+              "enum": ["ko", "en", "ja"],
+              "default": "ko"
+            },
+            "notifications": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        }
+      },
+      "required": ["id", "name", "email"]
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "생성 일시"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "수정 일시"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "스키마 버전"
+        }
+      },
+      "required": ["createdAt", "version"]
+    }
+  },
+  "required": ["user", "metadata"]
+}

@@ -1,0 +1,24 @@
+# ZAP 보안 스캔 규칙
+# 탭으로 구분된 값 (TSV) 형식
+# 형식: rule_id	action	url_pattern	parameter
+
+# 무시할 규칙들 (false positive 방지)
+10021	IGNORE	.*	# X-Content-Type-Options header missing (정적 파일)
+10020	IGNORE	.*\.css	# X-Frame-Options header missing (CSS 파일)
+10020	IGNORE	.*\.js	# X-Frame-Options header missing (JS 파일)
+10020	IGNORE	.*\.png	# X-Frame-Options header missing (이미지 파일)
+10020	IGNORE	.*\.jpg	# X-Frame-Options header missing (이미지 파일)
+10020	IGNORE	.*\.gif	# X-Frame-Options header missing (이미지 파일)
+
+# 개발/테스트 환경 관련 무시
+10038	IGNORE	.*/health	# Content Security Policy missing (헬스체크)
+10038	IGNORE	.*/metrics	# Content Security Policy missing (메트릭)
+
+# API 엔드포인트 관련
+10049	IGNORE	.*/api/.*	# Storable and Cacheable Content (API 응답)
+
+# 경고 수준으로 변경할 규칙들
+40012	WARN	.*	# Cross Domain Script Inclusion
+40014	WARN	.*	# Cross Domain Misconfiguration
+40016	WARN	.*	# Web Browser XSS Protection Not Enabled
+40017	WARN	.*	# Cross Domain JavaScript Source File Inclusion

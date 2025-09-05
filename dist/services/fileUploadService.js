@@ -33,8 +33,8 @@ const ALLOWED_EXTENSIONS = [
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 const TEMP_DIR = path_1.default.join(process.cwd(), "temp");
 class FileUploadService {
+    uploadedFiles = new Map();
     constructor() {
-        this.uploadedFiles = new Map();
         this.ensureTempDirectory();
         this.startCleanupTimer();
     }

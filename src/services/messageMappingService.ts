@@ -438,8 +438,8 @@ transformed: true
   }
 }
 
-export { 
-  MessageMappingService, 
+export { MessageMappingService };
+export type { 
   MessageMapping, 
   Configuration, 
   AdvancedMappingRule, 

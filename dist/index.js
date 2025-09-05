@@ -23,22 +23,35 @@ const mcpController_1 = __importDefault(require("./mcp/mcpController"));
 const collaboration_1 = __importDefault(require("./routes/collaboration"));
 const schemaValidation_1 = __importDefault(require("./routes/schemaValidation"));
 const performanceMonitoring_1 = __importDefault(require("./routes/performanceMonitoring"));
+const grid_1 = __importDefault(require("./routes/grid"));
 const CollaborationService_1 = require("./services/CollaborationService");
 const messageMappingService_1 = require("./services/messageMappingService");
+const Logger_1 = require("./core/logging/Logger");
+const collaboration_2 = require("./routes/collaboration");
+const index_1 = require("./routes/v2/index");
+const collaboration_3 = require("./routes/v2/collaboration");
+const compatibility_1 = require("./routes/v1/compatibility");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const server = (0, http_1.createServer)(app);
 const PORT = process.env.PORT || 3001;
 app.set("trust proxy", 1);
 const messageMappingService = new messageMappingService_1.MessageMappingService(logger_1.logger);
-const collaborationService = new CollaborationService_1.CollaborationService(messageMappingService);
+const collaborationLogger = new Logger_1.Logger('CollaborationService');
+const collaborationService = new CollaborationService_1.CollaborationService(collaborationLogger);
 const io = new socket_io_1.Server(server, {
     cors: {
         origin: process.env.FRONTEND_URL || "*",
-        methods: ["GET", "POST"]
-    }
+        methods: ["GET", "POST"],
+        credentials: true
+    },
+    transports: ['websocket', 'polling'],
+    pingTimeout: 60000,
+    pingInterval: 25000
 });
 collaborationService.initialize(io);
+(0, collaboration_2.initializeCollaborationService)(collaborationService);
+(0, collaboration_3.initializeCollaborationV2Service)(collaborationService);
 app.use((0, helmet_1.default)({
     crossOriginResourcePolicy: { policy: "cross-origin" },
 }));
@@ -101,6 +114,9 @@ app.use("/api/mcp", mcpController_1.default);
 app.use("/api/collaboration", collaboration_1.default);
 app.use("/api/schema-validation", schemaValidation_1.default);
 app.use("/api/performance", performanceMonitoring_1.default);
+app.use("/api/v2/grid", grid_1.default);
+app.use("/api/v2", index_1.apiV2Router);
+app.use("/api/v1", compatibility_1.compatibilityRouter);
 app.use(errorHandler_1.errorHandler);
 app.get("/", (req, res) => {
     res.status(200).json({

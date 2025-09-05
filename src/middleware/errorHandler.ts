@@ -1,125 +1,26 @@
+// 레거시 에러 핸들러 - 새로운 구조로 마이그레이션됨
+// 새로운 에러 핸들러는 src/core/errors/ErrorHandler.ts에 있습니다.
+
 import { Request, Response, NextFunction } from "express";
-import { logger } from "../utils/logger";
+import { ErrorHandler } from "../core/errors/ErrorHandler";
+import { Logger } from "../core/logging/Logger";
 
-export interface AppError extends Error {
-  statusCode?: number;
-  isOperational?: boolean;
-}
+// 레거시 호환성을 위한 래퍼
+const logger = new Logger();
+const errorHandler = new ErrorHandler(logger);
 
-export const errorHandler = (
-  error: AppError,
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  // 에러 ID 생성 (추적용)
-  const errorId = `ERR-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+export const legacyErrorHandler = errorHandler.handleError;
 
-  // 상세한 에러 로깅
-  logger.error("에러 발생:", {
-    errorId,
-    message: error.message,
-    stack: error.stack,
-    name: error.name,
-    url: req.url,
-    method: req.method,
-    ip: req.ip,
-    userAgent: req.get("User-Agent"),
-    body: req.method !== 'GET' ? JSON.stringify(req.body).substring(0, 500) : undefined,
-    query: req.query,
-    headers: req.headers,
-    timestamp: new Date().toISOString()
-  });
+// 레거시 에러 클래스들 - 새로운 타입으로 마이그레이션 권장
+export { 
+  ValidationError,
+  FileProcessingError as FileUploadError,
+  AuthorizationError as SecurityError,
+  InternalServerError as NetworkError
+} from "../types/errors";
 
-  // 기본 에러 상태 코드 설정
-  const statusCode = error.statusCode || 500;
-
-  // 사용자 친화적인 에러 메시지 생성
-  const userMessage = getUserFriendlyMessage(error);
-
-  // 에러 응답 구성
-  const errorResponse: {
-    success: false;
-    error: {
-      message: string;
-      errorId: string;
-      timestamp: string;
-      type?: string;
-      stack?: string;
-      originalMessage?: string;
-    };
-  } = {
-    success: false,
-    error: {
-      message: userMessage,
-      errorId,
-      timestamp: new Date().toISOString(),
-      ...(process.env.NODE_ENV === "development" && {
-        stack: error.stack,
-        originalMessage: error.message
-      })
-    }
-  };
-
-  // 특정 에러 타입에 대한 추가 처리
-  if (error.name === 'ValidationError') {
-    errorResponse.error.type = 'VALIDATION_ERROR';
-  } else if (error.name === 'FileUploadError') {
-    errorResponse.error.type = 'FILE_UPLOAD_ERROR';
-  } else if (error.name === 'SecurityError') {
-    errorResponse.error.type = 'SECURITY_ERROR';
-  } else if (error.name === 'NetworkError') {
-    errorResponse.error.type = 'NETWORK_ERROR';
-  }
-
-  res.status(statusCode).json(errorResponse);
-};
-
-// 비동기 함수 에러 처리를 위한 래퍼
-export const asyncHandler = (fn: Function) => (req: Request, res: Response, next: NextFunction) => {
-  Promise.resolve(fn(req, res, next)).catch(next);
-};
-
-// 커스텀 에러 클래스들
-export class ValidationError extends Error {
-  statusCode = 400;
-  isOperational = true;
-
-  constructor(message: string) {
-    super(message);
-    this.name = "ValidationError";
-  }
-}
-
-export class FileUploadError extends Error {
-  statusCode = 400;
-  isOperational = true;
-
-  constructor(message: string) {
-    super(message);
-    this.name = "FileUploadError";
-  }
-}
-
-export class SecurityError extends Error {
-  statusCode = 403;
-  isOperational = true;
-
-  constructor(message: string) {
-    super(message);
-    this.name = "SecurityError";
-  }
-}
-
-export class NetworkError extends Error {
-  statusCode = 502;
-  isOperational = true;
-
-  constructor(message: string) {
-    super(message);
-    this.name = "NetworkError";
-  }
-}
+// 비동기 핸들러는 새로운 유틸리티 사용 권장
+export { asyncHandler } from "../core/utils/asyncHandler";
 
 // 사용자 친화적인 에러 메시지 생성 함수
 function getUserFriendlyMessage(error: AppError): string {

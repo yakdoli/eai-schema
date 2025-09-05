@@ -1,0 +1,101 @@
+# Artillery 부하 테스트 설정
+config:
+  target: 'http://localhost:3000'
+  phases:
+    # 워밍업 단계
+    - duration: 60
+      arrivalRate: 5
+      name: "워밍업"
+    # 점진적 부하 증가
+    - duration: 120
+      arrivalRate: 10
+      rampTo: 50
+      name: "부하 증가"
+    # 최대 부하 유지
+    - duration: 180
+      arrivalRate: 50
+      name: "최대 부하"
+    # 부하 감소
+    - duration: 60
+      arrivalRate: 50
+      rampTo: 5
+      name: "부하 감소"
+  
+  # 성능 메트릭 설정
+  metrics:
+    - name: "response_time_p95"
+      unit: "ms"
+    - name: "response_time_p99"
+      unit: "ms"
+    - name: "error_rate"
+      unit: "percent"
+
+  # 플러그인 설정
+  plugins:
+    metrics-by-endpoint:
+      useOnlyRequestNames: true
+
+# 테스트 시나리오
+scenarios:
+  # API 엔드포인트 테스트
+  - name: "API 엔드포인트 부하 테스트"
+    weight: 40
+    flow:
+      - get:
+          url: "/health"
+          name: "헬스체크"
+      - get:
+          url: "/metrics"
+          name: "메트릭 조회"
+      - post:
+          url: "/api/validate"
+          name: "스키마 검증"
+          json:
+            schema: '{"type": "object", "properties": {"name": {"type": "string"}}}'
+            format: "json"
+      - think: 1
+
+  # 파일 업로드 테스트
+  - name: "파일 업로드 부하 테스트"
+    weight: 30
+    flow:
+      - post:
+          url: "/api/convert"
+          name: "스키마 변환"
+          formData:
+            format: "json"
+            targetFormat: "xml"
+            file: "@./src/__tests__/fixtures/sample-schema.json"
+      - think: 2
+
+  # WebSocket 연결 테스트
+  - name: "WebSocket 연결 테스트"
+    weight: 20
+    engine: ws
+    flow:
+      - connect:
+          target: "ws://localhost:3000"
+      - send:
+          payload: '{"type": "join-session", "sessionId": "load-test-session", "userId": "user-{{ $randomString() }}", "userName": "Load Test User"}'
+      - think: 5
+      - send:
+          payload: '{"type": "grid-change", "sessionId": "load-test-session", "change": {"type": "cell-update", "position": {"row": {{ $randomInt(0, 10) }}, "col": {{ $randomInt(0, 5) }}}, "newValue": "test-{{ $randomString() }}", "userId": "user-{{ $randomString() }}", "timestamp": {{ $timestamp }}}}'
+      - think: 3
+
+  # 정적 파일 서빙 테스트
+  - name: "정적 파일 서빙 테스트"
+    weight: 10
+    flow:
+      - get:
+          url: "/"
+          name: "메인 페이지"
+      - get:
+          url: "/grid.html"
+          name: "그리드 페이지"
+      - get:
+          url: "/css/grid.css"
+          name: "CSS 파일"
+      - get:
+          url: "/js/grid.js"
+          name: "JavaScript 파일"
+      - think: 1

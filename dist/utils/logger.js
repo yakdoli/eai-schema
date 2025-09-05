@@ -1,35 +1,18 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logger = void 0;
-const winston_1 = __importDefault(require("winston"));
-const logFormat = winston_1.default.format.combine(winston_1.default.format.timestamp({
-    format: "YYYY-MM-DD HH:mm:ss"
-}), winston_1.default.format.errors({ stack: true }), winston_1.default.format.json());
-exports.logger = winston_1.default.createLogger({
-    level: process.env.LOG_LEVEL || "info",
-    format: logFormat,
-    defaultMeta: { service: "eai-schema-toolkit-backend" },
-    transports: [
-        new winston_1.default.transports.Console({
-            format: winston_1.default.format.combine(winston_1.default.format.colorize(), winston_1.default.format.simple())
-        }),
-        new winston_1.default.transports.File({
-            filename: "logs/error.log",
-            level: "error"
-        }),
-        new winston_1.default.transports.File({
-            filename: "logs/combined.log"
-        })
-    ]
-});
-if (process.env.NODE_ENV !== "production") {
-    exports.logger.add(new winston_1.default.transports.Console({
-        format: winston_1.default.format.combine(winston_1.default.format.colorize(), winston_1.default.format.timestamp(), winston_1.default.format.printf(({ timestamp, level, message, ...meta }) => {
-            return `${timestamp} [${level}]: ${message} ${Object.keys(meta).length ? JSON.stringify(meta, null, 2) : ""}`;
-        }))
-    }));
-}
+exports.Logger = exports.logger = void 0;
+const Logger_1 = require("../core/logging/Logger");
+const legacyLogger = new Logger_1.Logger();
+exports.logger = {
+    error: (message, meta) => legacyLogger.error(message, meta),
+    warn: (message, meta) => legacyLogger.warn(message, meta),
+    info: (message, meta) => legacyLogger.info(message, meta),
+    debug: (message, meta) => legacyLogger.debug(message, meta),
+    logRequest: legacyLogger.logRequest.bind(legacyLogger),
+    logPerformance: legacyLogger.logPerformance.bind(legacyLogger),
+    logSecurityEvent: legacyLogger.logSecurityEvent.bind(legacyLogger),
+    logBusinessEvent: legacyLogger.logBusinessEvent.bind(legacyLogger)
+};
+var Logger_2 = require("../core/logging/Logger");
+Object.defineProperty(exports, "Logger", { enumerable: true, get: function () { return Logger_2.Logger; } });
 //# sourceMappingURL=logger.js.map

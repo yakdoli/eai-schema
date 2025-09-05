@@ -158,16 +158,19 @@ class PerformanceMonitoringService {
    * Start periodic metric collection
    */
   private startMetricCollection(): void {
-    // Collect memory and CPU usage every 10 seconds
-    setInterval(() => {
-      this.recordMemoryUsage();
-      this.recordCpuUsage();
-    }, 10000);
+    // Only start collection in non-test environments
+    if (process.env.NODE_ENV !== "test") {
+      // Collect memory and CPU usage every 10 seconds
+      setInterval(() => {
+        this.recordMemoryUsage();
+        this.recordCpuUsage();
+      }, 10000);
 
-    // Log metrics summary every minute
-    setInterval(() => {
-      this.logMetricsSummary();
-    }, 60000);
+      // Log metrics summary every minute
+      setInterval(() => {
+        this.logMetricsSummary();
+      }, 60000);
+    }
   }
 
   /**

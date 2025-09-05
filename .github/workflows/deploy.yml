@@ -1,123 +1,338 @@
-name: Deploy to GitHub Pages and Heroku
+name: 배포 파이프라인
 
 on:
   push:
     branches: [main]
-  pull_request:
+  workflow_run:
+    workflows: ["Continuous Integration"]
+    types: [completed]
     branches: [main]
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+# GitHub Pages 배포를 위한 권한 설정
 permissions:
   contents: read
   pages: write
   id-token: write
+  deployments: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+# 동시 배포 제한 - 진행 중인 배포는 취소하지 않음
 concurrency:
-  group: "pages"
+  group: "deployment"
   cancel-in-progress: false
 
 jobs:
-  # Build job
-  build:
+  # 배포 전 검증
+  pre-deployment-checks:
+    name: 배포 전 검증
     runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'push'
+    timeout-minutes: 10
+    
+    outputs:
+      should-deploy: ${{ steps.check.outputs.should-deploy }}
+      version: ${{ steps.version.outputs.version }}
+    
     steps:
-      - name: Checkout
+      - name: 코드 체크아웃
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Node.js 설정
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "22"
           cache: "npm"
 
-      - name: Install dependencies
-        run: |
-          # package-lock.json이 없는 경우 npm install 사용
-          if [ -f "package-lock.json" ]; then
-            npm ci
-          else
-            npm install
-          fi
+      - name: 의존성 설치
+        run: npm ci
 
-      - name: Run tests
-        run: npm test
-        continue-on-error: true  # 테스트 실패해도 빌드 계속 진행
-
-      - name: Build backend
+      - name: 빌드 테스트
         run: npm run build
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v3
-
-      - name: Copy docs to build output
+      - name: 배포 가능 여부 확인
+        id: check
         run: |
+          if [ -f "dist/index.js" ] && [ -f "package.json" ]; then
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+            echo "✅ 배포 준비 완료"
+          else
+            echo "should-deploy=false" >> $GITHUB_OUTPUT
+            echo "❌ 배포 준비 미완료"
+            exit 1
+          fi
+
+      - name: 버전 정보 추출
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "배포 버전: $VERSION"
+
+  # 스테이징 환경 배포
+  deploy-staging:
+    name: 스테이징 배포
+    runs-on: ubuntu-latest
+    needs: pre-deployment-checks
+    if: needs.pre-deployment-checks.outputs.should-deploy == 'true'
+    timeout-minutes: 15
+    
+    environment:
+      name: staging
+      url: https://eai-schema-staging.herokuapp.com
+    
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Node.js 설정
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: 의존성 설치
+        run: npm ci
+
+      - name: 프로덕션 빌드
+        run: npm run build
+
+      - name: Heroku CLI 설치
+        run: |
+          curl https://cli-assets.heroku.com/install.sh | sh
+
+      - name: 스테이징 환경 배포
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          HEROKU_STAGING_APP: eai-schema-staging
+        run: |
+          echo "machine api.heroku.com login _ password $HEROKU_API_KEY" > ~/.netrc
+          echo "machine git.heroku.com login _ password $HEROKU_API_KEY" >> ~/.netrc
+          chmod 600 ~/.netrc
+          
+          heroku git:remote -a "$HEROKU_STAGING_APP"
+          
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+          
+          git add -f dist/ package.json package-lock.json Procfile app.json
+          git commit -m "Deploy v${{ needs.pre-deployment-checks.outputs.version }} to staging [skip ci]" || echo "No changes to commit"
+          
+          git push heroku HEAD:main --force
+
+      - name: 스테이징 헬스체크
+        run: |
+          echo "스테이징 환경 헬스체크 대기 중..."
+          sleep 30
+          
+          for i in {1..10}; do
+            if curl -f -s https://eai-schema-staging.herokuapp.com/health > /dev/null; then
+              echo "✅ 스테이징 환경 정상 작동"
+              exit 0
+            fi
+            echo "헬스체크 시도 $i/10 실패, 10초 후 재시도..."
+            sleep 10
+          done
+          
+          echo "❌ 스테이징 환경 헬스체크 실패"
+          exit 1
+
+  # 스테이징 환경 테스트
+  staging-tests:
+    name: 스테이징 테스트
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    timeout-minutes: 20
+    
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Node.js 설정
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: 의존성 설치
+        run: npm ci
+
+      - name: 스테이징 환경 스모크 테스트
+        run: |
+          echo "스테이징 환경 API 테스트 실행..."
+          
+          # 기본 헬스체크
+          curl -f https://eai-schema-staging.herokuapp.com/health
+          
+          # API 엔드포인트 테스트
+          curl -f https://eai-schema-staging.herokuapp.com/api/v1/health
+          
+          # 메트릭 엔드포인트 테스트
+          curl -f https://eai-schema-staging.herokuapp.com/metrics
+          
+          echo "✅ 스테이징 환경 스모크 테스트 통과"
+
+      - name: 성능 기준선 테스트
+        run: |
+          echo "성능 기준선 테스트 실행..."
+          npx autocannon -c 10 -d 30 https://eai-schema-staging.herokuapp.com/health
+        continue-on-error: true
+
+  # GitHub Pages 배포 (문서)
+  deploy-docs:
+    name: 문서 배포
+    runs-on: ubuntu-latest
+    needs: pre-deployment-checks
+    if: needs.pre-deployment-checks.outputs.should-deploy == 'true'
+    timeout-minutes: 10
+    
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Node.js 설정
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: 의존성 설치
+        run: npm ci
+
+      - name: 문서 빌드
+        run: |
+          npm run build
           mkdir -p _site
           cp -r docs/* _site/
+          
+          # API 문서 생성 (Swagger)
+          if [ -f "dist/index.js" ]; then
+            echo "API 문서 생성 중..."
+            # API 문서 생성 로직 추가 가능
+          fi
 
-      - name: Upload artifact
+      - name: GitHub Pages 설정
+        uses: actions/configure-pages@v4
+
+      - name: 문서 아티팩트 업로드
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
 
-  # Deployment job for GitHub Pages
-  deploy-frontend:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - name: Deploy to GitHub Pages
+      - name: GitHub Pages 배포
         id: deployment
         uses: actions/deploy-pages@v4
 
-  # Deployment job for Heroku backend
-  deploy-backend:
+  # 프로덕션 배포
+  deploy-production:
+    name: 프로덕션 배포
     runs-on: ubuntu-latest
-    needs: build
-    if: github.ref == 'refs/heads/main'
+    needs: [staging-tests, deploy-docs]
+    timeout-minutes: 20
+    
+    environment:
+      name: production
+      url: https://eai-schema-api.herokuapp.com
+    
     steps:
-      - name: Checkout
+      - name: 코드 체크아웃
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # 전체 히스토리 가져오기
+          fetch-depth: 0
 
-      - name: Setup Node.js
+      - name: Node.js 설정
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "22"
+          cache: "npm"
 
-      - name: Install Heroku CLI
+      - name: 의존성 설치
+        run: npm ci
+
+      - name: 프로덕션 빌드
+        run: npm run build
+
+      - name: Heroku CLI 설치
         run: |
           curl https://cli-assets.heroku.com/install.sh | sh
 
-      - name: Deploy to Heroku
+      - name: 프로덕션 배포
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-          HEROKU_APP_NAME: eai-schema-api
-          HEROKU_EMAIL: ourpebble@gmail.com
+          HEROKU_PRODUCTION_APP: eai-schema-api
         run: |
-          # Heroku CLI 로그인 using netrc
-          echo "machine api.heroku.com login $HEROKU_EMAIL password $HEROKU_API_KEY" > ~/.netrc
-          echo "machine git.heroku.com login $HEROKU_EMAIL password $HEROKU_API_KEY" >> ~/.netrc
+          echo "machine api.heroku.com login _ password $HEROKU_API_KEY" > ~/.netrc
+          echo "machine git.heroku.com login _ password $HEROKU_API_KEY" >> ~/.netrc
           chmod 600 ~/.netrc
           
-          # Verify authentication
-          heroku auth:whoami
+          heroku git:remote -a "$HEROKU_PRODUCTION_APP"
           
-          # Git 설정
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action"
           
-          # Heroku remote 추가
-          heroku git:remote -a "$HEROKU_APP_NAME"
-          
-          # 빌드된 파일들을 커밋
           git add -f dist/ package.json package-lock.json Procfile app.json
-          git commit -m "Deploy to Heroku [skip ci]" || echo "No changes to commit"
+          git commit -m "Deploy v${{ needs.pre-deployment-checks.outputs.version }} to production [skip ci]" || echo "No changes to commit"
           
-          # Heroku에 배포
           git push heroku HEAD:main --force
+
+      - name: 프로덕션 헬스체크
+        run: |
+          echo "프로덕션 환경 헬스체크 대기 중..."
+          sleep 60
+          
+          for i in {1..15}; do
+            if curl -f -s https://eai-schema-api.herokuapp.com/health > /dev/null; then
+              echo "✅ 프로덕션 환경 정상 작동"
+              exit 0
+            fi
+            echo "헬스체크 시도 $i/15 실패, 15초 후 재시도..."
+            sleep 15
+          done
+          
+          echo "❌ 프로덕션 환경 헬스체크 실패"
+          exit 1
+
+      - name: 배포 알림
+        if: success()
+        run: |
+          echo "## 🚀 배포 완료" >> $GITHUB_STEP_SUMMARY
+          echo "버전: v${{ needs.pre-deployment-checks.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "프로덕션 URL: https://eai-schema-api.herokuapp.com" >> $GITHUB_STEP_SUMMARY
+          echo "문서 URL: ${{ needs.deploy-docs.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "배포 시간: $(date -u)" >> $GITHUB_STEP_SUMMARY
+
+  # 배포 후 모니터링
+  post-deployment-monitoring:
+    name: 배포 후 모니터링
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    if: success()
+    timeout-minutes: 10
+    
+    steps:
+      - name: 프로덕션 모니터링 설정
+        run: |
+          echo "배포 후 모니터링 시작..."
+          
+          # 5분간 헬스체크 모니터링
+          for i in {1..5}; do
+            if curl -f -s https://eai-schema-api.herokuapp.com/health > /dev/null; then
+              echo "모니터링 $i/5: ✅ 정상"
+            else
+              echo "모니터링 $i/5: ❌ 오류 감지"
+              # 알림 로직 추가 가능
+            fi
+            sleep 60
+          done
+          
+          echo "✅ 배포 후 모니터링 완료"
+
+      - name: 성능 메트릭 수집
+        run: |
+          echo "성능 메트릭 수집 중..."
+          curl -s https://eai-schema-api.herokuapp.com/metrics | head -20
+        continue-on-error: true

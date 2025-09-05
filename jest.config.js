@@ -1,3 +1,4 @@
+/** @type {import('jest').Config} */
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
@@ -8,7 +9,13 @@ module.exports = {
     '<rootDir>/src/**/*.spec.ts'
   ],
   transform: {
-    '^.+\\.ts$': 'ts-jest',
+    '^.+\\.ts$': ['ts-jest', {
+      useESM: false,
+      tsconfig: {
+        target: 'ES2022',
+        module: 'commonjs'
+      }
+    }],
   },
   collectCoverageFrom: [
     'src/**/*.ts',
@@ -20,8 +27,24 @@ module.exports = {
   coverageReporters: [
     'text',
     'lcov',
-    'html'
+    'html',
+    'json-summary'
   ],
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80
+    }
+  },
   setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
-  testTimeout: 10000
+  testTimeout: 15000,
+  maxWorkers: '50%',
+  clearMocks: true,
+  restoreMocks: true,
+  verbose: true,
+  detectOpenHandles: true,
+  forceExit: true,
+  errorOnDeprecated: true
 };

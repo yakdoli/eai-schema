@@ -1,48 +1,24 @@
-import winston from "winston";
+// 레거시 로거 - 새로운 구조로 마이그레이션됨
+// 새로운 로거는 src/core/logging/Logger.ts에 있습니다.
 
-// 로그 포맷 정의
-const logFormat = winston.format.combine(
-  winston.format.timestamp({
-    format: "YYYY-MM-DD HH:mm:ss"
-  }),
-  winston.format.errors({ stack: true }),
-  winston.format.json()
-);
+import { Logger } from "../core/logging/Logger";
 
-// 로거 생성
-export const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || "info",
-  format: logFormat,
-  defaultMeta: { service: "eai-schema-toolkit-backend" },
-  transports: [
-    // 콘솔 출력
-    new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.simple()
-      )
-    }),
-    // 파일 출력 (에러 로그)
-    new winston.transports.File({
-      filename: "logs/error.log",
-      level: "error"
-    }),
-    // 파일 출력 (전체 로그)
-    new winston.transports.File({
-      filename: "logs/combined.log"
-    })
-  ]
-});
+// 레거시 호환성을 위한 인스턴스 생성
+const legacyLogger = new Logger();
 
-// 개발 환경에서는 더 자세한 로그 출력
-if (process.env.NODE_ENV !== "production") {
-  logger.add(new winston.transports.Console({
-    format: winston.format.combine(
-      winston.format.colorize(),
-      winston.format.timestamp(),
-      winston.format.printf(({ timestamp, level, message, ...meta }) => {
-        return `${timestamp} [${level}]: ${message} ${Object.keys(meta).length ? JSON.stringify(meta, null, 2) : ""}`;
-      })
-    )
-  }));
-}
+// 기존 winston 인터페이스와 호환되는 래퍼
+export const logger = {
+  error: (message: string, meta?: any) => legacyLogger.error(message, meta),
+  warn: (message: string, meta?: any) => legacyLogger.warn(message, meta),
+  info: (message: string, meta?: any) => legacyLogger.info(message, meta),
+  debug: (message: string, meta?: any) => legacyLogger.debug(message, meta),
+  
+  // 새로운 메서드들도 노출
+  logRequest: legacyLogger.logRequest.bind(legacyLogger),
+  logPerformance: legacyLogger.logPerformance.bind(legacyLogger),
+  logSecurityEvent: legacyLogger.logSecurityEvent.bind(legacyLogger),
+  logBusinessEvent: legacyLogger.logBusinessEvent.bind(legacyLogger)
+};
+
+// 새로운 Logger 클래스도 export (권장)
+export { Logger } from "../core/logging/Logger";

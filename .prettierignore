@@ -1,0 +1,41 @@
+# 빌드 출력
+dist/
+build/
+coverage/
+
+# 의존성
+node_modules/
+
+# 로그 파일
+*.log
+logs/
+
+# 임시 파일
+temp/
+tmp/
+
+# 환경 설정
+.env
+.env.local
+.env.production
+
+# 생성된 파일
+*.min.js
+*.min.css
+package-lock.json
+yarn.lock
+
+# 문서 (이미 포맷된 상태 유지)
+CHANGELOG.md
+LICENSE
+
+# Git 관련
+.git/
+.gitignore
+
+# IDE 설정
+.vscode/
+.idea/
+
+# 기타
+*.tsbuildinfo

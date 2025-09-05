@@ -1,92 +1,18 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.NetworkError = exports.SecurityError = exports.FileUploadError = exports.ValidationError = exports.asyncHandler = exports.errorHandler = void 0;
-const logger_1 = require("../utils/logger");
-const errorHandler = (error, req, res, next) => {
-    const errorId = `ERR-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    logger_1.logger.error("에러 발생:", {
-        errorId,
-        message: error.message,
-        stack: error.stack,
-        name: error.name,
-        url: req.url,
-        method: req.method,
-        ip: req.ip,
-        userAgent: req.get("User-Agent"),
-        body: req.method !== 'GET' ? JSON.stringify(req.body).substring(0, 500) : undefined,
-        query: req.query,
-        headers: req.headers,
-        timestamp: new Date().toISOString()
-    });
-    const statusCode = error.statusCode || 500;
-    const userMessage = getUserFriendlyMessage(error);
-    const errorResponse = {
-        success: false,
-        error: {
-            message: userMessage,
-            errorId,
-            timestamp: new Date().toISOString(),
-            ...(process.env.NODE_ENV === "development" && {
-                stack: error.stack,
-                originalMessage: error.message
-            })
-        }
-    };
-    if (error.name === 'ValidationError') {
-        errorResponse.error.type = 'VALIDATION_ERROR';
-    }
-    else if (error.name === 'FileUploadError') {
-        errorResponse.error.type = 'FILE_UPLOAD_ERROR';
-    }
-    else if (error.name === 'SecurityError') {
-        errorResponse.error.type = 'SECURITY_ERROR';
-    }
-    else if (error.name === 'NetworkError') {
-        errorResponse.error.type = 'NETWORK_ERROR';
-    }
-    res.status(statusCode).json(errorResponse);
-};
-exports.errorHandler = errorHandler;
-const asyncHandler = (fn) => (req, res, next) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
-};
-exports.asyncHandler = asyncHandler;
-class ValidationError extends Error {
-    constructor(message) {
-        super(message);
-        this.statusCode = 400;
-        this.isOperational = true;
-        this.name = "ValidationError";
-    }
-}
-exports.ValidationError = ValidationError;
-class FileUploadError extends Error {
-    constructor(message) {
-        super(message);
-        this.statusCode = 400;
-        this.isOperational = true;
-        this.name = "FileUploadError";
-    }
-}
-exports.FileUploadError = FileUploadError;
-class SecurityError extends Error {
-    constructor(message) {
-        super(message);
-        this.statusCode = 403;
-        this.isOperational = true;
-        this.name = "SecurityError";
-    }
-}
-exports.SecurityError = SecurityError;
-class NetworkError extends Error {
-    constructor(message) {
-        super(message);
-        this.statusCode = 502;
-        this.isOperational = true;
-        this.name = "NetworkError";
-    }
-}
-exports.NetworkError = NetworkError;
+exports.asyncHandler = exports.NetworkError = exports.SecurityError = exports.FileUploadError = exports.ValidationError = exports.legacyErrorHandler = void 0;
+const ErrorHandler_1 = require("../core/errors/ErrorHandler");
+const Logger_1 = require("../core/logging/Logger");
+const logger = new Logger_1.Logger();
+const errorHandler = new ErrorHandler_1.ErrorHandler(logger);
+exports.legacyErrorHandler = errorHandler.handleError;
+var errors_1 = require("../types/errors");
+Object.defineProperty(exports, "ValidationError", { enumerable: true, get: function () { return errors_1.ValidationError; } });
+Object.defineProperty(exports, "FileUploadError", { enumerable: true, get: function () { return errors_1.FileProcessingError; } });
+Object.defineProperty(exports, "SecurityError", { enumerable: true, get: function () { return errors_1.AuthorizationError; } });
+Object.defineProperty(exports, "NetworkError", { enumerable: true, get: function () { return errors_1.InternalServerError; } });
+var asyncHandler_1 = require("../core/utils/asyncHandler");
+Object.defineProperty(exports, "asyncHandler", { enumerable: true, get: function () { return asyncHandler_1.asyncHandler; } });
 function getUserFriendlyMessage(error) {
     const errorMessages = {
         'ValidationError': '입력 데이터가 올바르지 않습니다. 다시 확인해주세요.',
