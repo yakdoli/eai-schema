@@ -76,7 +76,7 @@ router.post('/validate', async (req: Request, res: Response) => {
 
     res.json({
       success: true,
-      valid: validationResult.valid,
+      valid: validationResult.isValid,
       errors: validationResult.errors,
       warnings: validationResult.warnings
     });
@@ -133,3 +133,4 @@ router.post('/fetch-schema', async (req: Request, res: Response) => {
 });
 
 export { router as schemaConversionRoutes };
+export default router;

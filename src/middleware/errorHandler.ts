@@ -10,6 +10,7 @@ const logger = new Logger();
 const errorHandler = new ErrorHandler(logger);
 
 export const legacyErrorHandler = errorHandler.handleError;
+export { errorHandler };
 
 // 레거시 에러 클래스들 - 새로운 타입으로 마이그레이션 권장
 export { 
@@ -23,7 +24,7 @@ export {
 export { asyncHandler } from "../core/utils/asyncHandler";
 
 // 사용자 친화적인 에러 메시지 생성 함수
-function _getUserFriendlyMessage(error: AppError): string {
+function _getUserFriendlyMessage(error: Error): string {
   const errorMessages: { [key: string]: string } = {
     'ValidationError': '입력 데이터가 올바르지 않습니다. 다시 확인해주세요.',
     'FileUploadError': '파일 업로드 중 문제가 발생했습니다. 파일 형식과 크기를 확인해주세요.',

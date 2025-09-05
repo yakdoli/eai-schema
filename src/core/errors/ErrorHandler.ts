@@ -15,6 +15,9 @@ import {
 import { ApiResponse } from '../../types/common';
 import { Logger } from '../logging/Logger';
 
+// AppError 재export
+export { AppError } from '../../types/errors';
+
 export class ErrorHandler {
   private logger: Logger;
 

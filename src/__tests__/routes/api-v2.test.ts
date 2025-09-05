@@ -4,7 +4,9 @@
  */
 
 import request from 'supertest';
-import app from '../../index';
+import { createApp } from '../../index';
+
+const app = createApp();
 
 describe('API v2 통합 테스트', () => {
   describe('API 버전 관리', () => {

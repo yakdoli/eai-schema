@@ -125,7 +125,8 @@ export const corsMiddleware = (req: Request, res: Response, next: NextFunction):
 
   // OPTIONS 요청 처리
   if (req.method === 'OPTIONS') {
-    return res.status(204).end();
+    res.status(204).end();
+    return;
   }
 
   next();
@@ -207,7 +208,7 @@ export const usageTrackingMiddleware = (req: Request, res: Response, next: NextF
       endpoint,
       method,
       timestamp: new Date(),
-      ip: req.ip,
+      ip: req.ip || 'unknown',
       userAgent: req.get('User-Agent')
     });
   }
@@ -272,7 +273,8 @@ export const healthCheckMiddleware = (req: Request, res: Response, next: NextFun
       }
     };
     
-    return res.json(response);
+    res.json(response);
+    return;
   }
   
   next();

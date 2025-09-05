@@ -2,7 +2,7 @@
 
 import { Response, NextFunction } from 'express';
 import { verifyJwtToken } from '../core/utils/crypto';
-import { AuthenticatedRequest } from '../types/api';
+import { AuthenticatedRequest } from '../types/auth';
 import { AuthenticationError, AuthorizationError } from '../types/errors';
 import { Logger } from '../core/logging/Logger';
 

@@ -94,7 +94,7 @@ class FileUploadService {
             try {
                 JSON.parse(content);
             }
-            catch (error) {
+            catch {
             }
         }
     }

@@ -1,10 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.asyncHandler = exports.NetworkError = exports.SecurityError = exports.FileUploadError = exports.ValidationError = exports.legacyErrorHandler = void 0;
+exports.asyncHandler = exports.NetworkError = exports.SecurityError = exports.FileUploadError = exports.ValidationError = exports.errorHandler = exports.legacyErrorHandler = void 0;
 const ErrorHandler_1 = require("../core/errors/ErrorHandler");
 const Logger_1 = require("../core/logging/Logger");
 const logger = new Logger_1.Logger();
 const errorHandler = new ErrorHandler_1.ErrorHandler(logger);
+exports.errorHandler = errorHandler;
 exports.legacyErrorHandler = errorHandler.handleError;
 var errors_1 = require("../types/errors");
 Object.defineProperty(exports, "ValidationError", { enumerable: true, get: function () { return errors_1.ValidationError; } });
@@ -13,7 +14,7 @@ Object.defineProperty(exports, "SecurityError", { enumerable: true, get: functio
 Object.defineProperty(exports, "NetworkError", { enumerable: true, get: function () { return errors_1.InternalServerError; } });
 var asyncHandler_1 = require("../core/utils/asyncHandler");
 Object.defineProperty(exports, "asyncHandler", { enumerable: true, get: function () { return asyncHandler_1.asyncHandler; } });
-function getUserFriendlyMessage(error) {
+function _getUserFriendlyMessage(error) {
     const errorMessages = {
         'ValidationError': '입력 데이터가 올바르지 않습니다. 다시 확인해주세요.',
         'FileUploadError': '파일 업로드 중 문제가 발생했습니다. 파일 형식과 크기를 확인해주세요.',

@@ -29,7 +29,7 @@ class UrlFetchService {
         try {
             parsedUrl = new url_1.URL(urlString);
         }
-        catch (error) {
+        catch {
             throw new errorHandler_1.ValidationError("유효하지 않은 URL 형식입니다.");
         }
         if (parsedUrl.protocol !== "https:" &&
