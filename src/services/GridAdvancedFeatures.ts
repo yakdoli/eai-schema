@@ -125,7 +125,7 @@ export class GridAdvancedFeatures {
         const cellMeta = this.hot.getCellMeta(row, col);
         const currentClassName = cellMeta.className || '';
         
-        if (currentClassName.includes('selected-range')) {
+        if (typeof currentClassName === 'string' && currentClassName.includes('selected-range')) {
           const newClassName = currentClassName.replace(/\s*selected-range\s*/g, '').trim();
           this.hot.setCellMeta(row, col, 'className', newClassName);
         }
@@ -184,11 +184,11 @@ export class GridAdvancedFeatures {
    */
   private registerCustomEditors(): void {
     // 이메일 에디터
-    const EmailEditor = Handsontable.editors.TextEditor.prototype.extend();
+    const EmailEditor = (Handsontable.editors as any).TextEditor.prototype.extend();
     EmailEditor.prototype.getValue = function() {
-      const value = this.TEXTAREA.value;
-      if (value && !this.isValidEmail(value)) {
-        this.hot.setCellMeta(this.row, this.col, 'className', 'cell-error');
+      const value = (this as any).TEXTAREA.value;
+      if (value && !(this as any).isValidEmail(value)) {
+        (this as any).hot.setCellMeta((this as any).row, (this as any).col, 'className', 'cell-error');
       }
       return value;
     };
@@ -198,11 +198,11 @@ export class GridAdvancedFeatures {
     };
 
     // URL 에디터
-    const UrlEditor = Handsontable.editors.TextEditor.prototype.extend();
+    const UrlEditor = (Handsontable.editors as any).TextEditor.prototype.extend();
     UrlEditor.prototype.getValue = function() {
-      const value = this.TEXTAREA.value;
-      if (value && !this.isValidUrl(value)) {
-        this.hot.setCellMeta(this.row, this.col, 'className', 'cell-error');
+      const value = (this as any).TEXTAREA.value;
+      if (value && !(this as any).isValidUrl(value)) {
+        (this as any).hot.setCellMeta((this as any).row, (this as any).col, 'className', 'cell-error');
       }
       return value;
     };
@@ -216,8 +216,8 @@ export class GridAdvancedFeatures {
     };
 
     // 에디터 등록
-    Handsontable.editors.registerEditor('email', EmailEditor);
-    Handsontable.editors.registerEditor('url', UrlEditor);
+    (Handsontable.editors as any).registerEditor('email', EmailEditor);
+    (Handsontable.editors as any).registerEditor('url', UrlEditor);
   }
 
   /**
@@ -225,7 +225,7 @@ export class GridAdvancedFeatures {
    */
   private setupKeyboardShortcuts(): void {
     // Ctrl+A: 전체 선택
-    this.hot.addHook('beforeKeyDown', (event: KeyboardEvent) => {
+    this.hot.addHook('beforeKeyDown', (event: any) => {
       if (event.ctrlKey && event.key === 'a') {
         event.preventDefault();
         this.selectAll();
@@ -323,20 +323,23 @@ export class GridAdvancedFeatures {
 
     // 데이터와 포맷 적용
     for (let i = 0; i < data.length; i++) {
-      for (let j = 0; j < data[i].length; j++) {
-        const targetRow = startRow + i;
-        const targetCol = startCol + j;
-        
-        if (targetRow < this.hot.countRows() && targetCol < this.hot.countCols()) {
-          // 데이터 설정
-          this.hot.setDataAtCell(targetRow, targetCol, data[i][j]);
+      const row = data[i];
+      if (row) {
+        for (let j = 0; j < row.length; j++) {
+          const targetRow = startRow + i;
+          const targetCol = startCol + j;
           
-          // 포맷 적용
-          if (formats && formats[i] && formats[i][j]) {
-            const format = formats[i][j];
-            Object.keys(format).forEach(key => {
-              this.hot.setCellMeta(targetRow, targetCol, key, format[key]);
-            });
+          if (targetRow < this.hot.countRows() && targetCol < this.hot.countCols()) {
+            // 데이터 설정
+            this.hot.setDataAtCell(targetRow, targetCol, row[j]);
+            
+            // 포맷 적용
+            if (formats && formats[i] && formats[i][j]) {
+              const format = formats[i][j];
+              Object.keys(format).forEach(key => {
+                this.hot.setCellMeta(targetRow, targetCol, key, format[key]);
+              });
+            }
           }
         }
       }
@@ -492,7 +495,7 @@ export class GridAdvancedFeatures {
         return Number(value) < Number(filter.value);
       case 'between':
         const numValue = Number(value);
-        return numValue >= Number(filter.value) && numValue <= Number(filter.value2);
+        return numValue >= Number(filter.value) && numValue <= Number(filter.value2 || 0);
       case 'empty':
         return !value || String(value).trim() === '';
       case 'notEmpty':
@@ -548,7 +551,7 @@ export class GridAdvancedFeatures {
   public removeFilter(column: number): void {
     this.activeFilters = this.activeFilters.filter(f => f.column !== column);
     this.executeFilters();
-    this.logger.debug('필터 제거됨:', column);
+    this.logger.debug('필터 제거됨:', { column });
   }
 
   /**
@@ -557,7 +560,7 @@ export class GridAdvancedFeatures {
   public removeSort(column: number): void {
     this.activeSorts = this.activeSorts.filter(s => s.column !== column);
     this.executeSort();
-    this.logger.debug('정렬 제거됨:', column);
+    this.logger.debug('정렬 제거됨:', { column });
   }
 
   /**
@@ -582,13 +585,19 @@ export class GridAdvancedFeatures {
    * 행/열 크기 조정 기능
    */
   public resizeRow(row: number, height: number): void {
-    this.hot.setRowHeight(row, height);
+    // Handsontable의 행 높이 조정은 updateSettings를 통해 수행
+    const rowHeights = this.hot.getSettings().rowHeights || [];
+    (rowHeights as any)[row] = height;
+    this.hot.updateSettings({ rowHeights });
     this.hot.render();
     this.logger.debug(`행 ${row} 높이 조정: ${height}px`);
   }
 
   public resizeColumn(col: number, width: number): void {
-    this.hot.setColWidth(col, width);
+    // Handsontable의 열 너비 조정은 updateSettings를 통해 수행
+    const colWidths = this.hot.getSettings().colWidths || [];
+    (colWidths as any)[col] = width;
+    this.hot.updateSettings({ colWidths });
     this.hot.render();
     this.logger.debug(`열 ${col} 너비 조정: ${width}px`);
   }

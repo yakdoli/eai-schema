@@ -9,21 +9,6 @@ import { validateData } from '../core/utils/validation';
 import { Logger } from '../core/logging/Logger';
 import { ApiResponse, ApiError } from '../types/api-v2';
 
-// Express Request 타입 확장
-declare global {
-  namespace Express {
-    interface Request {
-      requestId?: string;
-      user?: {
-        id: string;
-        name?: string;
-        email?: string;
-        roles?: string[];
-      };
-    }
-  }
-}
-
 const logger = new Logger('ValidationMiddleware');
 
 /**
@@ -59,271 +44,209 @@ export const validationMiddleware = (req: AuthenticatedRequest, res: Response, n
       error: apiError
     };
 
-    return res.status(400).json(response);
+    res.status(400).json(response);
+    return;
   }
 
   next();
 };
 
 /**
- * Zod 스키마를 사용한 요청 검증 미들웨어
+ * Zod 스키마 기반 검증 미들웨어
  */
-export const validateRequest = (options: {
-  body?: z.ZodSchema;
-  query?: z.ZodSchema;
-  params?: z.ZodSchema;
-}) => {
+export const zodValidationMiddleware = (options: ValidationMiddlewareOptions) => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
     try {
-      // 요청 본문 검증
-      if (options.body && req.body) {
+      // 요청 데이터 검증
+      if (options.body) {
         req.body = validateData(options.body, req.body, 'body');
       }
 
-      // 쿼리 파라미터 검증
-      if (options.query && req.query) {
-        req.query = validateData(options.query, req.query, 'query');
+      if (options.query) {
+        req.query = validateData(options.query, req.query, 'query') as any;
       }
 
-      // 경로 파라미터 검증
-      if (options.params && req.params) {
-        req.params = validateData(options.params, req.params, 'params');
+      if (options.params) {
+        req.params = validateData(options.params, req.params, 'params') as any;
       }
-
-      logger.debug('요청 검증 성공', {
-        requestId: req.requestId,
-        method: req.method,
-        url: req.originalUrl
-      });
 
       next();
     } catch (error) {
-      logger.warn('요청 검증 실패', {
-        requestId: req.requestId,
-        error: (error as Error).message,
-        method: req.method,
-        url: req.originalUrl
-      });
-      next(error);
+      logger.error('Zod 검증 실패', { error, requestId: req.requestId });
+
+      const apiError: ApiError = {
+        code: 'VALIDATION_ERROR',
+        message: '요청 데이터 검증에 실패했습니다.',
+        details: error instanceof Error ? error.message : 'Unknown validation error',
+        timestamp: new Date().toISOString(),
+        requestId: req.requestId || 'unknown'
+      };
+
+      const response: ApiResponse = {
+        success: false,
+        error: apiError
+      };
+
+      res.status(400).json(response);
     }
   };
 };
 
-/**
- * 파일 업로드 검증 미들웨어
- */
-export const validateFileUpload = (options: {
-  maxSize?: number;
-  allowedMimeTypes?: string[];
-  allowedExtensions?: string[];
-  required?: boolean;
-}) => {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
-    try {
-      const files = req.files as any;
-      const file = req.file as any;
-      
-      // 파일이 필수인 경우 확인
-      if (options.required && !files && !file) {
-        throw new ValidationError('파일이 필요합니다', 'file', undefined, req.requestId);
-      }
+// 공통 검증 스키마들
+export const commonSchemas = {
+  // 페이지네이션
+  pagination: z.object({
+    page: z.number().int().min(1).default(1),
+    limit: z.number().int().min(1).max(100).default(20)
+  }),
 
-      // 파일이 있는 경우 검증
-      const filesToValidate = files ? (Array.isArray(files) ? files : [files]) : (file ? [file] : []);
-      
-      for (const uploadedFile of filesToValidate) {
-        // 파일 크기 검증
-        if (options.maxSize && uploadedFile.size > options.maxSize) {
-          throw new ValidationError(
-            `파일 크기가 너무 큽니다. 최대 ${options.maxSize} 바이트까지 허용됩니다`,
-            'file.size',
-            uploadedFile.size,
-            req.requestId
-          );
-        }
+  // ID 검증
+  id: z.string().min(1, '유효한 ID가 필요합니다'),
 
-        // MIME 타입 검증
-        if (options.allowedMimeTypes && !options.allowedMimeTypes.includes(uploadedFile.mimetype)) {
-          throw new ValidationError(
-            `허용되지 않는 파일 형식입니다. 허용되는 형식: ${options.allowedMimeTypes.join(', ')}`,
-            'file.mimetype',
-            uploadedFile.mimetype,
-            req.requestId
-          );
-        }
+  // 날짜 범위
+  dateRange: z.object({
+    from: z.string().datetime().optional(),
+    to: z.string().datetime().optional()
+  }),
 
-        // 파일 확장자 검증
-        if (options.allowedExtensions) {
-          const extension = uploadedFile.originalname.toLowerCase().split('.').pop();
-          if (!extension || !options.allowedExtensions.includes(extension)) {
-            throw new ValidationError(
-              `허용되지 않는 파일 확장자입니다. 허용되는 확장자: ${options.allowedExtensions.join(', ')}`,
-              'file.extension',
-              extension,
-              req.requestId
-            );
-          }
-        }
-      }
+  // 정렬 옵션
+  sort: z.object({
+    field: z.string(),
+    direction: z.enum(['asc', 'desc']).default('asc')
+  }),
 
-      logger.debug('파일 업로드 검증 성공', {
-        requestId: req.requestId,
-        fileCount: filesToValidate.length
-      });
+  // 스키마 형식
+  schemaFormat: z.enum(['xml', 'json', 'yaml', 'xsd', 'wsdl']),
 
-      next();
-    } catch (error) {
-      logger.warn('파일 업로드 검증 실패', {
-        requestId: req.requestId,
-        error: (error as Error).message
-      });
-      next(error);
-    }
-  };
-};
+  // 태그 배열
+  tags: z.array(z.string()).optional(),
 
-/**
- * 페이지네이션 파라미터 검증 미들웨어
- */
-export const validatePagination = (options: {
-  maxLimit?: number;
-  defaultLimit?: number;
-} = {}) => {
-  const maxLimit = options.maxLimit || 100;
-  const defaultLimit = options.defaultLimit || 10;
+  // 검색 쿼리
+  searchQuery: z.string().min(1).max(500),
 
-  const schema = z.object({
-    page: z.string().optional().transform(val => {
-      const num = parseInt(val || '1');
-      return isNaN(num) || num < 1 ? 1 : num;
-    }),
-    limit: z.string().optional().transform(val => {
-      const num = parseInt(val || defaultLimit.toString());
-      if (isNaN(num) || num < 1) return defaultLimit;
-      return Math.min(num, maxLimit);
-    }),
-    sortBy: z.string().optional(),
-    sortOrder: z.enum(['asc', 'desc']).optional().default('asc')
-  });
-
-  return validateRequest({ query: schema });
-};
-
-/**
- * ID 파라미터 검증 미들웨어
- */
-export const validateId = (paramName: string = 'id') => {
-  const schema = z.object({
-    [paramName]: z.string().uuid('유효하지 않은 ID 형식입니다')
-  });
-
-  return validateRequest({ params: schema });
-};
-
-/**
- * 스키마 생성 요청 검증
- */
-export const validateCreateSchema = validateRequest({
-  body: z.object({
-    name: z.string().min(1, '스키마 이름은 필수입니다').max(100, '스키마 이름은 100자를 초과할 수 없습니다'),
-    description: z.string().max(500, '설명은 500자를 초과할 수 없습니다').optional(),
-    format: z.enum(['xml', 'json', 'yaml', 'xsd', 'wsdl'], {
-      errorMap: () => ({ message: '지원되지 않는 스키마 형식입니다' })
-    }),
-    content: z.string().min(1, '스키마 내용은 필수입니다')
+  // 파일 업로드
+  file: z.object({
+    filename: z.string(),
+    mimetype: z.string(),
+    size: z.number().max(10 * 1024 * 1024) // 10MB 제한
   })
-});
+};
 
-/**
- * 스키마 업데이트 요청 검증
- */
-export const validateUpdateSchema = validateRequest({
-  body: z.object({
-    name: z.string().min(1).max(100).optional(),
-    description: z.string().max(500).optional(),
+// 스키마 관련 검증 스키마
+export const schemaValidationSchemas = {
+  // 스키마 생성
+  createSchema: z.object({
+    name: z.string().min(1).max(255),
+    description: z.string().max(1000).optional(),
+    format: commonSchemas.schemaFormat,
+    content: z.string().min(1),
+    tags: commonSchemas.tags
+  }),
+
+  // 스키마 업데이트
+  updateSchema: z.object({
+    name: z.string().min(1).max(255).optional(),
+    description: z.string().max(1000).optional(),
     content: z.string().min(1).optional(),
-    gridData: z.array(z.array(z.any())).optional()
-  }).refine(data => {
-    // 최소 하나의 필드는 업데이트되어야 함
-    return Object.keys(data).length > 0;
-  }, {
-    message: '업데이트할 필드가 최소 하나는 필요합니다'
-  })
-});
+    tags: commonSchemas.tags
+  }),
 
-/**
- * 협업 세션 생성 요청 검증
- */
-export const validateCreateSession = validateRequest({
-  body: z.object({
-    schemaId: z.string().uuid('유효하지 않은 스키마 ID입니다'),
-    name: z.string().min(1, '세션 이름은 필수입니다').max(100, '세션 이름은 100자를 초과할 수 없습니다'),
-    settings: z.object({
-      maxUsers: z.number().min(1).max(50).optional(),
-      allowAnonymous: z.boolean().optional(),
-      autoSave: z.boolean().optional(),
-      autoSaveInterval: z.number().min(10).max(300).optional(),
-      conflictResolution: z.enum(['last-write-wins', 'merge', 'manual']).optional()
+  // 스키마 검색
+  searchSchemas: z.object({
+    query: commonSchemas.searchQuery,
+    filters: z.object({
+      format: z.array(commonSchemas.schemaFormat).optional(),
+      tags: z.array(z.string()).optional(),
+      createdBy: z.array(z.string()).optional(),
+      dateRange: commonSchemas.dateRange.optional()
+    }).optional(),
+    sort: commonSchemas.sort.optional(),
+    pagination: commonSchemas.pagination.optional()
+  }),
+
+  // 그리드 변환
+  convertToGrid: z.object({
+    format: commonSchemas.schemaFormat,
+    content: z.string().min(1),
+    options: z.object({
+      preserveComments: z.boolean().default(false),
+      includeMetadata: z.boolean().default(true),
+      maxDepth: z.number().int().min(1).max(10).default(5)
+    }).optional()
+  }),
+
+  // 그리드 업데이트
+  updateGrid: z.object({
+    gridData: z.array(z.array(z.any())),
+    metadata: z.record(z.any()).optional()
+  }),
+
+  // 배치 작업
+  batchOperation: z.object({
+    operations: z.array(z.object({
+      operation: z.enum(['create', 'update', 'delete']),
+      id: z.string().optional(),
+      data: z.any()
+    })),
+    options: z.object({
+      continueOnError: z.boolean().default(false),
+      maxConcurrency: z.number().int().min(1).max(10).default(5),
+      timeout: z.number().int().min(1000).max(300000).default(30000)
     }).optional()
   })
-});
-
-/**
- * 그리드 데이터 업데이트 요청 검증
- */
-export const validateUpdateGrid = validateRequest({
-  body: z.object({
-    gridData: z.array(z.array(z.object({
-      fieldName: z.string().min(1, '필드명은 필수입니다'),
-      dataType: z.string().min(1, '데이터 타입은 필수입니다'),
-      required: z.boolean(),
-      description: z.string(),
-      defaultValue: z.any().optional(),
-      constraints: z.string().optional()
-    }))),
-    changes: z.array(z.object({
-      id: z.string(),
-      type: z.enum(['cell-update', 'row-insert', 'row-delete', 'column-insert', 'column-delete', 'structure-change']),
-      position: z.object({
-        row: z.number().min(0),
-        col: z.number().min(0)
-      }),
-      oldValue: z.any().optional(),
-      newValue: z.any().optional(),
-      userId: z.string(),
-      timestamp: z.number(),
-      metadata: z.record(z.any()).optional()
-    }))
-  })
-});
-
-/**
- * 내용 타입 검증 미들웨어
- */
-export const validateContentType = (allowedTypes: string[]) => {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
-    const contentType = req.headers['content-type'];
-    
-    if (!contentType) {
-      return next(new ValidationError(
-        'Content-Type 헤더가 필요합니다',
-        'content-type',
-        undefined,
-        req.requestId
-      ));
-    }
-
-    const isAllowed = allowedTypes.some(type => contentType.includes(type));
-    
-    if (!isAllowed) {
-      return next(new ValidationError(
-        `허용되지 않는 Content-Type입니다. 허용되는 타입: ${allowedTypes.join(', ')}`,
-        'content-type',
-        contentType,
-        req.requestId
-      ));
-    }
-
-    next();
-  };
 };
+
+// 협업 관련 검증 스키마
+export const collaborationValidationSchemas = {
+  // 세션 생성
+  createSession: z.object({
+    schemaId: commonSchemas.id,
+    name: z.string().max(255).optional(),
+    description: z.string().max(1000).optional(),
+    permissions: z.object({
+      read: z.boolean().default(true),
+      write: z.boolean().default(false),
+      delete: z.boolean().default(false),
+      share: z.boolean().default(false),
+      admin: z.boolean().default(false)
+    }).optional(),
+    expiresAt: z.string().datetime().optional()
+  }),
+
+  // 세션 업데이트
+  updateSession: z.object({
+    name: z.string().max(255).optional(),
+    description: z.string().max(1000).optional(),
+    permissions: z.object({
+      read: z.boolean(),
+      write: z.boolean(),
+      delete: z.boolean(),
+      share: z.boolean(),
+      admin: z.boolean()
+    }).optional(),
+    expiresAt: z.string().datetime().optional()
+  }),
+
+  // 사용자 초대
+  inviteUser: z.object({
+    email: z.string().email(),
+    permissions: z.object({
+      read: z.boolean().default(true),
+      write: z.boolean().default(false),
+      delete: z.boolean().default(false),
+      share: z.boolean().default(false),
+      admin: z.boolean().default(false)
+    }).optional()
+  })
+};
+
+// 버전 관리 검증 스키마
+export const versionValidationSchemas = {
+  // 호환성 체크
+  compatibilityCheck: z.object({
+    fromVersion: z.string().regex(/^\d+\.\d+$/, '유효한 버전 형식이 아닙니다 (예: 1.0)'),
+    toVersion: z.string().regex(/^\d+\.\d+$/, '유효한 버전 형식이 아닙니다 (예: 2.0)')
+  })
+};
+
+export default validationMiddleware;

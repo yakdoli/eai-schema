@@ -112,7 +112,7 @@ export class GridManager {
    */
   public createGrid(
     gridId: string,
-    container: HTMLElement,
+    container: any, // HTMLElement 대신 any 사용
     options?: Partial<GridComponentProps>
   ): GridComponent {
     try {
@@ -143,7 +143,7 @@ export class GridManager {
       this.logger.info(`그리드 생성됨: ${gridId}`);
       return grid;
     } catch (error) {
-      this.logger.error(`그리드 생성 실패: ${gridId}`, error);
+      this.logger.error(`그리드 생성 실패: ${gridId}`, { error });
       throw error;
     }
   }
@@ -237,46 +237,45 @@ export class GridManager {
         // JSON 스키마 처리
         if (schema.properties) {
           Object.entries(schema.properties).forEach(([fieldName, fieldDef]: [string, any]) => {
-            const row: SchemaGridData[] = [
-              {
-                fieldName,
-                dataType: fieldDef.type || 'string',
-                required: schema.required?.includes(fieldName) || false,
-                description: fieldDef.description || '',
-                defaultValue: fieldDef.default || '',
-                constraints: this.extractConstraints(fieldDef)
-              }
-            ];
-            gridData.push(row);
+            const cellData: SchemaGridData = {
+              fieldName,
+              dataType: fieldDef.type || 'string',
+              required: schema.required?.includes(fieldName) || false,
+              description: fieldDef.description || '',
+              defaultValue: fieldDef.default || '',
+              constraints: this.extractConstraints(fieldDef)
+            };
+            gridData.push([cellData]);
           });
         }
         
         // XML 스키마 처리 (XSD)
         else if (schema.elements) {
           schema.elements.forEach((element: any) => {
-            const row: SchemaGridData[] = [
-              {
-                fieldName: element.name || '',
-                dataType: element.type || 'string',
-                required: element.minOccurs !== '0',
-                description: element.annotation?.documentation || '',
-                defaultValue: element.default || '',
-                constraints: this.extractXmlConstraints(element)
-              }
-            ];
-            gridData.push(row);
+            const cellData: SchemaGridData = {
+              fieldName: element.name || '',
+              dataType: element.type || 'string',
+              required: element.minOccurs !== '0',
+              description: element.annotation?.documentation || '',
+              defaultValue: element.default || '',
+              constraints: this.extractXmlConstraints(element)
+            };
+            gridData.push([cellData]);
           });
         }
       }
       
       // 최소 행 수 보장
       while (gridData.length < 10) {
-        gridData.push(this.createEmptyData(1)[0]);
+        const emptyRow = this.createEmptyData(1)[0];
+        if (emptyRow) {
+          gridData.push(emptyRow);
+        }
       }
       
       return gridData;
     } catch (error) {
-      this.logger.error('스키마를 그리드 데이터로 변환 중 오류:', error);
+      this.logger.error('스키마를 그리드 데이터로 변환 중 오류:', { error });
       return this.createEmptyData(10);
     }
   }
@@ -356,7 +355,7 @@ export class GridManager {
       
       return schema;
     } catch (error) {
-      this.logger.error('그리드 데이터를 스키마로 변환 중 오류:', error);
+      this.logger.error('그리드 데이터를 스키마로 변환 중 오류:', { error });
       throw error;
     }
   }
@@ -421,13 +420,18 @@ export class GridManager {
         case 'maxLength':
         case 'minimum':
         case 'maximum':
-          property[key] = parseInt(value, 10);
+          if (value) {
+            property[key] = parseInt(value, 10);
+          }
           break;
         case 'pattern':
           property[key] = value;
           break;
         case 'enum':
-          property[key] = value.replace(/[\[\]]/g, '').split(',').map(s => s.trim());
+          if (value) {
+            property[key] = value.replace(/[\[\]]/g, '').split(',').map(s => s.trim());
+          }
+          break;
           break;
       }
     });
