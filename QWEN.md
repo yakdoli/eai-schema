@@ -1,331 +1,210 @@
-# EAI Schema Toolkit - Project Context
+# EAI Schema Toolkit - Project Context for Qwen Code
 
 ## Project Overview
 
-The EAI Schema Toolkit is an enterprise application integration tool for schema conversion and validation. It provides both a web interface (hosted on GitHub Pages) and a backend API server for processing various schema formats including XML, JSON, and YAML.
+The **EAI Schema Toolkit** is a comprehensive Enterprise Application Integration tool designed for schema conversion and validation. It supports multiple schema formats including XML, JSON, and YAML, and provides both a RESTful API and a web interface.
 
-## Key Features
-
-- Multi-format schema support (XML, JSON, YAML)
-- File upload via drag-and-drop or file selection
-- URL-based schema import
-- Real-time validation and conversion
-- RESTful API interface
-- Web interface with GitHub Pages hosting
-- Message mapping functionality for EAI Work Tool integration
+### Key Features
+- Multi-schema format support (XML, JSON, YAML)
+- File upload via drag-and-drop or URL import
+- Real-time schema validation and conversion
+- RESTful API with comprehensive endpoints
+- Web interface hosted on GitHub Pages
 - Real-time collaboration capabilities
-- Performance monitoring with Prometheus metrics
+- Performance monitoring with Prometheus/Grafana integration
+- MCP (Model-View-Controller-Provider) pattern integration
+
+### Technology Stack
+- **Language**: TypeScript
+- **Runtime**: Node.js v22
+- **Package Manager**: npm
+- **Framework**: Express.js
+- **Testing**: Jest (unit/integration), Playwright (E2E)
+- **Code Quality**: ESLint, Prettier
+- **CI/CD**: GitHub Actions
+- **Documentation**: GitHub Pages
 
 ## Project Structure
 
 ```
 eai-schema/
-├── src/                    # Backend source code
-│   ├── routes/            # API routes
-│   ├── services/          # Business logic
-│   ├── middleware/        # Middleware functions
+├── .github/workflows/     # GitHub Actions CI/CD workflows
+├── docs/                  # Documentation and web interface
+├── src/                   # Source code
+│   ├── __tests__/         # Test files (unit, integration, E2E)
+│   ├── components/        # Reusable components
+│   ├── core/              # Core functionality (config, logging, etc.)
+│   ├── mcp/               # MCP integration
+│   ├── middleware/        # Express middleware
+│   ├── routes/            # API route definitions
+│   ├── services/          # Business logic services
+│   ├── types/             # TypeScript type definitions
 │   ├── utils/             # Utility functions
-│   └── __tests__/         # Unit tests
-├── docs/                  # GitHub Pages web interface
-│   ├── index.html        # Main web page
-│   ├── style.css         # Stylesheet
-│   ├── script.js         # Client JavaScript
-│   └── README.md         # Web interface documentation
-├── dist/                 # Build output
-├── temp/                 # Temporary file storage
-├── .github/workflows/    # GitHub Actions workflows
-├── mcp-server/           # Model Context Provider server for AI agent assistance
-└── package.json          # Node.js package configuration
+│   ├── app.ts             # Main application setup
+│   └── index.ts           # Entry point
+├── dist/                  # Compiled output
+├── scripts/               # Utility scripts
+└── temp/                  # Temporary files
 ```
 
-## Backend Architecture
+## Development Environment
 
-The backend is a Node.js/Express server that provides RESTful APIs for:
-- File upload and management
-- URL-based schema fetching
-- Schema validation
-- Message mapping generation
-- Real-time collaboration
-- Performance monitoring
+### Prerequisites
+- Node.js v22+
+- npm v10+
 
-### Core Components
+### Setup
+```bash
+# Clone repository
+git clone https://github.com/yakdoli/eai-schema.git
+cd eai-schema
 
-1. **File Upload Service** (`src/services/fileUploadService.ts`)
-   - Handles file validation, storage, and retrieval
-   - Supports XML, JSON, YAML formats with security checks
-   - Implements file expiration and cleanup
+# Install dependencies
+npm install
+```
 
-2. **Message Mapping Service** (`src/services/messageMappingService.ts`)
-   - Transforms schemas between different formats
-   - Generates mapping rules based on EAI Work Tool structure
-   - Creates metadata for transformations
+## Building and Running
 
-3. **Collaboration Service** (`src/services/CollaborationService.ts`)
-   - Manages real-time collaboration between multiple users
-   - Handles WebSocket connections for live updates
-   - Tracks user presence and activities
+### Development
+```bash
+# Run development server with hot reload
+npm run dev
 
-4. **Performance Monitoring Service** (`src/services/PerformanceMonitoringService.ts`)
-   - Collects and exposes Prometheus metrics
-   - Monitors HTTP requests, memory usage, CPU usage
-   - Tracks garbage collection and active connections
+# Build for production
+npm run build
 
-5. **Schema Validation Service** (`src/services/SchemaValidationService.ts`)
-   - Validates XML schemas against XSD
-   - Validates JSON schemas against JSON Schema
-   - Validates YAML schemas
+# Run production server
+npm start
+```
 
-6. **Routes** (`src/routes/`)
-   - `/api/health` - Health check endpoint
-   - `/api/upload/*` - File handling endpoints
-   - `/api/message-mapping/*` - Schema conversion endpoints
-   - `/api/collaboration/*` - Real-time collaboration endpoints
-   - `/api/schema-validation/*` - Schema validation endpoints
-   - `/api/performance/*` - Performance monitoring endpoints
+### Testing
+```bash
+# Run all tests
+npm test
 
-## Web Interface
+# Run unit tests
+npm run test:unit
 
-The web interface is a client-side application that provides:
-- Tab-based navigation (File Upload, URL Import, Message Mapping)
-- Drag-and-drop file upload zone
-- File management (list, download, delete)
-- Message mapping configuration
-- Real-time collaboration features
-- Dark mode support
-- Responsive design
+# Run integration tests
+npm run test:integration
 
-### Key Components
+# Run E2E tests
+npm run test:e2e
 
-1. **Configuration Section** - Set message type, data type, root element, namespace, encoding, version
-2. **Source Section** - Input source data for transformation
-3. **Statement Section** - SQL queries or processing instructions
-4. **Test Data Section** - Sample data for validation
-5. **Message Mapping Section** - Generated mapping rules visualization
-6. **Result Section** - Transformed output in XML, JSON, or preview formats
-7. **Collaboration Section** - Real-time collaboration features
+# Run performance tests
+npm run test:performance
 
-## Development Setup
+# Run with coverage
+npm run test:coverage
+```
 
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
+### Code Quality
+```bash
+# Run linter
+npm run lint
 
-2. Start development server:
-   ```bash
-   npm run dev
-   ```
+# Fix linting issues
+npm run lint:fix
 
-3. Build for production:
-   ```bash
-   npm run build
-   ```
+# Check code formatting
+npm run format:check
 
-4. Start production server:
-   ```bash
-   npm start
-   ```
+# Format code
+npm run format
 
-## Testing
+# Type checking
+npm run type-check
+```
 
-- Unit tests: `npm test`
-- Test coverage: `npm run test:coverage`
-- E2E tests: `npm run test:e2e`
-- Run all tests: `npm run test:all`
+## API Endpoints
+
+### File Upload
+- `POST /api/upload/file` - Upload file
+- `POST /api/upload/url` - Import from URL
+- `GET /api/upload/file/{fileId}` - Get file info
+- `GET /api/upload/file/{fileId}/content` - Download file
+- `DELETE /api/upload/file/{fileId}` - Delete file
+- `GET /api/upload/files` - List uploaded files
+
+### Message Mapping
+- `POST /api/message-mapping/generate` - Generate message mapping
+
+### Collaboration
+- WebSocket connection for real-time collaboration
+
+### Performance Monitoring
+- `GET /api/performance/metrics` - Get performance metrics
 
 ## Configuration
 
 Environment variables can be set in a `.env` file:
-- `PORT` - Server port (default: 3001)
-- `FRONTEND_URL` - CORS allowed origins
-- `LOG_LEVEL` - Logging level
-- `UPLOAD_PATH` - File storage path
-- `FILE_EXPIRY_HOURS` - File expiration time
+```env
+PORT=3001
+FRONTEND_URL=https://[username].github.io
+LOG_LEVEL=info
+UPLOAD_PATH=./temp
+FILE_EXPIRY_HOURS=24
+```
 
 ## Deployment
 
-### GitHub Pages Deployment
-The web interface is automatically deployed to GitHub Pages via GitHub Actions when pushing to the main branch.
+### GitHub Pages
+The web interface is automatically deployed to GitHub Pages via GitHub Actions.
 
-### Backend API Deployment
+### Backend API
+The backend API can be deployed to:
+- Heroku: `git push heroku main`
+- Vercel: `vercel --prod`
+- Railway: `railway up`
+- Render: GitHub integration for automatic deployment
 
-#### Heroku Deployment
-1. Install Heroku CLI: https://devcenter.heroku.com/articles/heroku-cli
-2. Login to Heroku: `heroku login`
-3. Create a new app or use existing app:
-   ```bash
-   # Create new app
-   heroku create your-app-name
-   
-   # Or use existing app
-   heroku git:remote -a your-existing-app-name
-   ```
-4. Set environment variables:
-   ```bash
-   heroku config:set NODE_ENV=production
-   heroku config:set PORT=3001
-   heroku config:set FRONTEND_URL=https://your-username.github.io/eai-schema/
-   ```
-5. Deploy: `git push heroku main`
+## Development Conventions
 
-#### Vercel Deployment
-- `vercel --prod`
+### Code Style
+- TypeScript with strict typing
+- ESLint for code quality
+- Prettier for code formatting
+- Conventional Commits for commit messages
 
-#### Railway Deployment
-- `railway up`
+### Testing
+- Unit tests for services and components
+- Integration tests for API endpoints
+- E2E tests for user workflows
+- Performance tests for critical paths
+- Minimum 80% code coverage
 
-#### Render Deployment
-- GitHub integration for automatic deployment
+### Architecture
+- MVC-like pattern with services layer
+- MCP (Model-View-Controller-Provider) integration
+- Modular design with clear separation of concerns
+- Real-time features via WebSocket
 
-## API Endpoints
-
-### Health Check
-```
-GET /api/health
-```
-
-### File Upload
-```
-POST /api/upload/file
-Content-Type: multipart/form-data
-```
-
-### URL Import
-```
-POST /api/upload/url
-Content-Type: application/json
-{
-  "url": "https://example.com/schema.xml"
-}
-```
-
-### File Information
-```
-GET /api/upload/file/{fileId}
-```
-
-### File Download
-```
-GET /api/upload/file/{fileId}/content
-```
-
-### File Deletion
-```
-DELETE /api/upload/file/{fileId}
-```
-
-### File List
-```
-GET /api/upload/files
-```
-
-### Message Mapping Generation
-```
-POST /api/message-mapping/generate
-Content-Type: application/json
-{
-  "configuration": { ... },
-  "source": "..."
-}
-```
-
-### Real-time Collaboration
-```
-WebSocket connection to /socket.io/
-Endpoints for collaboration management
-```
-
-### Schema Validation
-```
-POST /api/schema-validation/validate
-POST /api/schema-validation/json
-POST /api/schema-validation/xml
-POST /api/schema-validation/yaml
-```
-
-### Performance Monitoring
-```
-GET /api/performance/metrics
-GET /api/performance/health
-```
-
-## Development Guidelines
-
-- Written in TypeScript with strict type checking
-- Follows ESLint rules for code quality
-- Uses Jest for unit testing
-- Implements conventional commits for version control
-- Includes comprehensive error handling and logging
-- Follows microservices-ready architecture
-
-## Supported Formats
-
-### Input Formats
-- XML (.xml)
-- JSON (.json)
-- YAML (.yaml, .yml)
-
-### File Limitations
-- Maximum file size: 50MB
-- File retention period: 24 hours (default)
-
-## Security Features
-
+### Security
 - CORS protection
 - Rate limiting
 - File type validation
-- SSRF prevention for URL imports
+- SSRF prevention
+- XXE prevention
 - Helmet.js for security headers
-- XXE attack prevention for XML files
-- Input sanitization
-- Secure WebSocket connections
 
-## Performance Monitoring
+## CI/CD Pipeline
 
-The application includes built-in performance monitoring through Prometheus metrics:
+GitHub Actions workflow includes:
+1. Code quality checks (TypeScript, ESLint, Prettier)
+2. Security scanning (npm audit, Snyk, CodeQL)
+3. Unit tests (Node.js 20 and 22)
+4. Integration tests
+5. E2E tests with Playwright
+6. Performance tests
+7. Build verification
+8. Test result summary
 
-- HTTP request duration and count
-- Memory and CPU usage
-- Garbage collection tracking
-- Active connections monitoring
-- Custom business metrics
+## Contributing
 
-Metrics are exposed at `/api/performance/metrics` and can be scraped by Prometheus for visualization in Grafana.
+1. Fork the project
+2. Create feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open Pull Request
 
-## Real-time Collaboration
-
-WebSocket-based real-time collaboration features enable multiple users to work together:
-
-- Live user presence tracking
-- Real-time change synchronization
-- Session management
-- Conflict resolution
-
-## AI Agent Assistance (Development Only)
-
-During development, the EAI Schema Toolkit includes a Model Context Provider (MCP) server to assist AI coding agents:
-
-### MCP Server
-- Located in `mcp-server/` directory
-- Provides project context to AI agents
-- Helps agents understand codebase structure and APIs
-- Not part of production deployment
-
-### Starting the MCP Server
-```bash
-npm run mcp:install  # Install MCP server dependencies
-npm run mcp:start     # Start MCP server on port 3002
-```
-
-Or use the convenience script:
-```bash
-./scripts/start-mcp-server.sh
-```
-
-### MCP Endpoint
-- Available at `http://localhost:3002/mcp` during development
-- Provides context about project structure, APIs, and services
-- Intended for AI agent assistance only
-- **NOT** used for deployment or production purposes
-
-**Note**: The MCP integration is purely for development assistance and has no role in the deployment or production operation of the EAI Schema Toolkit.
+Follow TypeScript best practices, maintain test coverage, and use Conventional Commits.
