@@ -13,7 +13,7 @@ import {
 } from '../../types/grid';
 
 // GridComponent 모킹
-jest.mock('../../components/GridComponent.js');
+jest.mock('../../components/GridComponent');
 
 describe('GridManager', () => {
   let gridManager: GridManager;
@@ -37,7 +37,7 @@ describe('GridManager', () => {
     it('새 그리드를 생성할 수 있어야 함', () => {
       const gridId = 'test-grid';
       
-      const _grid = gridManager.createGrid(gridId, mockContainer);
+      const grid = gridManager.createGrid(gridId, mockContainer);
       
       expect(GridComponent).toHaveBeenCalledTimes(1);
       expect(grid).toBeInstanceOf(GridComponent);

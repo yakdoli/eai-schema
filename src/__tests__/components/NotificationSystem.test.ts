@@ -40,7 +40,7 @@ describe('NotificationManager', () => {
   describe('기본 알림 기능', () => {
     test('성공 알림을 표시할 수 있어야 함', () => {
       const message = '작업이 성공적으로 완료되었습니다.';
-      const _id = notificationManager.success(message);
+      const id = notificationManager.success(message);
 
       expect(id).toBeDefined();
       
@@ -275,7 +275,7 @@ describe('NotificationManager', () => {
     });
 
     test('Escape 키로 알림을 닫을 수 있어야 함', () => {
-      const _id = notificationManager.info('키보드 테스트');
+      const id = notificationManager.info('키보드 테스트');
 
       const escapeEvent = new KeyboardEvent('keydown', {
         key: 'Escape',
