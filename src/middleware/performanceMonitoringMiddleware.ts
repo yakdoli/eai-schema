@@ -72,7 +72,7 @@ export class PerformanceMonitoringMiddleware {
           req.originalUrl || req.url,
           res.statusCode,
           duration,
-          requestId,
+          requestId || 'unknown',
           req.user?.id
         );
 

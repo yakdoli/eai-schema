@@ -125,10 +125,12 @@ export const setNestedValue = (obj: any, path: string, value: any): void => {
   
   for (let i = 0; i < keys.length - 1; i++) {
     const key = keys[i];
-    if (!(key in current) || typeof current[key] !== 'object') {
+    if (key && (!(key in current) || typeof current[key] !== 'object')) {
       current[key] = {};
     }
-    current = current[key];
+    if (key) {
+      current = current[key];
+    }
   }
   
   current[keys[keys.length - 1]] = value;

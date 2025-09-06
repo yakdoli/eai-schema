@@ -255,13 +255,16 @@ export const decompressString = (compressed: string): string => {
   let i = 0;
   
   while (i < compressed.length) {
-    if (/\d/.test(compressed[i])) {
-      const count = parseInt(compressed[i]);
-      const char = compressed[i + 1];
-      decompressed += char.repeat(count);
+    const char = compressed[i];
+    if (char && /\d/.test(char)) {
+      const count = parseInt(char);
+      const nextChar = compressed[i + 1];
+      if (nextChar) {
+        decompressed += nextChar.repeat(count);
+      }
       i += 2;
     } else {
-      decompressed += compressed[i];
+      decompressed += char || '';
       i++;
     }
   }
