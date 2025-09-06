@@ -39,14 +39,13 @@ router.post('/convert', upload.single('file'), async (req: Request, res: Respons
       targetFormat
     );
 
-    res.json({
+    return res.json({
       success: true,
       result
     });
-
   } catch (error) {
     logger.error('스키마 변환 중 오류 발생:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : '스키마 변환 중 오류가 발생했습니다'
     });

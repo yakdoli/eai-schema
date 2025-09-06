@@ -724,7 +724,9 @@ export class NotificationManager {
     const actionButtons = notification.querySelectorAll('.notification-action');
     actionButtons.forEach((button, index) => {
       button.addEventListener('click', () => {
-        options.actions![index].action();
+        if (options.actions && options.actions[index]) {
+          options.actions[index].action();
+        }
         this.hide(id);
       });
     });
@@ -983,6 +985,103 @@ export class NotificationManager {
   }
 }
 
+/** 
+ * 툴팁 시스템
+ */
+class TooltipSystem {
+  /**
+   * 툴팁 추가
+   */
+  public add(element: HTMLElement, options: TooltipOptions): void {
+    const tooltip = this.createTooltip(options);
+    document.body.appendChild(tooltip);
+    
+    this.setupTooltipEvents(element, tooltip, options);
+  }
+
+  /**
+   * 툴팁 생성
+   */
+  private createTooltip(options: TooltipOptions): HTMLElement {
+    const tooltip = document.createElement('div');
+    tooltip.className = `help-tooltip ${options.position || 'top'} ${options.theme || 'dark'}`;
+    tooltip.textContent = options.content;
+    
+    if (options.maxWidth) {
+      tooltip.style.maxWidth = `${options.maxWidth}px`;
+    }
+    
+    return tooltip;
+  }
+
+  /**
+   * 툴팁 이벤트 설정
+   */
+  private setupTooltipEvents(element: HTMLElement, tooltip: HTMLElement, options: TooltipOptions): void {
+    const delay = options.delay || 300;
+    let showTimeout: number;
+    let hideTimeout: number;
+
+    const showTooltip = () => {
+      clearTimeout(hideTimeout);
+      showTimeout = window.setTimeout(() => {
+        this.positionTooltip(element, tooltip, options.position || 'top');
+        tooltip.classList.add('show');
+      }, delay);
+    };
+
+    const hideTooltip = () => {
+      clearTimeout(showTimeout);
+      hideTimeout = window.setTimeout(() => {
+        tooltip.classList.remove('show');
+      }, 100);
+    };
+
+    element.addEventListener('mouseenter', showTooltip);
+    element.addEventListener('mouseleave', hideTooltip);
+    element.addEventListener('focus', showTooltip);
+    element.addEventListener('blur', hideTooltip);
+  }
+
+  /**
+   * 툴팁 위치 설정 (HelpSystem과 동일한 로직)
+   */
+  private positionTooltip(element: HTMLElement, tooltip: HTMLElement, position: string): void {
+    // HelpSystem의 positionTooltip과 동일한 구현
+    const elementRect = element.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    
+    let top = 0;
+    let left = 0;
+    
+    switch (position) {
+      case 'top':
+        top = elementRect.top - tooltipRect.height - 12;
+        left = elementRect.left + (elementRect.width - tooltipRect.width) / 2;
+        break;
+      case 'bottom':
+        top = elementRect.bottom + 12;
+        left = elementRect.left + (elementRect.width - tooltipRect.width) / 2;
+        break;
+      case 'left':
+        top = elementRect.top + (elementRect.height - tooltipRect.height) / 2;
+        left = elementRect.left - tooltipRect.width - 12;
+        break;
+      case 'right':
+        top = elementRect.top + (elementRect.height - tooltipRect.height) / 2;
+        left = elementRect.right + 12;
+        break;
+    }
+    
+    const margin = 10;
+    top = Math.max(margin, Math.min(top, window.innerHeight - tooltipRect.height - margin));
+    left = Math.max(margin, Math.min(left, window.innerWidth - tooltipRect.width - margin));
+    
+    tooltip.style.top = `${top + window.scrollY}px`;
+    tooltip.style.left = `${left + window.scrollX}px`;
+  }
+}
+
 /**
  * 도움말 시스템
  */
@@ -1117,103 +1216,6 @@ class HelpSystem {
    */
   private generateId(): string {
     return `help-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  }
-}
-
-/**
- * 툴팁 시스템
- */
-class TooltipSystem {
-  /**
-   * 툴팁 추가
-   */
-  public add(element: HTMLElement, options: TooltipOptions): void {
-    const tooltip = this.createTooltip(options);
-    document.body.appendChild(tooltip);
-    
-    this.setupTooltipEvents(element, tooltip, options);
-  }
-
-  /**
-   * 툴팁 생성
-   */
-  private createTooltip(options: TooltipOptions): HTMLElement {
-    const tooltip = document.createElement('div');
-    tooltip.className = `help-tooltip ${options.position || 'top'} ${options.theme || 'dark'}`;
-    tooltip.textContent = options.content;
-    
-    if (options.maxWidth) {
-      tooltip.style.maxWidth = `${options.maxWidth}px`;
-    }
-    
-    return tooltip;
-  }
-
-  /**
-   * 툴팁 이벤트 설정
-   */
-  private setupTooltipEvents(element: HTMLElement, tooltip: HTMLElement, options: TooltipOptions): void {
-    const delay = options.delay || 300;
-    let showTimeout: number;
-    let hideTimeout: number;
-
-    const showTooltip = () => {
-      clearTimeout(hideTimeout);
-      showTimeout = window.setTimeout(() => {
-        this.positionTooltip(element, tooltip, options.position || 'top');
-        tooltip.classList.add('show');
-      }, delay);
-    };
-
-    const hideTooltip = () => {
-      clearTimeout(showTimeout);
-      hideTimeout = window.setTimeout(() => {
-        tooltip.classList.remove('show');
-      }, 100);
-    };
-
-    element.addEventListener('mouseenter', showTooltip);
-    element.addEventListener('mouseleave', hideTooltip);
-    element.addEventListener('focus', showTooltip);
-    element.addEventListener('blur', hideTooltip);
-  }
-
-  /**
-   * 툴팁 위치 설정 (HelpSystem과 동일한 로직)
-   */
-  private positionTooltip(element: HTMLElement, tooltip: HTMLElement, position: string): void {
-    // HelpSystem의 positionTooltip과 동일한 구현
-    const elementRect = element.getBoundingClientRect();
-    const tooltipRect = tooltip.getBoundingClientRect();
-    
-    let top = 0;
-    let left = 0;
-    
-    switch (position) {
-      case 'top':
-        top = elementRect.top - tooltipRect.height - 12;
-        left = elementRect.left + (elementRect.width - tooltipRect.width) / 2;
-        break;
-      case 'bottom':
-        top = elementRect.bottom + 12;
-        left = elementRect.left + (elementRect.width - tooltipRect.width) / 2;
-        break;
-      case 'left':
-        top = elementRect.top + (elementRect.height - tooltipRect.height) / 2;
-        left = elementRect.left - tooltipRect.width - 12;
-        break;
-      case 'right':
-        top = elementRect.top + (elementRect.height - tooltipRect.height) / 2;
-        left = elementRect.right + 12;
-        break;
-    }
-    
-    const margin = 10;
-    top = Math.max(margin, Math.min(top, window.innerHeight - tooltipRect.height - margin));
-    left = Math.max(margin, Math.min(left, window.innerWidth - tooltipRect.width - margin));
-    
-    tooltip.style.top = `${top + window.scrollY}px`;
-    tooltip.style.left = `${left + window.scrollX}px`;
   }
 }
 

@@ -21,7 +21,7 @@ interface RateLimitStore {
  */
 class MemoryRateLimitStore {
   private store: RateLimitStore = {};
-  private cleanupInterval: NodeJS.Timeout;
+  private cleanupInterval!: NodeJS.Timeout;
 
   constructor() {
     // 테스트 환경이 아닐 때만 정리 작업 시작
@@ -60,9 +60,9 @@ class MemoryRateLimitStore {
       return { count: 1, resetTime };
     }
     
-    existing.count++;
-    this.set(key, existing.count, existing.resetTime);
-    return existing;
+    const updatedCount = existing.count + 1;
+    this.set(key, updatedCount, existing.resetTime);
+    return { count: updatedCount, resetTime: existing.resetTime };
   }
 
   private cleanup(): void {
@@ -184,8 +184,8 @@ export const createRateLimit = (options: RateLimitOptions) => {
  * 기본 Rate Limit (일반 API)
  */
 export const defaultRateLimit = createRateLimit({
-  windowMs: config.get('RATE_LIMIT_WINDOW'),
-  max: config.get('RATE_LIMIT_MAX'),
+  windowMs: config.get('RATE_LIMIT_WINDOW') || 15 * 60 * 1000,
+  max: config.get('RATE_LIMIT_MAX') || 100,
   message: '너무 많은 요청을 보냈습니다. 15분 후에 다시 시도해주세요.'
 });
 
@@ -232,7 +232,8 @@ export const userRateLimit = createRateLimit({
   },
   skip: (req) => {
     // 관리자는 Rate Limit 제외
-    return req.user?.role === 'admin';
+    const user = req.user;
+    return user && user.role === 'admin';
   }
 });
 
@@ -284,11 +285,12 @@ export const getRateLimitStatus = (req: AuthenticatedRequest, res: Response, _ne
   const key = req.user?.id || req.ip || 'unknown';
   const current = rateLimitStore.get(key);
   
+  const rateLimitMax = config.get('RATE_LIMIT_MAX') || 100;
   const status = {
-    limit: config.get('RATE_LIMIT_MAX'),
-    remaining: current ? Math.max(0, config.get('RATE_LIMIT_MAX') - current.count) : config.get('RATE_LIMIT_MAX'),
+    limit: rateLimitMax,
+    remaining: current ? Math.max(0, rateLimitMax - current.count) : rateLimitMax,
     reset: current ? new Date(current.resetTime).toISOString() : null,
-    retryAfter: current && current.count > config.get('RATE_LIMIT_MAX') 
+    retryAfter: current && current.count > rateLimitMax 
       ? Math.ceil((current.resetTime - Date.now()) / 1000) 
       : null
   };

@@ -164,21 +164,15 @@ router.post('/convert/to-grid', asyncHandler(async (req: Request, res: Response)
 
     res.json({
       success: true,
-      data: {
-        gridData,
-        validation: validationResult,
-        metadata: {
-          rowCount: gridData.length,
-          columnCount: gridData[0]?.length || 0,
-          format,
-          convertedAt: new Date().toISOString()
-        }
-      }
+      gridData,
+      validation: validationResult
     });
-
   } catch (error) {
-    logger.error('스키마 변환 중 오류:', error);
-    throw new AppError('스키마 변환 중 오류가 발생했습니다.', 422);
+    logger.error('스키마 그리드 변환 중 오류 발생:', error);
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : '스키마 그리드 변환 중 오류가 발생했습니다'
+    });
   }
 }));
 
@@ -340,6 +334,10 @@ router.post('/export', asyncHandler(async (req: Request, res: Response) => {
       case 'xml':
         contentType = 'application/xml';
         fileExtension = 'xml';
+        break;
+      default:
+        contentType = 'application/json';
+        fileExtension = 'json';
         break;
     }
 

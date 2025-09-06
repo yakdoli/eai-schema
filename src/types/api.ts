@@ -100,8 +100,11 @@ export interface AuthenticatedRequest extends Request {
 export type MiddlewareFunction = (req: AuthenticatedRequest, res: Response, next: Function) => void | Promise<void>;
 
 export interface ValidationMiddlewareOptions {
-  schema: any; // Joi 또는 다른 검증 스키마
+  schema?: any; // Joi 또는 다른 검증 스키마
   property?: 'body' | 'query' | 'params';
+  body?: any;
+  query?: any;
+  params?: any;
 }
 
 export interface RateLimitOptions {

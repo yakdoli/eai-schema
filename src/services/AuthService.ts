@@ -122,8 +122,8 @@ export class AuthService {
         id: generateUuid(),
         email: validatedData.email,
         name: validatedData.name,
-        role: validatedData.role,
-        permissions: this.getDefaultPermissions(validatedData.role),
+        role: validatedData.role || 'user',
+        permissions: this.getDefaultPermissions(validatedData.role || 'user'),
         tier: 'free',
         isActive: true,
         createdAt: new Date(),
@@ -364,9 +364,9 @@ export class AuthService {
       const filteredData = Object.keys(updateData)
         .filter(key => allowedFields.includes(key))
         .reduce((obj, key) => {
-          obj[key] = updateData[key];
+          obj[key] = (updateData as any)[key];
           return obj;
-        }, {} as any);
+        }, {} as Partial<User>);
 
       const updatedUser = {
         ...user,

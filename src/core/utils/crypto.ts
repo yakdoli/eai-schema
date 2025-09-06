@@ -11,7 +11,7 @@ const config = ConfigManager.getInstance();
  * 비밀번호 해싱
  */
 export const hashPassword = async (password: string): Promise<string> => {
-  const rounds = config.get('BCRYPT_ROUNDS');
+  const rounds: number = config.get('BCRYPT_ROUNDS') || 12;
   return bcrypt.hash(password, rounds);
 };
 
@@ -26,8 +26,8 @@ export const verifyPassword = async (password: string, hash: string): Promise<bo
  * JWT 토큰 생성
  */
 export const generateJwtToken = (payload: object): string => {
-  const secret = config.get('JWT_SECRET');
-  const expiresIn = config.get('JWT_EXPIRES_IN');
+  const secret: string = config.get('JWT_SECRET') || '';
+  const expiresIn: string = config.get('JWT_EXPIRES_IN') || '1h';
   
   if (!secret) {
     throw new Error('JWT_SECRET이 설정되지 않았습니다');
@@ -40,7 +40,7 @@ export const generateJwtToken = (payload: object): string => {
  * JWT 토큰 검증
  */
 export const verifyJwtToken = (token: string): any => {
-  const secret = config.get('JWT_SECRET');
+  const secret: string = config.get('JWT_SECRET') || '';
   
   if (!secret) {
     throw new Error('JWT_SECRET이 설정되지 않았습니다');
@@ -86,7 +86,7 @@ export const encrypt = (text: string, key: string): {
   tag: string;
 } => {
   const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipher('aes-256-gcm', key);
+  const cipher = crypto.createCipheriv('aes-256-gcm', Buffer.from(key), iv);
   
   let encrypted = cipher.update(text, 'utf8', 'hex');
   encrypted += cipher.final('hex');
@@ -107,7 +107,7 @@ export const decrypt = (
   encryptedData: { encrypted: string; iv: string; tag: string },
   key: string
 ): string => {
-  const decipher = crypto.createDecipher('aes-256-gcm', key);
+  const decipher = crypto.createDecipheriv('aes-256-gcm', Buffer.from(key), Buffer.from(encryptedData.iv, 'hex'));
   decipher.setAuthTag(Buffer.from(encryptedData.tag, 'hex'));
   
   let decrypted = decipher.update(encryptedData.encrypted, 'hex', 'utf8');
@@ -139,7 +139,8 @@ export const generateTotp = (secret: string, window = 0): string => {
   const timeBuffer = Buffer.alloc(8);
   timeBuffer.writeUInt32BE(time, 4);
   
-  const hmac = crypto.createHmac('sha1', Buffer.from(secret, 'base32'));
+  const key = Buffer.from(secret, 'base32');
+  const hmac = crypto.createHmac('sha1', key);
   hmac.update(timeBuffer);
   const hash = hmac.digest();
   

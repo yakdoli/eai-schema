@@ -107,7 +107,7 @@ export class SchemaConversionService implements ISchemaConversionService {
         message: error instanceof Error ? error.message : '알 수 없는 변환 오류',
         code: 'MULTI_FORMAT_CONVERSION_ERROR',
         sourceFormat: SchemaFormat.JSON,
-        targetFormat: targetFormats[0] // 첫 번째 형식을 대표로 사용
+        targetFormat: targetFormats[0] || SchemaFormat.XML // 첫 번째 형식을 대표로 사용
       });
     }
 

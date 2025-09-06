@@ -71,12 +71,12 @@ export interface ValidationRule {
 
 export interface ValidationResult {
   isValid: boolean;
-  errors: ValidationError[];
+  errors: SchemaValidationError[];
   warnings: ValidationWarning[];
   metadata?: Record<string, any>;
 }
 
-export interface ValidationError {
+export interface SchemaValidationError {
   field: string;
   message: string;
   code: string;

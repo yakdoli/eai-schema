@@ -16,12 +16,14 @@ export const validateData = <T>(
   } catch (error) {
     if (error instanceof z.ZodError) {
       const firstError = error.errors[0];
-      const field = fieldName || firstError.path.join('.');
-      throw new ValidationError(
-        firstError.message,
-        field,
-        data
-      );
+      if (firstError) {
+        const field = fieldName || firstError.path.join('.');
+        throw new ValidationError(
+          firstError.message,
+          field,
+          data
+        );
+      }
     }
     throw error;
   }
