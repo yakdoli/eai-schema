@@ -27,7 +27,7 @@ describe("Code Coverage Tests", () => {
   describe("Error Handler Middleware", () => {
     it("에러 핸들러 모듈이 존재해야 함", async () => {
       try {
-        const errorHandlerModule = await import("../middleware/errorHandler");
+        const errorHandlerModule = await import("../middleware/errorHandler.js");
         expect(errorHandlerModule).toBeDefined();
       } catch (error) {
         // 모듈이 존재하지 않거나 import할 수 없는 경우
@@ -137,7 +137,7 @@ describe("Code Coverage Tests", () => {
   describe("Error Classes", () => {
     it("커스텀 에러 클래스들이 올바르게 작동해야 함", async () => {
       try {
-        const { SecurityError, ValidationError, NetworkError } = await import("../middleware/errorHandler");
+        const { SecurityError, ValidationError, NetworkError } = await import("../middleware/errorHandler.js");
         
         const securityError = new SecurityError("Security test");
         expect(securityError).toBeInstanceOf(Error);
