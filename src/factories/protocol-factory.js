@@ -1,6 +1,9 @@
 // Protocol Factory
-import { WSDLProtocol } from './wsdl-protocol.js';
-import { BaseProtocol } from './base-protocol.js';
+import { WSDLProtocol } from '../protocols/wsdl-protocol.js';
+import { JSONRPCProtocol } from '../protocols/json-rpc-protocol.js';
+import { XSDProtocol } from '../protocols/xsd-protocol.js';
+import { SAPProtocol } from '../protocols/sap-protocol.js';
+import { BaseProtocol } from '../protocols/base-protocol.js';
 
 export class ProtocolFactory {
   static createProtocol(protocolType, config = {}) {
@@ -11,14 +14,11 @@ export class ProtocolFactory {
         // Placeholder for SOAP protocol
         throw new Error('SOAP protocol not yet implemented');
       case 'jsonrpc':
-        // Placeholder for JSON-RPC protocol
-        throw new Error('JSON-RPC protocol not yet implemented');
+        return new JSONRPCProtocol(config);
       case 'xsd':
-        // Placeholder for XSD protocol
-        throw new Error('XSD protocol not yet implemented');
+        return new XSDProtocol(config);
       case 'sap':
-        // Placeholder for SAP protocol
-        throw new Error('SAP protocol not yet implemented');
+        return new SAPProtocol(config);
       default:
         throw new Error(`Unsupported protocol type: ${protocolType}`);
     }

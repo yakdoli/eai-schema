@@ -8,14 +8,18 @@ module.exports = {
     '<rootDir>/src/**/*.test.ts',
     '<rootDir>/src/**/*.spec.ts'
   ],
+  extensionsToTreatAsEsm: ['.ts'],
+  moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1',
+  },
   transform: {
-    '^.+\\.ts$': ['ts-jest', {
-      useESM: false,
-      tsconfig: {
-        target: 'ES2022',
-        module: 'commonjs'
-      }
-    }],
+    // Transform TypeScript files using ts-jest in ESM mode.
+    '^.+\\.tsx?$': [
+      'ts-jest',
+      {
+        useESM: true,
+      },
+    ],
   },
   collectCoverageFrom: [
     'src/**/*.ts',

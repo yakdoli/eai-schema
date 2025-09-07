@@ -1,4 +1,6 @@
 // Jest 테스트 환경 설정
+import { jest, afterAll, afterEach } from '@jest/globals';
+
 /// <reference types="jest" />
 
 // 테스트 환경 변수 설정
