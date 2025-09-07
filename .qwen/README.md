@@ -128,10 +128,6 @@ The project includes a comprehensive set of UI components:
 
 The project uses Tailwind CSS 4 with CSS variables for easy theming. Modify the CSS variables in `src/App.css` to customize the appearance.
 
-## Development Workflow
-
-All development documentation and guidelines are located in the `.qwen` directory. Please refer to `.qwen/WORKFLOW_GUIDELINES.md` for detailed development processes, testing procedures, and documentation management.
-
 ## License
 
 Copyright (C) 2024 YoungHyun Cho  
@@ -146,12 +142,11 @@ This project follows the original EAI Work Tool specifications. For questions or
 
 ## Research and Planning Documents
 
-For detailed information about the extension plans, please see the organized documentation in the `.qwen` directory:
+For detailed information about the extension plans, please see:
 
-- `PROJECT_OVERVIEW.md` - Project description and goals
-- `PROJECT_CONTEXT.md` - Background and development tools context
-- `REQUIREMENTS.md` - Functional and non-functional requirements
-- `DESIGN.md` - Architecture and component design
-- `WORK_PLAN.md` - Phased implementation approach
-- `PROGRESS_REPORT.md` - Current status and next steps
-- `WORKFLOW_GUIDELINES.md` - Development workflow guidelines
+- `enterprise_protocol_research.md` - Research on enterprise messaging protocols
+- `extension_architecture_design.md` - Detailed architecture design
+- `implementation_plan_updated.md` - Phased implementation plan
+- `package_research.md` - NPM package research
+- `prototype_evaluation.md` - Evaluation of WSDL prototype
+- `research_summary.md` - Comprehensive research summary
