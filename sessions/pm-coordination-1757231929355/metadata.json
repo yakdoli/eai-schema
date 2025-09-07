@@ -4,6 +4,28 @@
   "type": "pm",
   "createdAt": "2025-09-07T07:58:49.355Z",
   "status": "running",
-  "tasks": [],
-  "startedAt": "2025-09-07T07:58:58.306Z"
+  "tasks": [
+    {
+      "id": "task-1757232010514",
+      "description": "Coordinate WSDL protocol implementation high",
+      "priority": "high",
+      "status": "pending",
+      "createdAt": "2025-09-07T08:00:10.514Z"
+    },
+    {
+      "id": "task-1757232013720",
+      "description": "Create feature implementation sessions for each protocol medium",
+      "priority": "medium",
+      "status": "pending",
+      "createdAt": "2025-09-07T08:00:13.720Z"
+    },
+    {
+      "id": "task-1757232016819",
+      "description": "Establish sub-agent delegation framework high",
+      "priority": "high",
+      "status": "pending",
+      "createdAt": "2025-09-07T08:00:16.819Z"
+    }
+  ],
+  "startedAt": "2025-09-07T08:00:07.237Z"
 }

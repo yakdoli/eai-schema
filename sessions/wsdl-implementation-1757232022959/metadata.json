@@ -1,0 +1,32 @@
+{
+  "id": "wsdl-implementation-1757232022959",
+  "name": "wsdl-implementation",
+  "type": "feature",
+  "createdAt": "2025-09-07T08:00:22.959Z",
+  "status": "running",
+  "tasks": [
+    {
+      "id": "task-1757232086668",
+      "description": "Enhance WSDLProtocol with advanced features high high",
+      "priority": "high",
+      "status": "in-progress",
+      "createdAt": "2025-09-07T08:01:26.668Z",
+      "updatedAt": "2025-09-07T08:01:57.016Z"
+    },
+    {
+      "id": "task-1757232089546",
+      "description": "Implement support for complex type definitions medium medium",
+      "priority": "medium",
+      "status": "pending",
+      "createdAt": "2025-09-07T08:01:29.546Z"
+    },
+    {
+      "id": "task-1757232096251",
+      "description": "Add service and port type management medium medium",
+      "priority": "medium",
+      "status": "pending",
+      "createdAt": "2025-09-07T08:01:36.251Z"
+    }
+  ],
+  "startedAt": "2025-09-07T08:01:23.422Z"
+}

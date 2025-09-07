@@ -14,7 +14,38 @@ const __dirname = path.dirname(__filename);
 class SessionManager {
   constructor() {
     this.sessionsDir = path.join(__dirname, 'sessions');
+    this.currentSession = this.loadCurrentSession();
+  }
+
+  // Load current session from file
+  loadCurrentSession() {
+    const currentSessionFile = path.join(this.sessionsDir, 'current-session.json');
+    if (fs.existsSync(currentSessionFile)) {
+      try {
+        return JSON.parse(fs.readFileSync(currentSessionFile, 'utf8'));
+      } catch (error) {
+        console.error('Error loading current session:', error.message);
+        return null;
+      }
+    }
+    return null;
+  }
+
+  // Save current session to file
+  saveCurrentSession() {
+    if (this.currentSession) {
+      const currentSessionFile = path.join(this.sessionsDir, 'current-session.json');
+      fs.writeFileSync(currentSessionFile, JSON.stringify(this.currentSession, null, 2));
+    }
+  }
+
+  // Clear current session
+  clearCurrentSession() {
     this.currentSession = null;
+    const currentSessionFile = path.join(this.sessionsDir, 'current-session.json');
+    if (fs.existsSync(currentSessionFile)) {
+      fs.unlinkSync(currentSessionFile);
+    }
   }
 
   // Create a new session
@@ -47,7 +78,6 @@ class SessionManager {
 `
     );
     
-    this.currentSession = sessionMetadata;
     console.log(`Created session: ${sessionName}`);
     return sessionPath;
   }
@@ -59,7 +89,10 @@ class SessionManager {
       return [];
     }
     
-    const sessions = fs.readdirSync(this.sessionsDir);
+    const sessions = fs.readdirSync(this.sessionsDir).filter(item => 
+      item !== 'current-session.json' && fs.statSync(path.join(this.sessionsDir, item)).isDirectory()
+    );
+    
     console.log('Available sessions:');
     sessions.forEach(session => console.log(`  - ${session}`));
     return sessions;
@@ -73,12 +106,13 @@ class SessionManager {
       return null;
     }
     
-    // Update metadata
+    // Load metadata
     const metadataPath = path.join(sessionPath, 'metadata.json');
     const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
     metadata.status = 'running';
     metadata.startedAt = new Date().toISOString();
     
+    // Update metadata
     fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
     
     // Log session start
@@ -89,6 +123,8 @@ class SessionManager {
     );
     
     this.currentSession = metadata;
+    this.saveCurrentSession();
+    
     console.log(`Started session: ${sessionId}`);
     return sessionPath;
   }
@@ -96,7 +132,7 @@ class SessionManager {
   // Add task to current session
   addTask(taskDescription, priority = 'medium') {
     if (!this.currentSession) {
-      console.error('No active session');
+      console.error('No active session. Please start a session first.');
       return;
     }
     
@@ -110,6 +146,7 @@ class SessionManager {
     };
     
     this.currentSession.tasks.push(task);
+    this.saveCurrentSession();
     
     // Update metadata
     const sessionPath = path.join(this.sessionsDir, this.currentSession.id);
@@ -130,7 +167,7 @@ class SessionManager {
   // Update task status
   updateTaskStatus(taskId, status) {
     if (!this.currentSession) {
-      console.error('No active session');
+      console.error('No active session. Please start a session first.');
       return;
     }
     
@@ -142,6 +179,8 @@ class SessionManager {
     
     task.status = status;
     task.updatedAt = new Date().toISOString();
+    
+    this.saveCurrentSession();
     
     // Update metadata
     const sessionPath = path.join(this.sessionsDir, this.currentSession.id);
@@ -181,7 +220,7 @@ class SessionManager {
     );
     
     console.log(`Ended session: ${this.currentSession.name}`);
-    this.currentSession = null;
+    this.clearCurrentSession();
   }
 
   // Get session status
